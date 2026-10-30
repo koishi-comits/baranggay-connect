@@ -5467,6 +5467,7 @@ function LoginView({
   const [regSubmittedName, setRegSubmittedName] = useState("");
 
   // ── Register form state ───────────────────────────────────────────────
+  const [regStep, setRegStep] = useState<"details" | "otp">("details");
   const [regFirstName, setRegFirstName] = useState("");
   const [regLastName, setRegLastName] = useState("");
   const [regEmail, setRegEmail] = useState("");
@@ -5474,8 +5475,39 @@ function LoginView({
   const [regAddress, setRegAddress] = useState("");
   const [regPassword, setRegPassword] = useState("");
   const [regConfirm, setRegConfirm] = useState("");
+  const [regOtpCode, setRegOtpCode] = useState("");
+  const [regOtpCooldown, setRegOtpCooldown] = useState(0);
   const [regError, setRegError] = useState("");
   const [regSubmitting, setRegSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (regOtpCooldown <= 0) return;
+    const timer = setInterval(() => {
+      setRegOtpCooldown((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [regOtpCooldown]);
+
+  // Validation helpers to prevent random strings & garbage input
+  function isValidEmail(val: string): boolean {
+    return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(val.trim());
+  }
+
+  function normalizePhilippinePhone(val: string): string | null {
+    let cleaned = val.replace(/[\s\-()]/g, "");
+    if (cleaned.startsWith("+63")) {
+      cleaned = "0" + cleaned.slice(3);
+    }
+    // Must be exactly 11 digits starting with 09
+    if (/^09\d{9}$/.test(cleaned)) {
+      return `${cleaned.slice(0, 4)}-${cleaned.slice(4, 7)}-${cleaned.slice(7)}`;
+    }
+    return null;
+  }
+
+  function isValidName(val: string): boolean {
+    return /^[a-zA-ZÀ-ÿ\s.'-]{2,50}$/.test(val.trim());
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -5547,58 +5579,175 @@ function LoginView({
     }
   }
 
-  async function handleRegister() {
+  async function handleSendOtp() {
     setRegError("");
-    if (!regFirstName.trim() || !regLastName.trim() || !regEmail.trim() || !regPassword.trim()) {
-      setRegError("Please fill in all required fields.");
+
+    // 1. Name validation
+    if (!regFirstName.trim() || !regLastName.trim()) {
+      setRegError("Please enter your complete first and last name.");
       return;
     }
+    if (!isValidName(regFirstName) || !isValidName(regLastName)) {
+      setRegError("Names should only contain valid letters (no numbers or random symbols).");
+      return;
+    }
+
+    // 2. Email validation
+    if (!regEmail.trim()) {
+      setRegError("Please enter your email address.");
+      return;
+    }
+    if (!isValidEmail(regEmail)) {
+      setRegError("Please enter a valid email address (e.g., resident@gmail.com).");
+      return;
+    }
+
+    // 3. Philippine Phone validation
+    if (!regPhone.trim()) {
+      setRegError("Please enter your mobile phone number.");
+      return;
+    }
+    const validatedPhone = normalizePhilippinePhone(regPhone);
+    if (!validatedPhone) {
+      setRegError("Please enter a valid 11-digit Philippine mobile number starting with 09 (e.g., 0917-123-4567).");
+      return;
+    }
+
+    // 4. Address validation
+    if (!regAddress.trim() || regAddress.trim().length < 6) {
+      setRegError("Please enter your house address within the barangay (at least 6 characters).");
+      return;
+    }
+
+    // 5. Password validation
     if (regPassword.length < 8) {
-      setRegError("Password must be at least 8 characters.");
+      setRegError("Password must be at least 8 characters long.");
       return;
     }
     if (regPassword !== regConfirm) {
       setRegError("Passwords do not match.");
       return;
     }
+
     setRegSubmitting(true);
     try {
-      const fullName = `${regFirstName.trim()} ${regLastName.trim()}`;
-      // 1. Create auth user
-      const { data: signUpData, error: signUpErr } = await supabase.auth.signUp({
-        email: regEmail.trim().toLowerCase(),
-        password: regPassword,
-        options: {
-          data: { full_name: fullName },
-        },
-      });
-      if (signUpErr || !signUpData.user) {
-        setRegError(signUpErr?.message ?? "Registration failed. Please try again.");
+      // Check if email already registered in accounts table
+      const { data: existingAcct } = await supabase
+        .from("accounts")
+        .select("id")
+        .eq("email", regEmail.trim().toLowerCase())
+        .maybeSingle();
+
+      if (existingAcct) {
+        setRegError("An account with this email address already exists. Please sign in instead.");
         setRegSubmitting(false);
         return;
       }
-      // 2. Insert profile row (status = pending — awaiting admin approval)
-      await supabase.from("accounts").insert([
+
+      // Send 6-digit OTP code to the email address via Supabase Auth
+      const { error: otpErr } = await supabase.auth.signInWithOtp({
+        email: regEmail.trim().toLowerCase(),
+      });
+
+      if (otpErr) {
+        setRegError(otpErr.message || "Failed to send verification code. Please check your email.");
+        setRegSubmitting(false);
+        return;
+      }
+
+      setRegStep("otp");
+      setRegOtpCode("");
+      setRegOtpCooldown(60);
+    } catch (err: any) {
+      setRegError(err?.message || "An unexpected error occurred. Please try again.");
+    } finally {
+      setRegSubmitting(false);
+    }
+  }
+
+  async function handleVerifyOtpAndRegister() {
+    setRegError("");
+    const code = regOtpCode.trim();
+    if (!code || code.length < 6) {
+      setRegError("Please enter the complete 6-digit verification code sent to your email.");
+      return;
+    }
+
+    setRegSubmitting(true);
+    try {
+      // 1. Verify OTP with Supabase
+      const { data: verifyData, error: verifyErr } = await supabase.auth.verifyOtp({
+        email: regEmail.trim().toLowerCase(),
+        token: code,
+        type: "email",
+      });
+
+      if (verifyErr || !verifyData.user) {
+        setRegError("Invalid or expired verification code. Please check your email inbox and try again.");
+        setRegSubmitting(false);
+        return;
+      }
+
+      // 2. Set the user's permanent password
+      await supabase.auth.updateUser({
+        password: regPassword,
+      });
+
+      const fullName = `${regFirstName.trim()} ${regLastName.trim()}`;
+      const validatedPhone = normalizePhilippinePhone(regPhone) || regPhone.trim();
+
+      // 3. Upsert user record into accounts table (status: pending for admin review)
+      await supabase.from("accounts").upsert([
         {
-          id: signUpData.user.id,
+          id: verifyData.user.id,
           email: regEmail.trim().toLowerCase(),
           full_name: fullName,
-          phone: regPhone.trim(),
+          phone: validatedPhone,
           address: regAddress.trim(),
           role: "resident",
           status: "pending",
         },
       ]);
-      // Sign out immediately — admin must approve first
+
+      // 4. Sign out — account is pending admin approval
       await supabase.auth.signOut();
-      setRegSubmittedName(`${regFirstName.trim()} ${regLastName.trim()}`);
+
+      setRegSubmittedName(fullName);
       setRegisterOpen(false);
+      setRegStep("details");
       setRegSuccessOpen(true);
-      // Reset form
-      setRegFirstName(""); setRegLastName(""); setRegEmail("");
-      setRegPhone(""); setRegAddress(""); setRegPassword(""); setRegConfirm("");
+
+      // Reset fields
+      setRegFirstName("");
+      setRegLastName("");
+      setRegEmail("");
+      setRegPhone("");
+      setRegAddress("");
+      setRegPassword("");
+      setRegConfirm("");
+      setRegOtpCode("");
     } catch (err: any) {
-      setRegError(err?.message ?? "An unexpected error occurred.");
+      setRegError(err?.message || "Registration verification failed. Please try again.");
+    } finally {
+      setRegSubmitting(false);
+    }
+  }
+
+  async function handleResendOtp() {
+    if (regOtpCooldown > 0) return;
+    setRegError("");
+    setRegSubmitting(true);
+    try {
+      const { error: resendErr } = await supabase.auth.signInWithOtp({
+        email: regEmail.trim().toLowerCase(),
+      });
+      if (resendErr) {
+        setRegError(resendErr.message || "Failed to resend code.");
+      } else {
+        setRegOtpCooldown(60);
+      }
+    } catch (err: any) {
+      setRegError(err?.message || "Failed to resend code.");
     } finally {
       setRegSubmitting(false);
     }
@@ -5747,95 +5896,200 @@ function LoginView({
       </section>
       {registerOpen && (
         <Modal
-          title="Resident registration"
-          close={() => setRegisterOpen(false)}
+          title={regStep === "details" ? "Resident registration" : "Verify Email Address"}
+          close={() => {
+            setRegisterOpen(false);
+            setRegStep("details");
+            setRegError("");
+          }}
         >
-          <p className="modal-intro">
-            Create your resident profile. The barangay will verify your
-            information before activating your account.
-          </p>
-          {regError && (
-            <div className="login-error" style={{ marginBottom: "0.75rem" }}>
-              <Icon name="x" size={15} /> {regError}
+          {regStep === "details" ? (
+            <>
+              <p className="modal-intro">
+                Create your resident profile. We will verify your email with a 6-digit code before submitting your profile to the barangay administration.
+              </p>
+              {regError && (
+                <div className="login-error" style={{ marginBottom: "0.75rem" }}>
+                  <Icon name="x" size={15} /> {regError}
+                </div>
+              )}
+              <div className="form-grid">
+                <label className="field">
+                  First name *
+                  <input
+                    required
+                    placeholder="Juan"
+                    value={regFirstName}
+                    onChange={(e) => setRegFirstName(e.target.value)}
+                  />
+                </label>
+                <label className="field">
+                  Last name *
+                  <input
+                    required
+                    placeholder="Dela Cruz"
+                    value={regLastName}
+                    onChange={(e) => setRegLastName(e.target.value)}
+                  />
+                </label>
+              </div>
+              <label className="field">
+                Email address *
+                <input
+                  type="email"
+                  required
+                  placeholder="resident@gmail.com"
+                  value={regEmail}
+                  onChange={(e) => setRegEmail(e.target.value)}
+                />
+              </label>
+              <label className="field">
+                Philippine Mobile Number *
+                <input
+                  type="tel"
+                  required
+                  placeholder="0917-123-4567"
+                  value={regPhone}
+                  onChange={(e) => setRegPhone(e.target.value)}
+                />
+                <small style={{ fontSize: "11px", color: "#6b7280", marginTop: "3px" }}>
+                  Must be an active 11-digit number starting with 09
+                </small>
+              </label>
+              <label className="field">
+                Home address within the barangay *
+                <textarea
+                  className="small-textarea"
+                  required
+                  placeholder="House number, street, and purok/area"
+                  value={regAddress}
+                  onChange={(e) => setRegAddress(e.target.value)}
+                />
+              </label>
+              <label className="field">
+                Create password *
+                <input
+                  type="password"
+                  required
+                  placeholder="At least 8 characters"
+                  value={regPassword}
+                  onChange={(e) => setRegPassword(e.target.value)}
+                />
+              </label>
+              <label className="field">
+                Confirm password *
+                <input
+                  type="password"
+                  required
+                  placeholder="Re-enter your password"
+                  value={regConfirm}
+                  onChange={(e) => setRegConfirm(e.target.value)}
+                />
+              </label>
+              <button
+                className="primary-button full"
+                type="button"
+                onClick={handleSendOtp}
+                disabled={regSubmitting}
+                style={{ marginTop: "6px" }}
+              >
+                {regSubmitting ? "Sending verification code…" : "Verify Email & Continue →"}
+              </button>
+            </>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+              <div style={{ textAlign: "center", padding: "6px 0" }}>
+                <div style={{ width: 56, height: 56, borderRadius: "50%", background: "#ecfdf5", border: "2px solid #a7f3d0", display: "inline-flex", alignItems: "center", justifyContent: "center", color: "#059669", marginBottom: "12px" }}>
+                  <Icon name="shield" size={26} />
+                </div>
+                <h3 style={{ margin: "0 0 6px", fontSize: "17px", color: "#111827", fontWeight: 700 }}>
+                  Enter Verification Code
+                </h3>
+                <p style={{ margin: 0, fontSize: "13px", color: "#4b5563", lineHeight: 1.5 }}>
+                  We sent a 6-digit security verification code to:
+                  <br />
+                  <strong style={{ color: "#065f46", fontSize: "14px" }}>{regEmail}</strong>
+                </p>
+                <small style={{ display: "block", marginTop: "4px", color: "#6b7280", fontSize: "11.5px" }}>
+                  Please check your inbox (and spam folder) for the code.
+                </small>
+              </div>
+
+              {regError && (
+                <div className="login-error">
+                  <Icon name="x" size={15} /> {regError}
+                </div>
+              )}
+
+              <label className="field">
+                6-Digit Security Code
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  maxLength={6}
+                  placeholder="000000"
+                  value={regOtpCode}
+                  onChange={(e) => {
+                    const clean = e.target.value.replace(/\D/g, "").slice(0, 6);
+                    setRegOtpCode(clean);
+                    setRegError("");
+                  }}
+                  style={{
+                    textAlign: "center",
+                    fontSize: "26px",
+                    letterSpacing: "8px",
+                    fontWeight: 700,
+                    padding: "12px",
+                    color: "#065f46",
+                  }}
+                  autoFocus
+                  required
+                />
+              </label>
+
+              <div style={{ textAlign: "center", fontSize: "12.5px", color: "#6b7280" }}>
+                Didn't receive code?{" "}
+                <button
+                  type="button"
+                  onClick={handleResendOtp}
+                  disabled={regOtpCooldown > 0 || regSubmitting}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    color: regOtpCooldown > 0 ? "#9ca3af" : "#16a34a",
+                    fontWeight: 600,
+                    cursor: regOtpCooldown > 0 ? "default" : "pointer",
+                    padding: 0,
+                    textDecoration: regOtpCooldown > 0 ? "none" : "underline",
+                  }}
+                >
+                  {regOtpCooldown > 0 ? `Resend in ${regOtpCooldown}s` : "Resend code"}
+                </button>
+              </div>
+
+              <div style={{ display: "flex", gap: "10px", marginTop: "8px" }}>
+                <button
+                  type="button"
+                  className="ghost-button"
+                  onClick={() => { setRegStep("details"); setRegError(""); }}
+                  disabled={regSubmitting}
+                  style={{ flex: 1 }}
+                >
+                  ← Edit details
+                </button>
+                <button
+                  type="button"
+                  className="primary-button"
+                  onClick={handleVerifyOtpAndRegister}
+                  disabled={regSubmitting || regOtpCode.length < 6}
+                  style={{ flex: 1.5 }}
+                >
+                  {regSubmitting ? "Verifying…" : "Verify & Complete"}
+                </button>
+              </div>
             </div>
           )}
-          <div className="form-grid">
-            <label className="field">
-              First name
-              <input
-                required
-                placeholder="Juan"
-                value={regFirstName}
-                onChange={(e) => setRegFirstName(e.target.value)}
-              />
-            </label>
-            <label className="field">
-              Last name
-              <input
-                required
-                placeholder="Dela Cruz"
-                value={regLastName}
-                onChange={(e) => setRegLastName(e.target.value)}
-              />
-            </label>
-          </div>
-          <label className="field">
-            Email address
-            <input
-              type="email"
-              required
-              placeholder="you@email.com"
-              value={regEmail}
-              onChange={(e) => setRegEmail(e.target.value)}
-            />
-          </label>
-          <label className="field">
-            Mobile number
-            <input
-              type="tel"
-              required
-              placeholder="09XX XXX XXXX"
-              value={regPhone}
-              onChange={(e) => setRegPhone(e.target.value)}
-            />
-          </label>
-          <label className="field">
-            Home address within the barangay
-            <textarea
-              className="small-textarea"
-              required
-              placeholder="House number, street, and area"
-              value={regAddress}
-              onChange={(e) => setRegAddress(e.target.value)}
-            />
-          </label>
-          <label className="field">
-            Create password
-            <input
-              type="password"
-              required
-              placeholder="At least 8 characters"
-              value={regPassword}
-              onChange={(e) => setRegPassword(e.target.value)}
-            />
-          </label>
-          <label className="field">
-            Confirm password
-            <input
-              type="password"
-              required
-              placeholder="Re-enter your password"
-              value={regConfirm}
-              onChange={(e) => setRegConfirm(e.target.value)}
-            />
-          </label>
-          <button
-            className="primary-button full"
-            onClick={handleRegister}
-            disabled={regSubmitting}
-          >
-            {regSubmitting ? "Submitting…" : "Submit for verification"}
-          </button>
         </Modal>
       )}
 
