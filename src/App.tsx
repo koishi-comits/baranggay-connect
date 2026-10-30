@@ -1583,15 +1583,20 @@ function UserProfileModal({
   user,
   onClose,
   onSave,
+  onToast,
 }: {
   user: Account;
   onClose: () => void;
   onSave: (updated: { name: string; photoUrl: string }) => void;
+  onToast?: (msg: string) => void;
 }) {
   const storedPhoto = (() => {
     try { return localStorage.getItem(`brgy_profile_photo_${user.id}`) || ""; } catch { return ""; }
   })();
 
+  const [activeTab, setActiveTab] = useState<"profile" | "password">("profile");
+
+  // Profile state
   const [name, setName] = useState(user.name);
   const [mobile, setMobile] = useState(() => {
     try { return localStorage.getItem(`brgy_profile_mobile_${user.id}`) || ""; } catch { return ""; }
@@ -1602,6 +1607,17 @@ function UserProfileModal({
   const [photoUrl, setPhotoUrl] = useState(storedPhoto);
   const [saving, setSaving] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  // Password state
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passwordLoading, setPasswordLoading] = useState(false);
+  const [passwordError, setPasswordError] = useState("");
+  const [passwordSuccess, setPasswordSuccess] = useState("");
 
   function handlePhotoUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -1614,18 +1630,16 @@ function UserProfileModal({
     reader.readAsDataURL(file);
   }
 
-  async function handleSave() {
+  async function handleSaveProfile() {
     if (!name.trim()) return;
     setSaving(true);
     try {
-      // Persist photo, mobile, address locally
       try {
         if (photoUrl) localStorage.setItem(`brgy_profile_photo_${user.id}`, photoUrl);
         else localStorage.removeItem(`brgy_profile_photo_${user.id}`);
         if (mobile) localStorage.setItem(`brgy_profile_mobile_${user.id}`, mobile);
         if (address) localStorage.setItem(`brgy_profile_address_${user.id}`, address);
       } catch {}
-      // Update full_name in Supabase
       await supabase.from("accounts").update({ full_name: name.trim() }).eq("id", user.id);
       onSave({ name: name.trim(), photoUrl });
     } catch (e) {
@@ -1636,83 +1650,357 @@ function UserProfileModal({
     }
   }
 
+  async function handlePasswordChange(e: React.FormEvent) {
+    e.preventDefault();
+    setPasswordError("");
+    setPasswordSuccess("");
+
+    if (!currentPassword) {
+      setPasswordError("Please enter your current password.");
+      return;
+    }
+    if (!newPassword) {
+      setPasswordError("Please enter your new password.");
+      return;
+    }
+    if (newPassword.length < 8) {
+      setPasswordError("New password must be at least 8 characters long.");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setPasswordError("New passwords do not match.");
+      return;
+    }
+    if (newPassword === currentPassword) {
+      setPasswordError("New password must be different from your current password.");
+      return;
+    }
+
+    setPasswordLoading(true);
+    try {
+      // 1. Verify current password by authenticating against Supabase
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+        email: user.email.trim().toLowerCase(),
+        password: currentPassword,
+      });
+
+      if (signInError || !signInData.user) {
+        setPasswordError("Current password is incorrect. Please verify and try again.");
+        setPasswordLoading(false);
+        return;
+      }
+
+      // 2. Current password verified successfully! Now update to new password
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+
+      if (updateError) {
+        setPasswordError(updateError.message || "Failed to update password. Please try again.");
+        setPasswordLoading(false);
+        return;
+      }
+
+      // 3. Password successfully updated
+      setPasswordSuccess("Password changed successfully! 🔒");
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      if (onToast) {
+        onToast("Password changed successfully! ✅");
+      }
+    } catch (err: any) {
+      setPasswordError(err?.message || "An unexpected error occurred while updating password.");
+    } finally {
+      setPasswordLoading(false);
+    }
+  }
+
   return (
     <Modal title="My Profile Settings" close={onClose} maxWidth="480px">
-      <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
-        {/* Avatar / Photo Upload */}
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "12px", paddingBottom: "14px", borderBottom: "1px solid #e8eee9" }}>
-          <div style={{ position: "relative", display: "inline-block" }}>
-            <div style={{ width: 88, height: 88, borderRadius: "50%", overflow: "hidden", background: "#e0f2fe", border: "3px solid #bae6fd", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              {photoUrl ? (
-                <img src={photoUrl} alt="Profile" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-              ) : (
-                <span style={{ fontSize: 28, fontWeight: 700, color: "#0369a1", letterSpacing: 1 }}>{getInitials(name || user.name)}</span>
-              )}
-            </div>
-            <button
-              type="button"
-              onClick={() => fileRef.current?.click()}
-              style={{ position: "absolute", bottom: 0, right: 0, background: "#16a34a", color: "white", border: "2px solid white", borderRadius: "50%", width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxShadow: "0 2px 6px rgba(0,0,0,0.15)" }}
-              title="Upload profile photo"
-            >
-              <Icon name="image" size={14} />
-            </button>
-          </div>
-          <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handlePhotoUpload} />
-          <div style={{ textAlign: "center" }}>
-            <strong style={{ fontSize: "14px", color: "#18362b", display: "block" }}>{user.name}</strong>
-            <small style={{ color: "#6b7f77", fontSize: "11.5px" }}>{user.email} · {user.role === "admin" ? "Administrator" : "Resident"}</small>
-          </div>
-          {photoUrl && (
-            <button
-              type="button"
-              onClick={() => setPhotoUrl("")}
-              style={{ fontSize: "10.5px", color: "#b91c1c", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: "6px", padding: "3px 10px", cursor: "pointer" }}
-            >
-              Remove photo
-            </button>
-          )}
-        </div>
-
-        {/* Profile Fields */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-          <label className="field">
-            Full Name *
-            <input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Your full name"
-            />
-          </label>
-          <label className="field">
-            Mobile Number
-            <input
-              value={mobile}
-              onChange={(e) => setMobile(e.target.value)}
-              placeholder="09XX XXX XXXX"
-            />
-          </label>
-          <label className="field">
-            Address / Area
-            <input
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              placeholder="e.g. Block 4 Lot 12, Purok 2"
-            />
-          </label>
-        </div>
-
-        <div className="modal-actions">
-          <button type="button" className="ghost-button" onClick={onClose} disabled={saving}>Cancel</button>
+      <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+        {/* Navigation Tabs */}
+        <div style={{ display: "flex", gap: "8px", borderBottom: "1px solid #e2ebe6", paddingBottom: "10px" }}>
           <button
             type="button"
-            className="primary-button"
-            onClick={handleSave}
-            disabled={saving || !name.trim()}
+            onClick={() => { setActiveTab("profile"); setPasswordError(""); setPasswordSuccess(""); }}
+            style={{
+              padding: "7px 14px",
+              borderRadius: "8px",
+              fontSize: "13px",
+              fontWeight: 600,
+              cursor: "pointer",
+              border: "none",
+              background: activeTab === "profile" ? "#16a34a" : "transparent",
+              color: activeTab === "profile" ? "white" : "#4b5563",
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              transition: "all 0.15s ease",
+            }}
           >
-            {saving ? "Saving..." : "Save changes"}
+            <Icon name="userCheck" size={15} /> Profile Details
+          </button>
+          <button
+            type="button"
+            onClick={() => { setActiveTab("password"); setPasswordError(""); setPasswordSuccess(""); }}
+            style={{
+              padding: "7px 14px",
+              borderRadius: "8px",
+              fontSize: "13px",
+              fontWeight: 600,
+              cursor: "pointer",
+              border: "none",
+              background: activeTab === "password" ? "#16a34a" : "transparent",
+              color: activeTab === "password" ? "white" : "#4b5563",
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              transition: "all 0.15s ease",
+            }}
+          >
+            <Icon name="shield" size={15} /> Change Password
           </button>
         </div>
+
+        {activeTab === "profile" ? (
+          <>
+            {/* Avatar / Photo Upload */}
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "12px", paddingBottom: "14px", borderBottom: "1px solid #e8eee9" }}>
+              <div style={{ position: "relative", display: "inline-block" }}>
+                <div style={{ width: 88, height: 88, borderRadius: "50%", overflow: "hidden", background: "#e0f2fe", border: "3px solid #bae6fd", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  {photoUrl ? (
+                    <img src={photoUrl} alt="Profile" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  ) : (
+                    <span style={{ fontSize: 28, fontWeight: 700, color: "#0369a1", letterSpacing: 1 }}>{getInitials(name || user.name)}</span>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => fileRef.current?.click()}
+                  style={{ position: "absolute", bottom: 0, right: 0, background: "#16a34a", color: "white", border: "2px solid white", borderRadius: "50%", width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxShadow: "0 2px 6px rgba(0,0,0,0.15)" }}
+                  title="Upload profile photo"
+                >
+                  <Icon name="image" size={14} />
+                </button>
+              </div>
+              <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handlePhotoUpload} />
+              <div style={{ textAlign: "center" }}>
+                <strong style={{ fontSize: "14px", color: "#18362b", display: "block" }}>{user.name}</strong>
+                <small style={{ color: "#6b7f77", fontSize: "11.5px" }}>{user.email} · {user.role === "admin" ? "Administrator" : "Resident"}</small>
+              </div>
+              {photoUrl && (
+                <button
+                  type="button"
+                  onClick={() => setPhotoUrl("")}
+                  style={{ fontSize: "10.5px", color: "#b91c1c", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: "6px", padding: "3px 10px", cursor: "pointer" }}
+                >
+                  Remove photo
+                </button>
+              )}
+            </div>
+
+            {/* Profile Fields */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+              <label className="field">
+                Full Name *
+                <input
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Your full name"
+                />
+              </label>
+              <label className="field">
+                Mobile Number
+                <input
+                  value={mobile}
+                  onChange={(e) => setMobile(e.target.value)}
+                  placeholder="09XX XXX XXXX"
+                />
+              </label>
+              <label className="field">
+                Address / Area
+                <input
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  placeholder="e.g. Block 4 Lot 12, Purok 2"
+                />
+              </label>
+            </div>
+
+            <div className="modal-actions">
+              <button type="button" className="ghost-button" onClick={onClose} disabled={saving}>Cancel</button>
+              <button
+                type="button"
+                className="primary-button"
+                onClick={handleSaveProfile}
+                disabled={saving || !name.trim()}
+              >
+                {saving ? "Saving..." : "Save changes"}
+              </button>
+            </div>
+          </>
+        ) : (
+          <form onSubmit={handlePasswordChange} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+            <p style={{ margin: 0, fontSize: "12.5px", color: "#64748b", lineHeight: 1.5 }}>
+              To change your password, verify your <strong>current password</strong> first. Your new password must be at least 8 characters long.
+            </p>
+
+            {passwordError && (
+              <div style={{ background: "#fef2f2", color: "#991b1b", border: "1px solid #fecaca", padding: "10px 14px", borderRadius: "8px", fontSize: "13px", display: "flex", alignItems: "center", gap: "8px" }}>
+                <Icon name="alert" size={16} />
+                <span>{passwordError}</span>
+              </div>
+            )}
+
+            {passwordSuccess && (
+              <div style={{ background: "#f0fdf4", color: "#166534", border: "1px solid #bbf7d0", padding: "10px 14px", borderRadius: "8px", fontSize: "13px", display: "flex", alignItems: "center", gap: "8px" }}>
+                <Icon name="check" size={16} />
+                <span>{passwordSuccess}</span>
+              </div>
+            )}
+
+            {/* Current Password Field */}
+            <label className="field">
+              Current Password *
+              <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+                <input
+                  type={showCurrentPassword ? "text" : "password"}
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  placeholder="Enter your current password"
+                  style={{ width: "100%", paddingRight: "40px" }}
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                  style={{
+                    position: "absolute",
+                    right: "10px",
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    color: "#6b7280",
+                    display: "flex",
+                    alignItems: "center",
+                  }}
+                  aria-label={showCurrentPassword ? "Hide password" : "Show password"}
+                >
+                  {showCurrentPassword ? (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+                      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+                      <line x1="1" y1="1" x2="23" y2="23"/>
+                    </svg>
+                  ) : (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                      <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                  )}
+                </button>
+              </div>
+            </label>
+
+            {/* New Password Field */}
+            <label className="field">
+              New Password *
+              <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+                <input
+                  type={showNewPassword ? "text" : "password"}
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="Enter new password (min. 8 characters)"
+                  style={{ width: "100%", paddingRight: "40px" }}
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNewPassword(!showNewPassword)}
+                  style={{
+                    position: "absolute",
+                    right: "10px",
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    color: "#6b7280",
+                    display: "flex",
+                    alignItems: "center",
+                  }}
+                  aria-label={showNewPassword ? "Hide password" : "Show password"}
+                >
+                  {showNewPassword ? (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+                      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+                      <line x1="1" y1="1" x2="23" y2="23"/>
+                    </svg>
+                  ) : (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                      <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                  )}
+                </button>
+              </div>
+            </label>
+
+            {/* Confirm New Password Field */}
+            <label className="field">
+              Confirm New Password *
+              <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Re-type your new password"
+                  style={{ width: "100%", paddingRight: "40px" }}
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  style={{
+                    position: "absolute",
+                    right: "10px",
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    color: "#6b7280",
+                    display: "flex",
+                    alignItems: "center",
+                  }}
+                  aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                >
+                  {showConfirmPassword ? (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+                      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+                      <line x1="1" y1="1" x2="23" y2="23"/>
+                    </svg>
+                  ) : (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                      <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                  )}
+                </button>
+              </div>
+            </label>
+
+            <div className="modal-actions" style={{ marginTop: "6px" }}>
+              <button type="button" className="ghost-button" onClick={onClose} disabled={passwordLoading}>Cancel</button>
+              <button
+                type="submit"
+                className="primary-button"
+                disabled={passwordLoading || !currentPassword || !newPassword || !confirmPassword}
+              >
+                {passwordLoading ? "Verifying & Updating..." : "Update Password"}
+              </button>
+            </div>
+          </form>
+        )}
       </div>
     </Modal>
   );
@@ -4192,6 +4480,7 @@ export default function App() {
               try { localStorage.removeItem(`brgy_profile_photo_${user.id}`); } catch {}
             }
           }}
+          onToast={showToast}
         />
       )}
 
