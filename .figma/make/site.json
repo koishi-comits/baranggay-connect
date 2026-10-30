@@ -1,0 +1,10 @@
+{
+  "description": "Connect with your barangay through a user-friendly platform for announcements, event calendars, and document requests, enhancing community engagement.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
