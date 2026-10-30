@@ -2263,51 +2263,10 @@ export default function App() {
     }
   }
 
-  // Handle auto-completion of registration when resident clicks email Magic Link
-  async function handlePendingRegistrationIfAny(sessionUser: { id: string; email?: string }): Promise<boolean> {
-    try {
-      const pendingRaw = localStorage.getItem("brgy_pending_reg");
-      if (!pendingRaw) return false;
-      const pending = JSON.parse(pendingRaw);
-      if (pending && pending.email === sessionUser.email?.toLowerCase()) {
-        localStorage.removeItem("brgy_pending_reg");
-        if (pending.password) {
-          await supabase.auth.updateUser({ password: pending.password });
-        }
-        await supabase.from("accounts").upsert([
-          {
-            id: sessionUser.id,
-            email: pending.email,
-            full_name: `${pending.firstName} ${pending.lastName}`.trim(),
-            phone: pending.phone,
-            address: pending.address,
-            role: "resident",
-            status: "pending",
-          },
-        ]);
-        await supabase.auth.signOut();
-        localStorage.setItem("brgy_reg_just_verified", `${pending.firstName} ${pending.lastName}`.trim());
-        setUser(null);
-        if (window.location.hash) {
-          window.history.replaceState(null, "", window.location.pathname);
-        }
-        return true;
-      }
-    } catch (e) {
-      console.error("Pending reg processing error:", e);
-    }
-    return false;
-  }
-
   useEffect(() => {
     // ── 1. Check for existing session on mount ───────────────────────────
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session?.user) {
-        const handledPending = await handlePendingRegistrationIfAny(session.user);
-        if (handledPending) {
-          setLoading(null);
-          return;
-        }
         const account = await resolveAccount(session.user);
         setUser(account);
       } else {
@@ -2325,10 +2284,6 @@ export default function App() {
       async (event, session) => {
         if (event === "SIGNED_IN") {
           if (session?.user) {
-            const handledPending = await handlePendingRegistrationIfAny(session.user);
-            if (handledPending) {
-              return;
-            }
             const account = await resolveAccount(session.user);
             setUser(account);
           }
@@ -5512,7 +5467,6 @@ function LoginView({
   const [regSubmittedName, setRegSubmittedName] = useState("");
 
   // ── Register form state ───────────────────────────────────────────────
-  const [regStep, setRegStep] = useState<"details" | "otp">("details");
   const [regFirstName, setRegFirstName] = useState("");
   const [regLastName, setRegLastName] = useState("");
   const [regEmail, setRegEmail] = useState("");
@@ -5520,28 +5474,9 @@ function LoginView({
   const [regAddress, setRegAddress] = useState("");
   const [regPassword, setRegPassword] = useState("");
   const [regConfirm, setRegConfirm] = useState("");
-  const [regOtpCode, setRegOtpCode] = useState("");
-  const [regOtpCooldown, setRegOtpCooldown] = useState(0);
   const [regError, setRegError] = useState("");
   const [regSubmitting, setRegSubmitting] = useState(false);
 
-  // Detect when user completes registration by clicking the email magic link
-  useEffect(() => {
-    const justVerified = localStorage.getItem("brgy_reg_just_verified");
-    if (justVerified) {
-      localStorage.removeItem("brgy_reg_just_verified");
-      setRegSubmittedName(justVerified);
-      setRegSuccessOpen(true);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (regOtpCooldown <= 0) return;
-    const timer = setInterval(() => {
-      setRegOtpCooldown((prev) => (prev > 0 ? prev - 1 : 0));
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [regOtpCooldown]);
 
   // Validation helpers to prevent random strings & garbage input
   function isValidEmail(val: string): boolean {
@@ -5634,7 +5569,7 @@ function LoginView({
     }
   }
 
-  async function handleSendOtp() {
+  async function handleRegisterDirect() {
     setRegError("");
 
     // 1. Name validation
@@ -5647,7 +5582,7 @@ function LoginView({
       return;
     }
 
-    // 2. Email validation
+    // 2. Email validation — required and must be a real format
     if (!regEmail.trim()) {
       setRegError("Please enter your email address.");
       return;
@@ -5670,7 +5605,7 @@ function LoginView({
 
     // 4. Address validation
     if (!regAddress.trim() || regAddress.trim().length < 6) {
-      setRegError("Please enter your house address within the barangay (at least 6 characters).");
+      setRegError("Please enter your home address within the barangay (at least 6 characters).");
       return;
     }
 
@@ -5686,87 +5621,48 @@ function LoginView({
 
     setRegSubmitting(true);
     try {
-      // Check if email already registered in accounts table
-      const { data: existingAcct } = await supabase
+      // Check if phone number already registered
+      const { data: existingPhone } = await supabase
+        .from("accounts")
+        .select("id")
+        .eq("phone", validatedPhone)
+        .maybeSingle();
+      if (existingPhone) {
+        setRegError("This phone number is already linked to an existing account.");
+        setRegSubmitting(false);
+        return;
+      }
+
+      // Check if email already registered
+      const { data: existingEmail } = await supabase
         .from("accounts")
         .select("id")
         .eq("email", regEmail.trim().toLowerCase())
         .maybeSingle();
-
-      if (existingAcct) {
+      if (existingEmail) {
         setRegError("An account with this email address already exists. Please sign in instead.");
         setRegSubmitting(false);
         return;
       }
 
-      // Save registration details locally so magic-link click can complete registration
-      const validatedPhoneSaved = normalizePhilippinePhone(regPhone) || regPhone.trim();
-      localStorage.setItem("brgy_pending_reg", JSON.stringify({
+      // Create the auth account — status will be "pending" until admin approves
+      const { data: signUpData, error: signUpErr } = await supabase.auth.signUp({
         email: regEmail.trim().toLowerCase(),
-        firstName: regFirstName.trim(),
-        lastName: regLastName.trim(),
-        phone: validatedPhoneSaved,
-        address: regAddress.trim(),
         password: regPassword,
-      }));
-
-      // Send 6-digit OTP code to the email address via Supabase Auth
-      const { error: otpErr } = await supabase.auth.signInWithOtp({
-        email: regEmail.trim().toLowerCase(),
       });
 
-      if (otpErr) {
-        localStorage.removeItem("brgy_pending_reg");
-        setRegError(otpErr.message || "Failed to send verification code. Please check your email.");
+      if (signUpErr || !signUpData.user) {
+        setRegError(signUpErr?.message || "Registration failed. Please try again.");
         setRegSubmitting(false);
         return;
       }
-
-      setRegStep("otp");
-      setRegOtpCode("");
-      setRegOtpCooldown(60);
-    } catch (err: any) {
-      setRegError(err?.message || "An unexpected error occurred. Please try again.");
-    } finally {
-      setRegSubmitting(false);
-    }
-  }
-
-  async function handleVerifyOtpAndRegister() {
-    setRegError("");
-    const code = regOtpCode.trim();
-    if (!code || code.length < 6) {
-      setRegError("Please enter the complete 6-digit verification code sent to your email.");
-      return;
-    }
-
-    setRegSubmitting(true);
-    try {
-      // 1. Verify OTP with Supabase
-      const { data: verifyData, error: verifyErr } = await supabase.auth.verifyOtp({
-        email: regEmail.trim().toLowerCase(),
-        token: code,
-        type: "email",
-      });
-
-      if (verifyErr || !verifyData.user) {
-        setRegError("Invalid or expired verification code. Please check your email inbox and try again.");
-        setRegSubmitting(false);
-        return;
-      }
-
-      // 2. Set the user's permanent password
-      await supabase.auth.updateUser({
-        password: regPassword,
-      });
 
       const fullName = `${regFirstName.trim()} ${regLastName.trim()}`;
-      const validatedPhone = normalizePhilippinePhone(regPhone) || regPhone.trim();
 
-      // 3. Upsert user record into accounts table (status: pending for admin review)
+      // Insert into accounts table with pending status for admin review
       await supabase.from("accounts").upsert([
         {
-          id: verifyData.user.id,
+          id: signUpData.user.id,
           email: regEmail.trim().toLowerCase(),
           full_name: fullName,
           phone: validatedPhone,
@@ -5776,12 +5672,11 @@ function LoginView({
         },
       ]);
 
-      // 4. Sign out — account is pending admin approval
+      // Sign out — they must wait for admin approval before logging in
       await supabase.auth.signOut();
 
       setRegSubmittedName(fullName);
       setRegisterOpen(false);
-      setRegStep("details");
       setRegSuccessOpen(true);
 
       // Reset fields
@@ -5792,29 +5687,8 @@ function LoginView({
       setRegAddress("");
       setRegPassword("");
       setRegConfirm("");
-      setRegOtpCode("");
     } catch (err: any) {
-      setRegError(err?.message || "Registration verification failed. Please try again.");
-    } finally {
-      setRegSubmitting(false);
-    }
-  }
-
-  async function handleResendOtp() {
-    if (regOtpCooldown > 0) return;
-    setRegError("");
-    setRegSubmitting(true);
-    try {
-      const { error: resendErr } = await supabase.auth.signInWithOtp({
-        email: regEmail.trim().toLowerCase(),
-      });
-      if (resendErr) {
-        setRegError(resendErr.message || "Failed to resend code.");
-      } else {
-        setRegOtpCooldown(60);
-      }
-    } catch (err: any) {
-      setRegError(err?.message || "Failed to resend code.");
+      setRegError(err?.message || "An unexpected error occurred. Please try again.");
     } finally {
       setRegSubmitting(false);
     }
@@ -5963,207 +5837,104 @@ function LoginView({
       </section>
       {registerOpen && (
         <Modal
-          title={regStep === "details" ? "Resident registration" : "Verify Email Address"}
+          title="Resident registration"
           close={() => {
             setRegisterOpen(false);
-            setRegStep("details");
             setRegError("");
           }}
         >
-          {regStep === "details" ? (
-            <>
-              <p className="modal-intro">
-                Create your resident profile. We will verify your email with a 6-digit code before submitting your profile to the barangay administration.
-              </p>
-              {regError && (
-                <div className="login-error" style={{ marginBottom: "0.75rem" }}>
-                  <Icon name="x" size={15} /> {regError}
-                </div>
-              )}
-              <div className="form-grid">
-                <label className="field">
-                  First name *
-                  <input
-                    required
-                    placeholder="Juan"
-                    value={regFirstName}
-                    onChange={(e) => setRegFirstName(e.target.value)}
-                  />
-                </label>
-                <label className="field">
-                  Last name *
-                  <input
-                    required
-                    placeholder="Dela Cruz"
-                    value={regLastName}
-                    onChange={(e) => setRegLastName(e.target.value)}
-                  />
-                </label>
+          <>
+            <p className="modal-intro">
+              Create your resident profile. The barangay will verify your information before activating your account.
+            </p>
+            {regError && (
+              <div className="login-error" style={{ marginBottom: "0.75rem" }}>
+                <Icon name="x" size={15} /> {regError}
               </div>
+            )}
+            <div className="form-grid">
               <label className="field">
-                Email address *
+                First name *
                 <input
-                  type="email"
                   required
-                  placeholder="resident@gmail.com"
-                  value={regEmail}
-                  onChange={(e) => setRegEmail(e.target.value)}
+                  placeholder="Juan"
+                  value={regFirstName}
+                  onChange={(e) => setRegFirstName(e.target.value)}
                 />
               </label>
               <label className="field">
-                Philippine Mobile Number *
+                Last name *
                 <input
-                  type="tel"
                   required
-                  placeholder="0917-123-4567"
-                  value={regPhone}
-                  onChange={(e) => setRegPhone(e.target.value)}
-                />
-                <small style={{ fontSize: "11px", color: "#6b7280", marginTop: "3px" }}>
-                  Must be an active 11-digit number starting with 09
-                </small>
-              </label>
-              <label className="field">
-                Home address within the barangay *
-                <textarea
-                  className="small-textarea"
-                  required
-                  placeholder="House number, street, and purok/area"
-                  value={regAddress}
-                  onChange={(e) => setRegAddress(e.target.value)}
+                  placeholder="Dela Cruz"
+                  value={regLastName}
+                  onChange={(e) => setRegLastName(e.target.value)}
                 />
               </label>
-              <label className="field">
-                Create password *
-                <input
-                  type="password"
-                  required
-                  placeholder="At least 8 characters"
-                  value={regPassword}
-                  onChange={(e) => setRegPassword(e.target.value)}
-                />
-              </label>
-              <label className="field">
-                Confirm password *
-                <input
-                  type="password"
-                  required
-                  placeholder="Re-enter your password"
-                  value={regConfirm}
-                  onChange={(e) => setRegConfirm(e.target.value)}
-                />
-              </label>
-              <button
-                className="primary-button full"
-                type="button"
-                onClick={handleSendOtp}
-                disabled={regSubmitting}
-                style={{ marginTop: "6px" }}
-              >
-                {regSubmitting ? "Sending verification code…" : "Verify Email & Continue →"}
-              </button>
-            </>
-          ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-              <div style={{ textAlign: "center", padding: "6px 0" }}>
-                <div style={{ width: 56, height: 56, borderRadius: "50%", background: "#ecfdf5", border: "2px solid #a7f3d0", display: "inline-flex", alignItems: "center", justifyContent: "center", color: "#059669", marginBottom: "12px" }}>
-                  <Icon name="shield" size={26} />
-                </div>
-                <h3 style={{ margin: "0 0 6px", fontSize: "17px", color: "#111827", fontWeight: 700 }}>
-                  Verify Your Email
-                </h3>
-                <p style={{ margin: 0, fontSize: "13px", color: "#4b5563", lineHeight: 1.5 }}>
-                  A verification email was sent to:
-                  <br />
-                  <strong style={{ color: "#065f46", fontSize: "14px" }}>{regEmail}</strong>
-                </p>
-                <div style={{ marginTop: "10px", padding: "10px 14px", background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: "8px", fontSize: "12.5px", color: "#166534", lineHeight: 1.6, textAlign: "left" }}>
-                  <strong>Two ways to verify:</strong>
-                  <ul style={{ margin: "4px 0 0 0", paddingLeft: "16px" }}>
-                    <li>Enter the <strong>6-digit code</strong> from the email below, <em>or</em></li>
-                    <li>Click the <strong>"Sign in"</strong> link in the email — it will complete your registration automatically</li>
-                  </ul>
-                </div>
-                <small style={{ display: "block", marginTop: "6px", color: "#6b7280", fontSize: "11.5px" }}>
-                  Check your inbox and spam folder. The email is from Supabase Auth.
-                </small>
-              </div>
-
-              {regError && (
-                <div className="login-error">
-                  <Icon name="x" size={15} /> {regError}
-                </div>
-              )}
-
-              <label className="field">
-                6-Digit Security Code
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  maxLength={6}
-                  placeholder="000000"
-                  value={regOtpCode}
-                  onChange={(e) => {
-                    const clean = e.target.value.replace(/\D/g, "").slice(0, 6);
-                    setRegOtpCode(clean);
-                    setRegError("");
-                  }}
-                  style={{
-                    textAlign: "center",
-                    fontSize: "26px",
-                    letterSpacing: "8px",
-                    fontWeight: 700,
-                    padding: "12px",
-                    color: "#065f46",
-                  }}
-                  autoFocus
-                  required
-                />
-              </label>
-
-              <div style={{ textAlign: "center", fontSize: "12.5px", color: "#6b7280" }}>
-                Didn't receive code?{" "}
-                <button
-                  type="button"
-                  onClick={handleResendOtp}
-                  disabled={regOtpCooldown > 0 || regSubmitting}
-                  style={{
-                    background: "none",
-                    border: "none",
-                    color: regOtpCooldown > 0 ? "#9ca3af" : "#16a34a",
-                    fontWeight: 600,
-                    cursor: regOtpCooldown > 0 ? "default" : "pointer",
-                    padding: 0,
-                    textDecoration: regOtpCooldown > 0 ? "none" : "underline",
-                  }}
-                >
-                  {regOtpCooldown > 0 ? `Resend in ${regOtpCooldown}s` : "Resend code"}
-                </button>
-              </div>
-
-              <div style={{ display: "flex", gap: "10px", marginTop: "8px" }}>
-                <button
-                  type="button"
-                  className="ghost-button"
-                  onClick={() => { setRegStep("details"); setRegError(""); }}
-                  disabled={regSubmitting}
-                  style={{ flex: 1 }}
-                >
-                  ← Edit details
-                </button>
-                <button
-                  type="button"
-                  className="primary-button"
-                  onClick={handleVerifyOtpAndRegister}
-                  disabled={regSubmitting || regOtpCode.length < 6}
-                  style={{ flex: 1.5 }}
-                >
-                  {regSubmitting ? "Verifying…" : "Verify & Complete"}
-                </button>
-              </div>
             </div>
-          )}
+            <label className="field">
+              Email address *
+              <input
+                type="email"
+                required
+                placeholder="you@email.com"
+                value={regEmail}
+                onChange={(e) => setRegEmail(e.target.value)}
+              />
+            </label>
+            <label className="field">
+              Mobile number *
+              <input
+                type="tel"
+                required
+                placeholder="09XX XXX XXXX"
+                value={regPhone}
+                onChange={(e) => setRegPhone(e.target.value)}
+              />
+              <small style={{ fontSize: "11px", color: "#6b7280", marginTop: "3px" }}>
+                Must be an active 11-digit Philippine number starting with 09
+              </small>
+            </label>
+            <label className="field">
+              Home address within the barangay *
+              <textarea
+                className="small-textarea"
+                required
+                placeholder="House number, street, and area"
+                value={regAddress}
+                onChange={(e) => setRegAddress(e.target.value)}
+              />
+            </label>
+            <label className="field">
+              Create password *
+              <input
+                type="password"
+                required
+                placeholder="At least 8 characters"
+                value={regPassword}
+                onChange={(e) => setRegPassword(e.target.value)}
+              />
+            </label>
+            <label className="field">
+              Confirm password *
+              <input
+                type="password"
+                required
+                placeholder="Re-enter your password"
+                value={regConfirm}
+                onChange={(e) => setRegConfirm(e.target.value)}
+              />
+            </label>
+            <button
+              className="primary-button full"
+              type="button"
+              onClick={handleRegisterDirect}
+              disabled={regSubmitting}
+              style={{ marginTop: "6px" }}
+            >
+              {regSubmitting ? "Submitting…" : "Submit for verification"}
+            </button>
+          </>
         </Modal>
       )}
 
