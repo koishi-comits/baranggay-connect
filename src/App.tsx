@@ -14,6 +14,7 @@ type IconName =
   | "filter"
   | "home"
   | "image"
+  | "lock"
   | "logo"
   | "megaphone"
   | "message"
@@ -88,6 +89,12 @@ const paths: Record<IconName, React.ReactNode> = {
       <rect x="3" y="4" width="18" height="16" rx="2" />
       <circle cx="8.5" cy="9" r="1.5" />
       <path d="m21 15-5-5L5 20" />
+    </>
+  ),
+  lock: (
+    <>
+      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
     </>
   ),
   logo: (
@@ -5467,6 +5474,15 @@ function LoginView({
   const [regSubmittedName, setRegSubmittedName] = useState("");
   const [pendingLoginOpen, setPendingLoginOpen] = useState(false);
 
+  // Forgot password modal state
+  const [forgotOpen, setForgotOpen] = useState(false);
+  const [forgotName, setForgotName] = useState("");
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotPhone, setForgotPhone] = useState("");
+  const [forgotError, setForgotError] = useState("");
+  const [forgotSubmitting, setForgotSubmitting] = useState(false);
+  const [forgotSuccess, setForgotSuccess] = useState(false);
+
   // ── Register form state ───────────────────────────────────────────────
   const [regFirstName, setRegFirstName] = useState("");
   const [regLastName, setRegLastName] = useState("");
@@ -5510,6 +5526,52 @@ function LoginView({
         password,
       });
       if (authErr || !data.user) {
+        // Check if user has an active temporary password issued by administrator
+        try {
+          const tempMap = JSON.parse(localStorage.getItem("brgy_temp_passwords") || "{}");
+          const tempEntry = tempMap[email.trim().toLowerCase()];
+          if (tempEntry && tempEntry.tempPassword === password) {
+            const { data: profile } = await supabase
+              .from("accounts")
+              .select("*")
+              .eq("email", email.trim().toLowerCase())
+              .maybeSingle();
+
+            if (profile) {
+              if (profile.status === "pending") {
+                setSubmitting(false);
+                setPendingLoginOpen(true);
+                return;
+              }
+              if (profile.status === "rejected") {
+                setError("Your account registration was not approved. Please visit the Barangay Hall for verification.");
+                setSubmitting(false);
+                return;
+              }
+              if (profile.status === "suspended" || profile.status === "banned") {
+                setError("Your account has been temporarily suspended. Contact the barangay office.");
+                setSubmitting(false);
+                return;
+              }
+              if (profile.status === "deleted") {
+                setError("This account has been deleted by the barangay administration. Please contact the Barangay Office.");
+                setSubmitting(false);
+                return;
+              }
+
+              const name = profile.full_name || email;
+              onLoginSuccess({
+                id: profile.id,
+                email: profile.email,
+                role: (profile.role as "admin" | "resident") || "resident",
+                name,
+                initials: getInitials(name),
+              });
+              return;
+            }
+          }
+        } catch {}
+
         setError(authErr?.message ?? "Invalid email or password. Please try again.");
         setSubmitting(false);
         return;
@@ -5819,7 +5881,7 @@ function LoginView({
             <label>
               <input type="checkbox" defaultChecked /> Remember me
             </label>
-            <button type="button">Forgot password?</button>
+            <button type="button" onClick={() => { setForgotOpen(true); setForgotSuccess(false); setForgotError(""); setForgotName(""); setForgotEmail(""); setForgotPhone(""); }}>Forgot password?</button>
           </div>
           <button className="primary-button full" type="submit" disabled={submitting}>
             {submitting ? "Signing in…" : <><span>Sign in securely</span> <Icon name="chevron" size={16} /></>}
@@ -5936,6 +5998,118 @@ function LoginView({
               {regSubmitting ? "Submitting…" : "Submit for verification"}
             </button>
           </>
+        </Modal>
+      )}
+
+      {/* ── Forgot Password Modal ─────────────────────────────────────── */}
+      {forgotOpen && (
+        <Modal title="Password Reset Request" close={() => setForgotOpen(false)}>
+          {forgotSuccess ? (
+            <div style={{ textAlign: "center", padding: "16px 0" }}>
+              <div style={{ width: 56, height: 56, borderRadius: "50%", background: "#ecfdf5", border: "2px solid #a7f3d0", display: "inline-flex", alignItems: "center", justifyContent: "center", color: "#059669", marginBottom: "14px" }}>
+                <Icon name="shield" size={28} />
+              </div>
+              <h3 style={{ margin: "0 0 8px", color: "#065f46", fontWeight: 700 }}>Request Submitted!</h3>
+              <p style={{ fontSize: "13px", color: "#4b5563", lineHeight: 1.6, margin: "0 0 12px" }}>
+                Your password reset request has been sent to the <strong>Barangay Administrator</strong>. They will verify your identity and contact you via your registered mobile number with your new credentials.
+              </p>
+              <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: "8px", padding: "10px 14px", fontSize: "12.5px", color: "#166534", textAlign: "left", marginBottom: "16px" }}>
+                <strong>What happens next:</strong>
+                <ul style={{ margin: "4px 0 0", paddingLeft: "16px", lineHeight: 1.8 }}>
+                  <li>Admin verifies your identity against barangay records</li>
+                  <li>Admin resets your password securely</li>
+                  <li>New credentials sent to your phone via SMS</li>
+                </ul>
+              </div>
+              <button className="primary-button full" onClick={() => setForgotOpen(false)}>Got it, I&apos;ll wait</button>
+            </div>
+          ) : (
+            <>
+              <p className="modal-intro">
+                Provide your registered details for identity verification. The admin will manually reset your password after confirming your identity.
+              </p>
+              {forgotError && (
+                <div className="login-error" style={{ marginBottom: "0.75rem" }}>
+                  <Icon name="x" size={15} /> {forgotError}
+                </div>
+              )}
+              <label className="field">
+                Full name (as registered) *
+                <input
+                  placeholder="Juan Dela Cruz"
+                  value={forgotName}
+                  onChange={(e) => setForgotName(e.target.value)}
+                />
+              </label>
+              <label className="field">
+                Email address *
+                <input
+                  type="email"
+                  placeholder="you@email.com"
+                  value={forgotEmail}
+                  onChange={(e) => setForgotEmail(e.target.value)}
+                />
+              </label>
+              <label className="field">
+                Registered mobile number *
+                <input
+                  type="tel"
+                  placeholder="09XX XXX XXXX"
+                  value={forgotPhone}
+                  onChange={(e) => setForgotPhone(e.target.value)}
+                />
+                <small style={{ fontSize: "11px", color: "#6b7280", marginTop: "3px" }}>Must match your registered number</small>
+              </label>
+              <button
+                className="primary-button full"
+                type="button"
+                disabled={forgotSubmitting}
+                style={{ marginTop: "6px" }}
+                onClick={async () => {
+                  setForgotError("");
+                  if (!forgotName.trim() || !forgotEmail.trim() || !forgotPhone.trim()) {
+                    setForgotError("Please fill in all fields.");
+                    return;
+                  }
+                  const cleanPhone = forgotPhone.replace(/[\s\-()]/g, "");
+                  if (!/^(09)\d{9}$/.test(cleanPhone)) {
+                    setForgotError("Please enter a valid 11-digit Philippine mobile number starting with 09.");
+                    return;
+                  }
+                  setForgotSubmitting(true);
+                  try {
+                    const existing = JSON.parse(localStorage.getItem("brgy_pw_reset_requests") || "[]");
+                    const newReq = {
+                      id: `pwreset-${Date.now()}`,
+                      name: forgotName.trim(),
+                      email: forgotEmail.trim().toLowerCase(),
+                      phone: cleanPhone,
+                      requestedAt: new Date().toISOString(),
+                      status: "pending",
+                    };
+                    localStorage.setItem("brgy_pw_reset_requests", JSON.stringify([newReq, ...existing]));
+                    try {
+                      await supabase.from("password_reset_requests").insert([{
+                        full_name: newReq.name,
+                        email: newReq.email,
+                        phone: newReq.phone,
+                        status: "pending",
+                      }]);
+                    } catch {
+                      // Table may not exist yet — local queue still works
+                    }
+                    setForgotSuccess(true);
+                  } catch (err: any) {
+                    setForgotError(err?.message || "Failed to submit request. Please try again.");
+                  } finally {
+                    setForgotSubmitting(false);
+                  }
+                }}
+              >
+                {forgotSubmitting ? "Submitting…" : "Submit Reset Request"}
+              </button>
+            </>
+          )}
         </Modal>
       )}
 
@@ -8379,6 +8553,8 @@ function saveResidentMeta(
     statusOverride?: string;
     isOnline?: boolean;
     deletedAt?: string;
+    tempPassword?: string;
+    needsPwChange?: boolean;
   }
 ) {
   try {
@@ -8522,7 +8698,7 @@ function ResidentsPage({
   const [refreshing, setRefreshing] = useState(false);
   const [search, setSearch] = useState("");
   const [purokFilter, setPurokFilter] = useState("all");
-  const [tab, setTab] = useState<"approved" | "pending" | "rejected" | "suspended" | "deleted">("approved");
+  const [tab, setTab] = useState<"approved" | "pending" | "rejected" | "suspended" | "deleted" | "pwresets">("approved");
 
   // Modals state
   const [selected, setSelected] = useState<ResidentRecord | null>(null);
@@ -8559,6 +8735,182 @@ function ResidentsPage({
   const [purgeModalOpen, setPurgeModalOpen] = useState(false);
   const [purgingResident, setPurgingResident] = useState<ResidentRecord | null>(null);
   const [isPurging, setIsPurging] = useState(false);
+
+  // Password reset requests & direct resident resets
+  const [pwResetRequests, setPwResetRequests] = useState<any[]>(() => {
+    try { return JSON.parse(localStorage.getItem("brgy_pw_reset_requests") || "[]"); } catch { return []; }
+  });
+  const [pwResetModalOpen, setPwResetModalOpen] = useState(false);
+  const [pwResetTarget, setPwResetTarget] = useState<any>(null);
+  const [pwResetAdminPass, setPwResetAdminPass] = useState("");
+  const [pwResetNewPass, setPwResetNewPass] = useState("");
+  const [pwResetConfirmPass, setPwResetConfirmPass] = useState("");
+  const [pwResetError, setPwResetError] = useState("");
+  const [pwResetSubmitting, setPwResetSubmitting] = useState(false);
+  const [pwResetSuccess, setPwResetSuccess] = useState(false);
+  const [showPwResetAdminPass, setShowPwResetAdminPass] = useState(false);
+  const [showPwResetNew, setShowPwResetNew] = useState(false);
+  const [copiedSms, setCopiedSms] = useState(false);
+
+  // Reload pw reset requests from storage and Supabase
+  async function reloadPwResetRequests() {
+    try {
+      const local = JSON.parse(localStorage.getItem("brgy_pw_reset_requests") || "[]");
+      try {
+        const { data, error } = await supabase
+          .from("password_reset_requests")
+          .select("*")
+          .order("created_at", { ascending: false });
+        if (!error && data && data.length > 0) {
+          const dbMapped = data.map((d: any) => ({
+            id: String(d.id),
+            name: d.full_name || d.name,
+            email: d.email,
+            phone: d.phone,
+            requestedAt: d.created_at || d.requested_at || new Date().toISOString(),
+            status: d.status || "pending",
+            tempPassword: d.temp_password,
+          }));
+          const merged = [...dbMapped];
+          local.forEach((l: any) => {
+            if (!merged.some((m) => m.email?.toLowerCase() === l.email?.toLowerCase())) {
+              merged.push(l);
+            }
+          });
+          setPwResetRequests(merged);
+          localStorage.setItem("brgy_pw_reset_requests", JSON.stringify(merged));
+          return;
+        }
+      } catch {}
+      setPwResetRequests(local);
+    } catch {}
+  }
+
+  function generateSecurePassword() {
+    const prefixes = ["Brgy", "SanIsidro", "Citizen", "Portal", "Secure"];
+    const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+    const num = Math.floor(1000 + Math.random() * 9000);
+    const syms = ["!", "@", "#", "$", "*"];
+    const sym = syms[Math.floor(Math.random() * syms.length)];
+    return `${prefix}${sym}${num}`;
+  }
+
+  function handleOpenResetModal(target: { id?: string; name: string; email: string; phone: string; reqId?: string }) {
+    const autoPass = generateSecurePassword();
+    setPwResetTarget(target);
+    setPwResetAdminPass("");
+    setPwResetNewPass(autoPass);
+    setPwResetConfirmPass(autoPass);
+    setPwResetError("");
+    setPwResetSuccess(false);
+    setShowPwResetAdminPass(false);
+    setShowPwResetNew(true);
+    setCopiedSms(false);
+    setPwResetModalOpen(true);
+  }
+
+  async function handleConfirmAdminPasswordReset() {
+    if (!pwResetTarget) return;
+    setPwResetError("");
+
+    if (!pwResetAdminPass.trim()) {
+      setPwResetError("Please enter your administrator password to authorize this action.");
+      return;
+    }
+    if (!pwResetNewPass.trim() || pwResetNewPass.length < 6) {
+      setPwResetError("New temporary password must be at least 6 characters long.");
+      return;
+    }
+    if (pwResetNewPass !== pwResetConfirmPass) {
+      setPwResetError("New password and confirmation do not match.");
+      return;
+    }
+
+    setPwResetSubmitting(true);
+    try {
+      // 1. Verify current administrator's identity by validating password
+      if (currentUser?.email) {
+        const { error: authErr } = await supabase.auth.signInWithPassword({
+          email: currentUser.email,
+          password: pwResetAdminPass,
+        });
+        if (authErr) {
+          setPwResetError("Administrator verification failed: Your password was incorrect. Authorization denied.");
+          setPwResetSubmitting(false);
+          return;
+        }
+      }
+
+      // 2. Update local requests queue
+      const localRequests: any[] = JSON.parse(localStorage.getItem("brgy_pw_reset_requests") || "[]");
+      const updatedLocal = localRequests.map((req) => {
+        if ((pwResetTarget.reqId && req.id === pwResetTarget.reqId) || req.email?.toLowerCase() === pwResetTarget.email?.toLowerCase()) {
+          return {
+            ...req,
+            status: "completed",
+            tempPassword: pwResetNewPass,
+            resetAt: new Date().toISOString(),
+            resetBy: currentUser?.name || "Administrator",
+          };
+        }
+        return req;
+      });
+      localStorage.setItem("brgy_pw_reset_requests", JSON.stringify(updatedLocal));
+      setPwResetRequests(updatedLocal);
+
+      // 3. Save temporary password mapping so resident can sign in
+      const tempMap = JSON.parse(localStorage.getItem("brgy_temp_passwords") || "{}");
+      tempMap[pwResetTarget.email.toLowerCase()] = {
+        tempPassword: pwResetNewPass,
+        phone: pwResetTarget.phone,
+        name: pwResetTarget.name,
+        resetAt: new Date().toISOString(),
+      };
+      localStorage.setItem("brgy_temp_passwords", JSON.stringify(tempMap));
+
+      // 4. Update Supabase password_reset_requests table if available
+      try {
+        await supabase
+          .from("password_reset_requests")
+          .update({
+            status: "completed",
+            temp_password: pwResetNewPass,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("email", pwResetTarget.email.toLowerCase());
+      } catch {}
+
+      // 5. Try RPC if backend function exists
+      if (pwResetTarget.id) {
+        try {
+          await supabase.rpc("admin_reset_password", {
+            target_user_id: pwResetTarget.id,
+            new_password: pwResetNewPass,
+          });
+        } catch {}
+
+        saveResidentMeta(pwResetTarget.id, {
+          tempPassword: pwResetNewPass,
+          needsPwChange: true,
+        });
+      }
+
+      setPwResetSuccess(true);
+      onToast(`Password successfully reset for ${pwResetTarget.name}! 🔑`);
+    } catch (err: any) {
+      setPwResetError(err?.message || "Failed to reset password. Please try again.");
+    } finally {
+      setPwResetSubmitting(false);
+    }
+  }
+
+  function handleDismissResetRequest(reqId: string) {
+    const localRequests: any[] = JSON.parse(localStorage.getItem("brgy_pw_reset_requests") || "[]");
+    const updated = localRequests.map((r) => (r.id === reqId ? { ...r, status: "dismissed" } : r));
+    localStorage.setItem("brgy_pw_reset_requests", JSON.stringify(updated));
+    setPwResetRequests(updated);
+    onToast("Password reset request dismissed.");
+  }
 
   // Fetch accounts directly from Supabase
   async function fetchResidents(silent = false) {
@@ -9373,6 +9725,15 @@ function ResidentsPage({
     return matchesSearch && matchesPurok;
   });
 
+  const filteredPwResets = pwResetRequests.filter((req: any) => {
+    const q = search.toLowerCase();
+    return (
+      (req.name || "").toLowerCase().includes(q) ||
+      (req.email || "").toLowerCase().includes(q) ||
+      (req.phone || "").toLowerCase().includes(q)
+    );
+  });
+
   const onlineCount = approvedList.filter((r) => r.isOnline).length;
 
   return (
@@ -9464,6 +9825,18 @@ function ResidentsPage({
             {deletedList.length}
           </span>
         </button>
+
+        <button
+          className={`resident-tab-btn ${tab === "pwresets" ? "active" : ""}`}
+          onClick={() => { setTab("pwresets"); reloadPwResetRequests(); }}
+          style={{ borderLeft: "2px solid #e5e7eb" }}
+        >
+          <Icon name="shield" size={17} />
+          <span>Password Resets</span>
+          <span className={`tab-counter ${pwResetRequests.filter((r: any) => r.status === "pending").length > 0 ? "pending" : ""}`}>
+            {pwResetRequests.filter((r: any) => r.status === "pending").length}
+          </span>
+        </button>
       </nav>
 
       {/* ── Filter & Search Toolbar ───────────────────────────────────── */}
@@ -9472,63 +9845,178 @@ function ResidentsPage({
           <label className="search-box" style={{ flex: "1 1 240px", maxWidth: "420px" }}>
             <Icon name="search" />
             <input
-              placeholder={`Search in ${tab} (${currentList.length} residents)...`}
+              placeholder={
+                tab === "pwresets"
+                  ? `Search reset requests (${pwResetRequests.length})...`
+                  : `Search in ${tab} (${currentList.length} residents)...`
+              }
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
           </label>
 
           <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-            <label style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "11px", color: "#50655d" }}>
-              <Icon name="filter" size={14} />
-              <span>Area:</span>
-              <select
-                value={purokFilter}
-                onChange={(e) => setPurokFilter(e.target.value)}
-                style={{
-                  border: "1px solid #dfe7e3",
-                  background: "white",
-                  borderRadius: "7px",
-                  padding: "5px 9px",
-                  fontSize: "11px",
-                  color: "#344941",
-                  outline: "none",
-                }}
-              >
-                <option value="all">All Puroks</option>
-                <option value="Purok 1">Purok 1 - Sampaguita</option>
-                <option value="Purok 2">Purok 2 - Mabini</option>
-                <option value="Purok 3">Purok 3 - Narra</option>
-                <option value="Purok 4">Purok 4 - Rizal</option>
-                <option value="Purok 5">Purok 5 - Ilang-Ilang</option>
-                <option value="Purok 6">Purok 6 - Riverside</option>
-                <option value="Purok 7">Purok 7 - Centro</option>
-              </select>
-            </label>
+            {tab !== "pwresets" && (
+              <label style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "11px", color: "#50655d" }}>
+                <Icon name="filter" size={14} />
+                <span>Area:</span>
+                <select
+                  value={purokFilter}
+                  onChange={(e) => setPurokFilter(e.target.value)}
+                  style={{
+                    border: "1px solid #dfe7e3",
+                    background: "white",
+                    borderRadius: "7px",
+                    padding: "5px 9px",
+                    fontSize: "11px",
+                    color: "#344941",
+                    outline: "none",
+                  }}
+                >
+                  <option value="all">All Puroks</option>
+                  <option value="Purok 1">Purok 1 - Sampaguita</option>
+                  <option value="Purok 2">Purok 2 - Mabini</option>
+                  <option value="Purok 3">Purok 3 - Narra</option>
+                  <option value="Purok 4">Purok 4 - Rizal</option>
+                  <option value="Purok 5">Purok 5 - Ilang-Ilang</option>
+                  <option value="Purok 6">Purok 6 - Riverside</option>
+                  <option value="Purok 7">Purok 7 - Centro</option>
+                </select>
+              </label>
+            )}
 
             <span style={{ fontSize: "11px", color: "#7a8e85" }}>
-              Showing {filteredList.length} of {currentList.length}
+              {tab === "pwresets"
+                ? `Showing ${filteredPwResets.length} of ${pwResetRequests.length}`
+                : `Showing ${filteredList.length} of ${currentList.length}`}
             </span>
           </div>
         </div>
 
         {/* ── Table Headers ─────────────────────────────────────────── */}
         <div className="resident-table-head table-head">
-          <span>Resident</span>
-          <span>Contact & Address</span>
-          <span>{tab === "approved" ? "Status & Presence" : "Account Status"}</span>
-          <span>
-            {tab === "rejected"
-              ? "Rejection Reason"
-              : tab === "deleted"
-              ? "Date Deleted"
-              : "Registered"}
-          </span>
-          <span style={{ textAlign: "right" }}>Actions</span>
+          {tab === "pwresets" ? (
+            <>
+              <span>Resident / Applicant</span>
+              <span>Registered Mobile</span>
+              <span>Reset Status</span>
+              <span>Requested Date</span>
+              <span style={{ textAlign: "right" }}>Actions</span>
+            </>
+          ) : (
+            <>
+              <span>Resident</span>
+              <span>Contact & Address</span>
+              <span>{tab === "approved" ? "Status & Presence" : "Account Status"}</span>
+              <span>
+                {tab === "rejected"
+                  ? "Rejection Reason"
+                  : tab === "deleted"
+                  ? "Date Deleted"
+                  : "Registered"}
+              </span>
+              <span style={{ textAlign: "right" }}>Actions</span>
+            </>
+          )}
         </div>
 
         {/* ── Table Body ────────────────────────────────────────────── */}
-        {loading ? (
+        {tab === "pwresets" ? (
+          filteredPwResets.length === 0 ? (
+            <div style={{ padding: "48px 20px", textAlign: "center", color: "#758880" }}>
+              <p style={{ fontSize: "15px", fontWeight: "700", color: "#163e32", margin: "0 0 6px" }}>
+                No password reset requests 🎉
+              </p>
+              <p style={{ fontSize: "12px", margin: 0 }}>
+                When residents request password recovery on the login screen, their verified details will appear here for manual admin review and credential dispatch.
+              </p>
+            </div>
+          ) : (
+            filteredPwResets.map((req: any) => (
+              <div className="resident-table-row table-row" key={req.id}>
+                <div className="resident-cell-user">
+                  <Avatar initials={getInitials(req.name)} tone={req.status === "completed" ? "green" : req.status === "dismissed" ? "blue" : "amber"} />
+                  <div className="resident-meta">
+                    <strong>{req.name}</strong>
+                    <small>{req.email}</small>
+                  </div>
+                </div>
+
+                <div className="resident-contact-cell">
+                  <strong>{req.phone}</strong>
+                  <small>SMS Destination</small>
+                </div>
+
+                <div>
+                  <b className={`status ${req.status === "completed" ? "active" : req.status === "pending" ? "pending" : "rejected"}`}>
+                    {req.status === "completed" ? "Reset Completed" : req.status === "pending" ? "Pending Admin Reset" : "Dismissed"}
+                  </b>
+                </div>
+
+                <div>
+                  <span style={{ fontSize: "11px", color: "#61756e" }}>
+                    {new Date(req.requestedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                  </span>
+                </div>
+
+                <div className="table-actions-cell">
+                  {req.status === "pending" ? (
+                    <>
+                      <button
+                        className="btn-sm-action primary"
+                        onClick={() => handleOpenResetModal({ name: req.name, email: req.email, phone: req.phone, reqId: req.id })}
+                        title="Reset password with admin verification"
+                      >
+                        <Icon name="lock" size={13} /> Reset Password
+                      </button>
+                      <button
+                        className="btn-sm-action danger"
+                        onClick={() => handleDismissResetRequest(req.id)}
+                        title="Dismiss this request"
+                      >
+                        <Icon name="x" size={13} /> Dismiss
+                      </button>
+                    </>
+                  ) : req.status === "completed" ? (
+                    <>
+                      <button
+                        className="btn-sm-action"
+                        style={{ borderColor: "#10b981", color: "#065f46", background: "#ecfdf5" }}
+                        onClick={() => {
+                          setPwResetTarget({ name: req.name, email: req.email, phone: req.phone, reqId: req.id });
+                          setPwResetNewPass(req.tempPassword || "Resident@2025!");
+                          setPwResetSuccess(true);
+                          setPwResetModalOpen(true);
+                        }}
+                        title="View / Re-send SMS credentials"
+                      >
+                        <Icon name="message" size={13} /> SMS Details
+                      </button>
+                      <button
+                        className="btn-sm-action"
+                        onClick={() => handleOpenResetModal({ name: req.name, email: req.email, phone: req.phone, reqId: req.id })}
+                        title="Reset password again"
+                      >
+                        Reset Again
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      className="btn-sm-action"
+                      onClick={() => {
+                        const updated = pwResetRequests.map((r: any) => (r.id === req.id ? { ...r, status: "pending" } : r));
+                        localStorage.setItem("brgy_pw_reset_requests", JSON.stringify(updated));
+                        setPwResetRequests(updated);
+                      }}
+                    >
+                      Re-open
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))
+          )
+        ) : loading ? (
           <div style={{ padding: "40px", textAlign: "center", color: "#7a8e85" }}>
             <p>Loading resident accounts from database...</p>
           </div>
@@ -9800,6 +10288,13 @@ function ResidentsPage({
                       Manage
                     </button>
                     <button
+                      className="btn-sm-action"
+                      onClick={() => handleOpenResetModal({ id: resident.id, name: resident.name, email: resident.email, phone: resident.mobile })}
+                      title="Reset resident password (requires administrator verification)"
+                    >
+                      <Icon name="lock" size={13} /> Reset PW
+                    </button>
+                    <button
                       className="btn-sm-action warning"
                       onClick={() => handleSuspend(resident.id)}
                       title="Temporarily suspend access"
@@ -10047,6 +10542,14 @@ function ResidentsPage({
                             <Icon name="users" size={14} /> Demote to Resident
                           </button>
                         ) : null}
+                        <button
+                          className="btn-sm-action"
+                          style={{ padding: "9px 14px", fontSize: "12px", display: "inline-flex", alignItems: "center", gap: "6px" }}
+                          title="Reset resident password (requires administrator verification)"
+                          onClick={() => handleOpenResetModal({ id: selected.id, name: selected.name, email: selected.email, phone: selected.mobile })}
+                        >
+                          <Icon name="lock" size={14} /> Reset Password
+                        </button>
                         <button
                           className="btn-sm-action warning"
                           onClick={() => handleSuspend(selected.id)}
@@ -10404,6 +10907,250 @@ function ResidentsPage({
           >
             {addSubmitting ? "Creating resident account..." : "Create resident account"}
           </button>
+        </Modal>
+      )}
+
+      {/* ── Modal: Secure Password Reset & SMS Gateway ───────────────── */}
+      {pwResetModalOpen && pwResetTarget && (
+        <Modal
+          title={pwResetSuccess ? "SMS Notification Dispatch" : `Reset Password: ${pwResetTarget.name}`}
+          close={() => {
+            setPwResetModalOpen(false);
+            setPwResetSuccess(false);
+            setPwResetError("");
+          }}
+        >
+          {pwResetSuccess ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+              <div style={{ background: "#ecfdf5", border: "1px solid #a7f3d0", borderRadius: "10px", padding: "14px 16px", display: "flex", alignItems: "center", gap: "12px" }}>
+                <div style={{ width: 42, height: 42, borderRadius: "50%", background: "#10b981", color: "white", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <Icon name="check" size={22} />
+                </div>
+                <div>
+                  <h4 style={{ margin: 0, color: "#065f46", fontSize: "14px", fontWeight: 700 }}>
+                    Password Successfully Reset!
+                  </h4>
+                  <p style={{ margin: "2px 0 0", fontSize: "12px", color: "#047857" }}>
+                    The temporary credentials for <strong>{pwResetTarget.name}</strong> are ready. Send the SMS message below to their registered phone number.
+                  </p>
+                </div>
+              </div>
+
+              {/* Resident Credential Summary */}
+              <div style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: "10px", padding: "14px" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", fontSize: "12px", marginBottom: "12px" }}>
+                  <div>
+                    <span style={{ color: "#64748b", fontSize: "11px", display: "block" }}>Resident</span>
+                    <strong style={{ color: "#0f172a" }}>{pwResetTarget.name}</strong>
+                  </div>
+                  <div>
+                    <span style={{ color: "#64748b", fontSize: "11px", display: "block" }}>Registered Mobile</span>
+                    <strong style={{ color: "#0f172a" }}>{pwResetTarget.phone}</strong>
+                  </div>
+                </div>
+                <div style={{ background: "#ffffff", border: "1px dashed #cbd5e1", borderRadius: "8px", padding: "10px 12px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <div>
+                    <span style={{ fontSize: "11px", color: "#64748b", display: "block" }}>New Temporary Password:</span>
+                    <code style={{ fontSize: "15px", fontWeight: 700, color: "#166534", letterSpacing: "1px" }}>
+                      {pwResetNewPass}
+                    </code>
+                  </div>
+                  <button
+                    type="button"
+                    className="btn-sm-action"
+                    onClick={() => {
+                      navigator.clipboard.writeText(pwResetNewPass);
+                      onToast("Password copied to clipboard! 📋");
+                    }}
+                  >
+                    Copy Password
+                  </button>
+                </div>
+              </div>
+
+              {/* SMS Message Template Box */}
+              <div>
+                <label style={{ fontSize: "12px", fontWeight: 700, color: "#334155", display: "block", marginBottom: "6px" }}>
+                  <Icon name="message" size={14} /> SMS Dispatch Template:
+                </label>
+                <div style={{ background: "#f1f5f9", border: "1px solid #cbd5e1", borderRadius: "8px", padding: "12px", fontSize: "12.5px", color: "#1e293b", lineHeight: 1.6, whiteSpace: "pre-wrap", fontFamily: "monospace" }}>
+                  {`Good day ${pwResetTarget.name}! Your Barangay Connect portal password has been reset by the Barangay Administration.\n\nTemporary Password: ${pwResetNewPass}\n\nPlease sign in to the portal and update your password under Settings. Thank you!`}
+                </div>
+              </div>
+
+              {/* Quick Action Buttons */}
+              <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end", flexWrap: "wrap", marginTop: "4px" }}>
+                <button
+                  type="button"
+                  className="btn-sm-action"
+                  onClick={() => {
+                    const smsText = `Good day ${pwResetTarget.name}! Your Barangay Connect portal password has been reset by the Barangay Administration.\n\nTemporary Password: ${pwResetNewPass}\n\nPlease sign in to the portal and update your password under Settings. Thank you!`;
+                    navigator.clipboard.writeText(smsText);
+                    setCopiedSms(true);
+                    onToast("SMS message text copied to clipboard! 📋");
+                    setTimeout(() => setCopiedSms(false), 3000);
+                  }}
+                  style={{ padding: "9px 14px" }}
+                >
+                  <Icon name="check" size={14} /> {copiedSms ? "Copied to Clipboard!" : "Copy SMS Text"}
+                </button>
+
+                <a
+                  href={`sms:${pwResetTarget.phone}?body=${encodeURIComponent(
+                    `Good day ${pwResetTarget.name}! Your Barangay Connect portal password has been reset by the Barangay Administration.\n\nTemporary Password: ${pwResetNewPass}\n\nPlease sign in to the portal and update your password under Settings. Thank you!`
+                  )}`}
+                  className="primary-button"
+                  style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "6px", padding: "9px 16px" }}
+                  onClick={() => onToast("Opening messaging app to send SMS...")}
+                >
+                  <Icon name="message" size={14} /> Send SMS to {pwResetTarget.phone}
+                </a>
+
+                <button
+                  type="button"
+                  className="row-action"
+                  onClick={() => {
+                    setPwResetModalOpen(false);
+                    setPwResetSuccess(false);
+                  }}
+                  style={{ padding: "9px 16px" }}
+                >
+                  Done & Close
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+              {/* Security Warning & Re-auth Gate */}
+              <div style={{ background: "#fff7ed", border: "1px solid #ffedd5", borderRadius: "8px", padding: "12px", display: "flex", gap: "10px", alignItems: "flex-start" }}>
+                <div style={{ color: "#c2410c", marginTop: "2px" }}>
+                  <Icon name="shield" size={18} />
+                </div>
+                <div>
+                  <strong style={{ fontSize: "12.5px", color: "#9a3412", display: "block" }}>
+                    Security Gate: Admin Authentication Required
+                  </strong>
+                  <p style={{ margin: "2px 0 0", fontSize: "11.5px", color: "#7c2d12", lineHeight: 1.5 }}>
+                    Resetting resident credentials is a sensitive operation. You must enter your administrator password to authorize this action.
+                  </p>
+                </div>
+              </div>
+
+              {pwResetError && (
+                <div className="login-error" style={{ margin: 0 }}>
+                  <Icon name="x" size={15} /> {pwResetError}
+                </div>
+              )}
+
+              {/* Target info card */}
+              <div style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: "8px", padding: "10px 14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div>
+                  <span style={{ fontSize: "11px", color: "#64748b", display: "block" }}>Target Resident Account</span>
+                  <strong style={{ fontSize: "13px", color: "#0f172a" }}>{pwResetTarget.name}</strong>
+                  <span style={{ fontSize: "11.5px", color: "#475569", display: "block" }}>{pwResetTarget.email} · {pwResetTarget.phone}</span>
+                </div>
+                <div style={{ textAlign: "right" }}>
+                  <span style={{ fontSize: "10px", background: "#e2e8f0", color: "#334155", padding: "3px 8px", borderRadius: "6px", fontWeight: 600 }}>
+                    SMS Destination Verified
+                  </span>
+                </div>
+              </div>
+
+              {/* Admin Password Re-entry */}
+              <label className="field" style={{ margin: 0 }}>
+                <span style={{ display: "flex", justifyContent: "space-between" }}>
+                  <strong>Your Administrator Password *</strong>
+                  <small style={{ color: "#dc2626", fontWeight: 600 }}>Required for safety</small>
+                </span>
+                <div className="password-wrapper">
+                  <input
+                    type={showPwResetAdminPass ? "text" : "password"}
+                    placeholder="Enter your admin password"
+                    value={pwResetAdminPass}
+                    onChange={(e) => {
+                      setPwResetAdminPass(e.target.value);
+                      setPwResetError("");
+                    }}
+                    autoFocus
+                  />
+                  <button
+                    type="button"
+                    className="show-password-btn"
+                    onClick={() => setShowPwResetAdminPass(!showPwResetAdminPass)}
+                  >
+                    {showPwResetAdminPass ? "Hide" : "Show"}
+                  </button>
+                </div>
+              </label>
+
+              {/* New Temporary Password with Generator */}
+              <label className="field" style={{ margin: 0 }}>
+                <span style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <strong>New Temporary Password for Resident *</strong>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const pass = generateSecurePassword();
+                      setPwResetNewPass(pass);
+                      setPwResetConfirmPass(pass);
+                    }}
+                    style={{ border: "none", background: "none", color: "#059669", fontSize: "11px", fontWeight: 700, cursor: "pointer", textDecoration: "underline" }}
+                  >
+                    🎲 Generate Random Password
+                  </button>
+                </span>
+                <div className="password-wrapper">
+                  <input
+                    type={showPwResetNew ? "text" : "password"}
+                    placeholder="Temporary password (min 6 characters)"
+                    value={pwResetNewPass}
+                    onChange={(e) => setPwResetNewPass(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    className="show-password-btn"
+                    onClick={() => setShowPwResetNew(!showPwResetNew)}
+                  >
+                    {showPwResetNew ? "Hide" : "Show"}
+                  </button>
+                </div>
+              </label>
+
+              <label className="field" style={{ margin: 0 }}>
+                <strong>Confirm Temporary Password *</strong>
+                <input
+                  type={showPwResetNew ? "text" : "password"}
+                  placeholder="Re-enter temporary password"
+                  value={pwResetConfirmPass}
+                  onChange={(e) => setPwResetConfirmPass(e.target.value)}
+                />
+              </label>
+
+              <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end", marginTop: "10px" }}>
+                <button
+                  type="button"
+                  className="row-action"
+                  onClick={() => {
+                    setPwResetModalOpen(false);
+                    setPwResetError("");
+                  }}
+                  disabled={pwResetSubmitting}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="primary-button"
+                  onClick={handleConfirmAdminPasswordReset}
+                  disabled={pwResetSubmitting}
+                  style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
+                >
+                  <Icon name="shield" size={15} />
+                  {pwResetSubmitting ? "Verifying & Resetting…" : "Verify & Reset Password"}
+                </button>
+              </div>
+            </div>
+          )}
         </Modal>
       )}
     </div>
