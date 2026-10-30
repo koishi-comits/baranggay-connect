@@ -2263,10 +2263,51 @@ export default function App() {
     }
   }
 
+  // Handle auto-completion of registration when resident clicks email Magic Link
+  async function handlePendingRegistrationIfAny(sessionUser: { id: string; email?: string }): Promise<boolean> {
+    try {
+      const pendingRaw = localStorage.getItem("brgy_pending_reg");
+      if (!pendingRaw) return false;
+      const pending = JSON.parse(pendingRaw);
+      if (pending && pending.email === sessionUser.email?.toLowerCase()) {
+        localStorage.removeItem("brgy_pending_reg");
+        if (pending.password) {
+          await supabase.auth.updateUser({ password: pending.password });
+        }
+        await supabase.from("accounts").upsert([
+          {
+            id: sessionUser.id,
+            email: pending.email,
+            full_name: `${pending.firstName} ${pending.lastName}`.trim(),
+            phone: pending.phone,
+            address: pending.address,
+            role: "resident",
+            status: "pending",
+          },
+        ]);
+        await supabase.auth.signOut();
+        localStorage.setItem("brgy_reg_just_verified", `${pending.firstName} ${pending.lastName}`.trim());
+        setUser(null);
+        if (window.location.hash) {
+          window.history.replaceState(null, "", window.location.pathname);
+        }
+        return true;
+      }
+    } catch (e) {
+      console.error("Pending reg processing error:", e);
+    }
+    return false;
+  }
+
   useEffect(() => {
     // ── 1. Check for existing session on mount ───────────────────────────
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session?.user) {
+        const handledPending = await handlePendingRegistrationIfAny(session.user);
+        if (handledPending) {
+          setLoading(null);
+          return;
+        }
         const account = await resolveAccount(session.user);
         setUser(account);
       } else {
@@ -2284,6 +2325,10 @@ export default function App() {
       async (event, session) => {
         if (event === "SIGNED_IN") {
           if (session?.user) {
+            const handledPending = await handlePendingRegistrationIfAny(session.user);
+            if (handledPending) {
+              return;
+            }
             const account = await resolveAccount(session.user);
             setUser(account);
           }
@@ -5480,6 +5525,16 @@ function LoginView({
   const [regError, setRegError] = useState("");
   const [regSubmitting, setRegSubmitting] = useState(false);
 
+  // Detect when user completes registration by clicking the email magic link
+  useEffect(() => {
+    const justVerified = localStorage.getItem("brgy_reg_just_verified");
+    if (justVerified) {
+      localStorage.removeItem("brgy_reg_just_verified");
+      setRegSubmittedName(justVerified);
+      setRegSuccessOpen(true);
+    }
+  }, []);
+
   useEffect(() => {
     if (regOtpCooldown <= 0) return;
     const timer = setInterval(() => {
@@ -5644,12 +5699,24 @@ function LoginView({
         return;
       }
 
+      // Save registration details locally so magic-link click can complete registration
+      const validatedPhoneSaved = normalizePhilippinePhone(regPhone) || regPhone.trim();
+      localStorage.setItem("brgy_pending_reg", JSON.stringify({
+        email: regEmail.trim().toLowerCase(),
+        firstName: regFirstName.trim(),
+        lastName: regLastName.trim(),
+        phone: validatedPhoneSaved,
+        address: regAddress.trim(),
+        password: regPassword,
+      }));
+
       // Send 6-digit OTP code to the email address via Supabase Auth
       const { error: otpErr } = await supabase.auth.signInWithOtp({
         email: regEmail.trim().toLowerCase(),
       });
 
       if (otpErr) {
+        localStorage.removeItem("brgy_pending_reg");
         setRegError(otpErr.message || "Failed to send verification code. Please check your email.");
         setRegSubmitting(false);
         return;
@@ -6003,15 +6070,22 @@ function LoginView({
                   <Icon name="shield" size={26} />
                 </div>
                 <h3 style={{ margin: "0 0 6px", fontSize: "17px", color: "#111827", fontWeight: 700 }}>
-                  Enter Verification Code
+                  Verify Your Email
                 </h3>
                 <p style={{ margin: 0, fontSize: "13px", color: "#4b5563", lineHeight: 1.5 }}>
-                  We sent a 6-digit security verification code to:
+                  A verification email was sent to:
                   <br />
                   <strong style={{ color: "#065f46", fontSize: "14px" }}>{regEmail}</strong>
                 </p>
-                <small style={{ display: "block", marginTop: "4px", color: "#6b7280", fontSize: "11.5px" }}>
-                  Please check your inbox (and spam folder) for the code.
+                <div style={{ marginTop: "10px", padding: "10px 14px", background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: "8px", fontSize: "12.5px", color: "#166534", lineHeight: 1.6, textAlign: "left" }}>
+                  <strong>Two ways to verify:</strong>
+                  <ul style={{ margin: "4px 0 0 0", paddingLeft: "16px" }}>
+                    <li>Enter the <strong>6-digit code</strong> from the email below, <em>or</em></li>
+                    <li>Click the <strong>"Sign in"</strong> link in the email — it will complete your registration automatically</li>
+                  </ul>
+                </div>
+                <small style={{ display: "block", marginTop: "6px", color: "#6b7280", fontSize: "11.5px" }}>
+                  Check your inbox and spam folder. The email is from Supabase Auth.
                 </small>
               </div>
 
