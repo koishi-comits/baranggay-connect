@@ -5465,6 +5465,7 @@ function LoginView({
   const [registerOpen, setRegisterOpen] = useState(false);
   const [regSuccessOpen, setRegSuccessOpen] = useState(false);
   const [regSubmittedName, setRegSubmittedName] = useState("");
+  const [pendingLoginOpen, setPendingLoginOpen] = useState(false);
 
   // ── Register form state ───────────────────────────────────────────────
   const [regFirstName, setRegFirstName] = useState("");
@@ -5526,9 +5527,9 @@ function LoginView({
         return;
       }
       if (profile.status === "pending") {
-        setError("Your account is still pending barangay approval. Please wait for an administrator to verify your registration.");
         await supabase.auth.signOut();
         setSubmitting(false);
+        setPendingLoginOpen(true);
         return;
       }
       if (profile.status === "rejected") {
@@ -5947,7 +5948,7 @@ function LoginView({
                 <path d="m20 6-11 11-5-5" />
               </svg>
             </div>
-            <h2 className="reg-success-title">Registration Complete!</h2>
+            <h2 className="reg-success-title">Registration Submitted!</h2>
             <p className="reg-success-subtitle">
               Welcome, <strong>{regSubmittedName}</strong>! Your resident account has been successfully submitted.
             </p>
@@ -5982,6 +5983,58 @@ function LoginView({
               onClick={() => setRegSuccessOpen(false)}
             >
               Got it, I'll wait for approval
+            </button>
+          </section>
+        </div>
+      )}
+
+      {/* ── Pending Account Login Modal ───────────────────────────────── */}
+      {pendingLoginOpen && (
+        <div className="modal-backdrop" onMouseDown={() => setPendingLoginOpen(false)}>
+          <section className="modal reg-success-modal" onMouseDown={(e) => e.stopPropagation()}>
+            <div className="reg-success-icon" style={{ background: "#fffbeb", border: "2px solid #fde68a" }}>
+              <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
+            </div>
+            <h2 className="reg-success-title" style={{ color: "#92400e" }}>Account Pending Approval</h2>
+            <p className="reg-success-subtitle">
+              Your account has been registered but is still <strong>waiting for verification</strong> by the barangay administration.
+            </p>
+            <div className="reg-success-steps">
+              <div className="reg-step">
+                <span className="reg-step-num done">✓</span>
+                <div>
+                  <strong>Registration received</strong>
+                  <small>Your profile is on file with the barangay</small>
+                </div>
+              </div>
+              <div className="reg-step">
+                <span className="reg-step-num pending">⏳</span>
+                <div>
+                  <strong>Awaiting admin verification</strong>
+                  <small>A barangay admin will review your submitted information</small>
+                </div>
+              </div>
+              <div className="reg-step">
+                <span className="reg-step-num pending">3</span>
+                <div>
+                  <strong>Access will be granted</strong>
+                  <small>You can sign in once the admin activates your account</small>
+                </div>
+              </div>
+            </div>
+            <p className="reg-success-note" style={{ background: "#fffbeb", border: "1px solid #fde68a", color: "#92400e" }}>
+              🏛️ Visit the <strong>Barangay Hall</strong> in person to speed up verification, or wait for a notification.
+            </p>
+            <button
+              className="primary-button full"
+              onClick={() => setPendingLoginOpen(false)}
+              style={{ background: "linear-gradient(135deg, #d97706, #b45309)" }}
+            >
+              Understood, I'll wait
             </button>
           </section>
         </div>
