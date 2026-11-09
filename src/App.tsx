@@ -3543,6 +3543,82 @@ export default function App() {
     };
   }, []);
 
+  // ── Active User Presence Heartbeat ──────────────────────────────
+  useEffect(() => {
+    if (!user) return;
+    const uid = String(user.id || "");
+    const uemail = (user.email || "").toLowerCase();
+
+    recordPresenceHeartbeat(uid, uemail);
+
+    const presenceChan = supabase.channel("brgy_presence_sync", {
+      config: { broadcast: { self: false } },
+    });
+
+    presenceChan
+      .on("broadcast", { event: "ping" }, ({ payload }: any) => {
+        if (payload?.id || payload?.email) {
+          recordPresenceHeartbeat(payload.id, payload.email);
+        }
+      })
+      .on("broadcast", { event: "leave" }, ({ payload }: any) => {
+        if (payload?.id || payload?.email) {
+          removePresenceHeartbeat(payload.id, payload.email);
+        }
+      })
+      .on("broadcast", { event: "request_presence" }, () => {
+        presenceChan.send({
+          type: "broadcast",
+          event: "ping",
+          payload: { id: uid, email: uemail },
+        });
+      })
+      .subscribe((status) => {
+        if (status === "SUBSCRIBED") {
+          presenceChan.send({
+            type: "broadcast",
+            event: "ping",
+            payload: { id: uid, email: uemail },
+          });
+        }
+      });
+
+    const interval = setInterval(() => {
+      recordPresenceHeartbeat(uid, uemail);
+      presenceChan.send({
+        type: "broadcast",
+        event: "ping",
+        payload: { id: uid, email: uemail },
+      });
+    }, 15000);
+
+    const handleUnload = () => {
+      removePresenceHeartbeat(uid, uemail);
+      try {
+        presenceChan.send({
+          type: "broadcast",
+          event: "leave",
+          payload: { id: uid, email: uemail },
+        });
+      } catch {}
+    };
+    window.addEventListener("beforeunload", handleUnload);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("beforeunload", handleUnload);
+      removePresenceHeartbeat(uid, uemail);
+      try {
+        presenceChan.send({
+          type: "broadcast",
+          event: "leave",
+          payload: { id: uid, email: uemail },
+        });
+      } catch {}
+      presenceChan.unsubscribe();
+    };
+  }, [user]);
+
   const todayLabel = useMemo(
     () =>
       new Intl.DateTimeFormat("en-PH", {
@@ -4802,6 +4878,9 @@ export default function App() {
                   onClick={async () => {
                     setAcctOpen(false);
                     setLoading("logout");
+                    if (user) {
+                      removePresenceHeartbeat(user.id, user.email);
+                    }
                     try {
                       localStorage.removeItem("brgy_auth_session");
                     } catch {}
@@ -8787,6 +8866,7 @@ function CalendarView({
   const [searchQuery, setSearchQuery] = useState("");
   const [formOpen, setFormOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<CommunityEvent | null>(null);
+  const [deleteEventTarget, setDeleteEventTarget] = useState<CommunityEvent | null>(null);
 
   const [form, setForm] = useState({
     title: "",
@@ -8887,15 +8967,10 @@ function CalendarView({
   }
 
   function handleConfirmDelete(id: number) {
-    if (
-      window.confirm(
-        "Are you sure you want to remove this event from the calendar?",
-      )
-    ) {
-      onDeleteEvent(id);
-      if (viewingEvent?.id === id) setViewingEvent(null);
-      if (formOpen) setFormOpen(false);
-    }
+    const found =
+      events.find((e) => e.id === id) ||
+      ({ id, title: "this event" } as CommunityEvent);
+    setDeleteEventTarget(found);
   }
 
   function getGoogleCalendarUrl(ev: CommunityEvent) {
@@ -10009,6 +10084,84 @@ function CalendarView({
           </div>
         </Modal>
       )}
+
+      {/* Delete Calendar Event In-App Confirmation Modal */}
+      {deleteEventTarget && (
+        <Modal
+          title="Delete Calendar Event"
+          close={() => setDeleteEventTarget(null)}
+        >
+          <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "12px",
+                padding: "14px 16px",
+                background: "#fef2f2",
+                borderRadius: "12px",
+                border: "1px solid #fee2e2",
+              }}
+            >
+              <div
+                style={{
+                  width: "42px",
+                  height: "42px",
+                  borderRadius: "50%",
+                  background: "#fee2e2",
+                  display: "grid",
+                  placeItems: "center",
+                  color: "#dc2626",
+                  flexShrink: 0,
+                }}
+              >
+                <Icon name="trash" size={20} />
+              </div>
+              <div>
+                <h4
+                  style={{
+                    margin: "0 0 4px",
+                    fontSize: "14px",
+                    color: "#991b1b",
+                    fontWeight: 700,
+                  }}
+                >
+                  Remove Event
+                </h4>
+                <p style={{ margin: 0, fontSize: "12.5px", color: "#b91c1c", lineHeight: 1.4 }}>
+                  Are you sure you want to remove <strong>"{deleteEventTarget.title}"</strong> from the community calendar?
+                </p>
+              </div>
+            </div>
+
+            <p style={{ margin: 0, fontSize: "12px", color: "#64748b", lineHeight: 1.5 }}>
+              This action cannot be undone. Residents will no longer see this scheduled event in their calendar.
+            </p>
+
+            <div className="modal-actions" style={{ marginTop: "8px" }}>
+              <button
+                type="button"
+                className="ghost-button"
+                onClick={() => setDeleteEventTarget(null)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="danger-button"
+                onClick={() => {
+                  onDeleteEvent(deleteEventTarget.id);
+                  if (viewingEvent?.id === deleteEventTarget.id) setViewingEvent(null);
+                  if (editingEvent?.id === deleteEventTarget.id) setFormOpen(false);
+                  setDeleteEventTarget(null);
+                }}
+              >
+                <Icon name="trash" size={14} /> Confirm Delete
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 }
@@ -10648,6 +10801,7 @@ function ResidentDocumentsPage({
 }) {
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [deleteDocTarget, setDeleteDocTarget] = useState<DocumentRequest | null>(null);
 
   const filtered = requests.filter((r) => {
     const q = search.toLowerCase();
@@ -10792,15 +10946,7 @@ function ResidentDocumentsPage({
                   <button
                     className="row-action"
                     style={{ color: "#ef4444", borderColor: "#fecaca" }}
-                    onClick={() => {
-                      if (
-                        window.confirm(
-                          `Are you sure you want to remove your document request for ${r.docType} (${r.trackingNo})?`,
-                        )
-                      ) {
-                        onDeleteRequest(r.id);
-                      }
-                    }}
+                    onClick={() => setDeleteDocTarget(r)}
                     title="Remove this request"
                   >
                     Remove
@@ -10811,6 +10957,77 @@ function ResidentDocumentsPage({
           ))
         )}
       </section>
+
+      {/* Cancel/Remove Document Request In-App Modal */}
+      {deleteDocTarget && (
+        <Modal
+          title="Remove Document Request"
+          close={() => setDeleteDocTarget(null)}
+        >
+          <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "12px",
+                padding: "14px 16px",
+                background: "#fef2f2",
+                borderRadius: "12px",
+                border: "1px solid #fee2e2",
+              }}
+            >
+              <div
+                style={{
+                  width: "42px",
+                  height: "42px",
+                  borderRadius: "50%",
+                  background: "#fee2e2",
+                  display: "grid",
+                  placeItems: "center",
+                  color: "#dc2626",
+                  flexShrink: 0,
+                }}
+              >
+                <Icon name="trash" size={20} />
+              </div>
+              <div>
+                <h4 style={{ margin: "0 0 4px", fontSize: "14px", color: "#991b1b", fontWeight: 700 }}>
+                  Cancel Request?
+                </h4>
+                <p style={{ margin: 0, fontSize: "12.5px", color: "#b91c1c", lineHeight: 1.4 }}>
+                  Are you sure you want to remove your document request for <strong>{deleteDocTarget.docType}</strong> ({deleteDocTarget.trackingNo})?
+                </p>
+              </div>
+            </div>
+
+            <p style={{ margin: 0, fontSize: "12px", color: "#64748b", lineHeight: 1.5 }}>
+              This request will be removed from your tracking history. If you still need this certificate, you will have to submit a new application.
+            </p>
+
+            <div className="modal-actions" style={{ marginTop: "8px" }}>
+              <button
+                type="button"
+                className="ghost-button"
+                onClick={() => setDeleteDocTarget(null)}
+              >
+                Keep Request
+              </button>
+              <button
+                type="button"
+                className="danger-button"
+                onClick={() => {
+                  if (onDeleteRequest) {
+                    onDeleteRequest(deleteDocTarget.id);
+                  }
+                  setDeleteDocTarget(null);
+                }}
+              >
+                <Icon name="trash" size={14} /> Remove Request
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 }
@@ -10837,6 +11054,7 @@ function AdminDocumentsPage({
   const [selected, setSelected] = useState<DocumentRequest | null>(null);
   const [feedback, setFeedback] = useState("");
   const [pickupWindow, setPickupWindow] = useState("Window 1");
+  const [deleteDocTarget, setDeleteDocTarget] = useState<DocumentRequest | null>(null);
 
   const statusCssMap: Record<string, string> = {
     Pending: "pending",
@@ -11037,15 +11255,7 @@ function AdminDocumentsPage({
                   <button
                     className="row-action"
                     style={{ color: "#ef4444", borderColor: "#fecaca" }}
-                    onClick={() => {
-                      if (
-                        window.confirm(
-                          `Permanently delete document request ${r.trackingNo} for ${r.residentName}?`,
-                        )
-                      ) {
-                        onDeleteRequest(r.id);
-                      }
-                    }}
+                    onClick={() => setDeleteDocTarget(r)}
                     title="Delete request"
                   >
                     Delete
@@ -11279,21 +11489,86 @@ function AdminDocumentsPage({
                 type="button"
                 className="row-action"
                 style={{ color: "#ef4444", borderColor: "#fecaca" }}
-                onClick={() => {
-                  if (
-                    window.confirm(
-                      `Permanently delete document request ${selected.trackingNo} for ${selected.residentName}?`,
-                    )
-                  ) {
-                    onDeleteRequest(selected.id);
-                    setSelected(null);
-                  }
-                }}
+                onClick={() => setDeleteDocTarget(selected)}
               >
                 Delete request
               </button>
             </div>
           )}
+        </Modal>
+      )}
+
+      {/* Admin: Confirm Delete Document Request Modal */}
+      {deleteDocTarget && (
+        <Modal
+          title="Delete Document Request"
+          close={() => setDeleteDocTarget(null)}
+        >
+          <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "12px",
+                padding: "14px 16px",
+                background: "#fef2f2",
+                borderRadius: "12px",
+                border: "1px solid #fee2e2",
+              }}
+            >
+              <div
+                style={{
+                  width: "42px",
+                  height: "42px",
+                  borderRadius: "50%",
+                  background: "#fee2e2",
+                  display: "grid",
+                  placeItems: "center",
+                  color: "#dc2626",
+                  flexShrink: 0,
+                }}
+              >
+                <Icon name="trash" size={20} />
+              </div>
+              <div>
+                <h4 style={{ margin: "0 0 4px", fontSize: "14px", color: "#991b1b", fontWeight: 700 }}>
+                  Permanently Delete Request?
+                </h4>
+                <p style={{ margin: 0, fontSize: "12.5px", color: "#b91c1c", lineHeight: 1.4 }}>
+                  Delete document request <strong>{deleteDocTarget.trackingNo}</strong> for <strong>{deleteDocTarget.residentName}</strong>?
+                </p>
+              </div>
+            </div>
+
+            <p style={{ margin: 0, fontSize: "12px", color: "#64748b", lineHeight: 1.5 }}>
+              This record will be permanently deleted from the document requests database and Supabase.
+            </p>
+
+            <div className="modal-actions" style={{ marginTop: "8px" }}>
+              <button
+                type="button"
+                className="ghost-button"
+                onClick={() => setDeleteDocTarget(null)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="danger-button"
+                onClick={() => {
+                  if (onDeleteRequest) {
+                    onDeleteRequest(deleteDocTarget.id);
+                  }
+                  if (selected?.id === deleteDocTarget.id) {
+                    setSelected(null);
+                  }
+                  setDeleteDocTarget(null);
+                }}
+              >
+                <Icon name="trash" size={14} /> Confirm Delete
+              </button>
+            </div>
+          </div>
         </Modal>
       )}
     </div>
@@ -11892,7 +12167,61 @@ function AvatarSm({
 const _ = AvatarSm;
 void _;
 
-// ─── Residents ───────────────────────────────────────────────────────────────
+// ─── Real-Time Session Presence Tracking ─────────────────────────────────
+const PRESENCE_STORAGE_KEY = "brgy_presence_sessions_v1";
+
+interface ActiveSessionEntry {
+  id: string;
+  email: string;
+  timestamp: number;
+}
+
+function getActiveSessions(): Record<string, ActiveSessionEntry> {
+  try {
+    const raw = localStorage.getItem(PRESENCE_STORAGE_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    const now = Date.now();
+    const valid: Record<string, ActiveSessionEntry> = {};
+    for (const key in parsed) {
+      if (parsed[key] && now - parsed[key].timestamp < 40000) {
+        valid[key] = parsed[key];
+      }
+    }
+    return valid;
+  } catch {
+    return {};
+  }
+}
+
+function recordPresenceHeartbeat(id: string, email: string) {
+  if (!id && !email) return;
+  try {
+    const sessions = getActiveSessions();
+    const idKey = (id || "").toLowerCase();
+    const emailKey = (email || "").toLowerCase();
+    const now = Date.now();
+    const entry: ActiveSessionEntry = {
+      id: id || "",
+      email: email || "",
+      timestamp: now,
+    };
+    if (idKey) sessions[idKey] = entry;
+    if (emailKey) sessions[emailKey] = entry;
+    localStorage.setItem(PRESENCE_STORAGE_KEY, JSON.stringify(sessions));
+  } catch {}
+}
+
+function removePresenceHeartbeat(id: string, email: string) {
+  try {
+    const sessions = getActiveSessions();
+    const idKey = (id || "").toLowerCase();
+    const emailKey = (email || "").toLowerCase();
+    if (idKey) delete sessions[idKey];
+    if (emailKey) delete sessions[emailKey];
+    localStorage.setItem(PRESENCE_STORAGE_KEY, JSON.stringify(sessions));
+  } catch {}
+}
 
 // ─── Residents ───────────────────────────────────────────────────────────────
 
@@ -12017,7 +12346,7 @@ const fallbackResidents: ResidentRecord[] = [
     role: "resident",
     status: "active",
     registered: "Yesterday",
-    isOnline: true,
+    isOnline: false,
   },
   {
     id: "res-102",
@@ -12029,7 +12358,7 @@ const fallbackResidents: ResidentRecord[] = [
     role: "resident",
     status: "active",
     registered: "Oct 18, 2026",
-    isOnline: true,
+    isOnline: false,
   },
   {
     id: "res-103",
@@ -12097,6 +12426,88 @@ function ResidentsPage({
   const [tab, setTab] = useState<
     "approved" | "pending" | "rejected" | "suspended" | "deleted" | "pwresets"
   >("approved");
+
+  const [activeSessions, setActiveSessions] = useState<Record<string, ActiveSessionEntry>>(getActiveSessions);
+
+  function checkIsOnline(residentId: string, residentEmail: string): boolean {
+    const idLower = String(residentId || "").toLowerCase();
+    const emailLower = String(residentEmail || "").toLowerCase();
+
+    // 1. Current logged-in user on this window
+    if (currentUser) {
+      if (
+        (currentUser.id && String(currentUser.id).toLowerCase() === idLower) ||
+        (currentUser.email && currentUser.email.toLowerCase() === emailLower)
+      ) {
+        return true;
+      }
+    }
+
+    // 2. Active session heartbeat within last 40 seconds (other tab / browser window / device)
+    if (idLower && activeSessions[idLower]) return true;
+    if (emailLower && activeSessions[emailLower]) return true;
+
+    for (const k in activeSessions) {
+      const s = activeSessions[k];
+      if (
+        (s.id && idLower && String(s.id).toLowerCase() === idLower) ||
+        (s.email && emailLower && s.email.toLowerCase() === emailLower)
+      ) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  // Real-time synchronization of active sessions
+  useEffect(() => {
+    const sync = () => {
+      setActiveSessions(getActiveSessions());
+    };
+    sync();
+    const interval = setInterval(sync, 3000);
+
+    const presenceChan = supabase.channel("brgy_presence_sync_page", {
+      config: { broadcast: { self: false } },
+    });
+
+    presenceChan
+      .on("broadcast", { event: "ping" }, ({ payload }: any) => {
+        if (payload?.id || payload?.email) {
+          recordPresenceHeartbeat(payload.id, payload.email);
+          sync();
+        }
+      })
+      .on("broadcast", { event: "leave" }, ({ payload }: any) => {
+        if (payload?.id || payload?.email) {
+          removePresenceHeartbeat(payload.id, payload.email);
+          sync();
+        }
+      })
+      .subscribe((status) => {
+        if (status === "SUBSCRIBED") {
+          presenceChan.send({
+            type: "broadcast",
+            event: "request_presence",
+            payload: {},
+          });
+        }
+      });
+
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === PRESENCE_STORAGE_KEY) {
+        sync();
+      }
+    };
+    window.addEventListener("storage", handleStorage);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("storage", handleStorage);
+      presenceChan.unsubscribe();
+    };
+  }, []);
 
   // Modals state
   const [selected, setSelected] = useState<ResidentRecord | null>(null);
@@ -12439,14 +12850,17 @@ function ResidentsPage({
             purok = purokMatch[0];
           }
 
-          // Online presence: current user is online, others have deterministic presence or metadata
-          const isCurrent = currentUser?.id === row.id;
+          // Online presence: strictly reflects active sessions
+          const isCurrent =
+            currentUser &&
+            (String(currentUser.id) === String(row.id) ||
+              currentUser.email?.toLowerCase() === (row.email || "").toLowerCase());
           const isOnline =
-            finalStatus === "deleted"
+            finalStatus === "deleted" ||
+            finalStatus === "suspended" ||
+            finalStatus === "banned"
               ? false
-              : isCurrent ||
-                (rowMeta.isOnline ??
-                  (idx % 3 !== 1 && finalStatus === "active"));
+              : Boolean(isCurrent || checkIsOnline(String(row.id), row.email || ""));
 
           return {
             id: String(row.id),
@@ -12541,7 +12955,6 @@ function ResidentsPage({
         statusOverride: "active",
         rejectionReason: undefined,
         deletedAt: undefined,
-        isOnline: true,
       });
 
       setResidents((prev) =>
@@ -12550,7 +12963,7 @@ function ResidentsPage({
             ? {
                 ...r,
                 status: "active",
-                isOnline: true,
+                isOnline: checkIsOnline(r.id, r.email),
                 rejectionReason: undefined,
                 deletedAt: undefined,
               }
@@ -12566,7 +12979,7 @@ function ResidentsPage({
             ? {
                 ...prev,
                 status: "active",
-                isOnline: true,
+                isOnline: checkIsOnline(prev.id, prev.email),
                 rejectionReason: undefined,
                 deletedAt: undefined,
               }
@@ -12578,11 +12991,12 @@ function ResidentsPage({
       console.error("Approve error:", err);
       saveResidentMeta(residentId, {
         statusOverride: "active",
-        isOnline: true,
       });
       setResidents((prev) =>
         prev.map((r) =>
-          r.id === residentId ? { ...r, status: "active", isOnline: true } : r,
+          r.id === residentId
+            ? { ...r, status: "active", isOnline: checkIsOnline(r.id, r.email) }
+            : r,
         ),
       );
       onToast("Resident approved and activated.");
@@ -12870,7 +13284,6 @@ function ResidentsPage({
         rejectionReason: undefined,
         banReason: undefined,
         deletedAt: undefined,
-        isOnline: true,
       });
 
       removePurgedId(residentId);
@@ -12884,7 +13297,7 @@ function ResidentsPage({
                 rejectionReason: undefined,
                 banReason: undefined,
                 deletedAt: undefined,
-                isOnline: true,
+                isOnline: checkIsOnline(r.id, r.email),
               }
             : r,
         ),
@@ -12896,7 +13309,7 @@ function ResidentsPage({
             ? {
                 ...prev,
                 status: "active",
-                isOnline: true,
+                isOnline: checkIsOnline(prev.id, prev.email),
                 deletedAt: undefined,
                 rejectionReason: undefined,
                 banReason: undefined,
@@ -12909,11 +13322,12 @@ function ResidentsPage({
       console.error("Reactivate error:", err);
       saveResidentMeta(residentId, {
         statusOverride: "active",
-        isOnline: true,
       });
       setResidents((prev) =>
         prev.map((r) =>
-          r.id === residentId ? { ...r, status: "active", isOnline: true } : r,
+          r.id === residentId
+            ? { ...r, status: "active", isOnline: checkIsOnline(r.id, r.email) }
+            : r,
         ),
       );
       onToast("Account reactivated.");
@@ -13031,7 +13445,6 @@ function ResidentsPage({
         deletedAt: undefined,
         rejectionReason: undefined,
         banReason: undefined,
-        isOnline: true,
       });
 
       removePurgedId(residentId);
@@ -13045,7 +13458,7 @@ function ResidentsPage({
                 deletedAt: undefined,
                 rejectionReason: undefined,
                 banReason: undefined,
-                isOnline: true,
+                isOnline: checkIsOnline(r.id, r.email),
               }
             : r,
         ),
@@ -13057,7 +13470,7 @@ function ResidentsPage({
             ? {
                 ...prev,
                 status: "active",
-                isOnline: true,
+                isOnline: checkIsOnline(prev.id, prev.email),
                 deletedAt: undefined,
                 rejectionReason: undefined,
                 banReason: undefined,
@@ -13071,12 +13484,16 @@ function ResidentsPage({
       saveResidentMeta(residentId, {
         statusOverride: "active",
         deletedAt: undefined,
-        isOnline: true,
       });
       setResidents((prev) =>
         prev.map((r) =>
           r.id === residentId
-            ? { ...r, status: "active", deletedAt: undefined, isOnline: true }
+            ? {
+                ...r,
+                status: "active",
+                deletedAt: undefined,
+                isOnline: checkIsOnline(r.id, r.email),
+              }
             : r,
         ),
       );
@@ -13086,7 +13503,7 @@ function ResidentsPage({
             ? {
                 ...prev,
                 status: "active",
-                isOnline: true,
+                isOnline: checkIsOnline(prev.id, prev.email),
                 deletedAt: undefined,
               }
             : null,
@@ -13233,7 +13650,6 @@ function ResidentsPage({
 
       saveResidentMeta(userId, {
         statusOverride: newResident.immediateStatus,
-        isOnline: newResident.immediateStatus === "active",
       });
 
       const newRecord: ResidentRecord = {
@@ -13246,7 +13662,7 @@ function ResidentsPage({
         role: "resident",
         status: newResident.immediateStatus,
         registered: "Today",
-        isOnline: newResident.immediateStatus === "active",
+        isOnline: checkIsOnline(userId, newResident.email),
       };
 
       setResidents((prev) => [newRecord, ...prev]);
@@ -13315,7 +13731,7 @@ function ResidentsPage({
     );
   });
 
-  const onlineCount = approvedList.filter((r) => r.isOnline).length;
+  const onlineCount = approvedList.filter((r) => checkIsOnline(r.id, r.email)).length;
 
   return (
     <div className="page inner-page">
@@ -13876,20 +14292,27 @@ function ResidentsPage({
                               : "Deleted"}
                   </b>
 
-                  {tab === "approved" && (
-                    <span
-                      className={`presence-badge ${resident.isOnline ? "online" : "offline"}`}
-                    >
+                  {tab === "approved" && (() => {
+                    const isRowOnline = checkIsOnline(resident.id, resident.email);
+                    const isSelf =
+                      currentUser &&
+                      (String(currentUser.id) === String(resident.id) ||
+                        currentUser.email?.toLowerCase() === resident.email?.toLowerCase());
+                    return (
                       <span
-                        className={`presence-dot ${resident.isOnline ? "online" : "offline"}`}
-                      />
-                      {currentUser?.id === resident.id
-                        ? "Online (You)"
-                        : resident.isOnline
-                          ? "Online"
-                          : "Offline"}
-                    </span>
-                  )}
+                        className={`presence-badge ${isRowOnline ? "online" : "offline"}`}
+                      >
+                        <span
+                          className={`presence-dot ${isRowOnline ? "online" : "offline"}`}
+                        />
+                        {isSelf
+                          ? "Online (You)"
+                          : isRowOnline
+                            ? "Online"
+                            : "Offline"}
+                      </span>
+                    );
+                  })()}
                 </div>
               </div>
 
@@ -14135,14 +14558,21 @@ function ResidentsPage({
                     👑 Administrator
                   </span>
                 )}
-                <span
-                  className={`presence-badge ${selected.isOnline ? "online" : "offline"}`}
-                >
-                  <span
-                    className={`presence-dot ${selected.isOnline ? "online" : "offline"}`}
-                  />
-                  {selected.isOnline ? "Online Now" : "Offline"}
-                </span>
+                {(() => {
+                  const isSelOnline = selected
+                    ? checkIsOnline(selected.id, selected.email)
+                    : false;
+                  return (
+                    <span
+                      className={`presence-badge ${isSelOnline ? "online" : "offline"}`}
+                    >
+                      <span
+                        className={`presence-dot ${isSelOnline ? "online" : "offline"}`}
+                      />
+                      {isSelOnline ? "Online Now" : "Offline"}
+                    </span>
+                  );
+                })()}
               </div>
             </div>
 
