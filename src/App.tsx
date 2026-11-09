@@ -1064,17 +1064,63 @@ export const initialThreads: Record<string, Msg[]> = {
   ],
 };
 
+export function getDeletedThreads(): string[] {
+  try {
+    const raw = localStorage.getItem("brgy_deleted_threads");
+    if (raw) return JSON.parse(raw);
+  } catch {}
+  return [];
+}
+
+export function markThreadDeleted(email: string) {
+  try {
+    const list = getDeletedThreads();
+    const clean = email.toLowerCase().trim();
+    if (!list.includes(clean)) {
+      list.push(clean);
+      localStorage.setItem("brgy_deleted_threads", JSON.stringify(list));
+    }
+  } catch {}
+}
+
+export function unmarkThreadDeleted(email: string) {
+  try {
+    const list = getDeletedThreads();
+    const clean = email.toLowerCase().trim();
+    const updated = list.filter((e) => e !== clean);
+    localStorage.setItem("brgy_deleted_threads", JSON.stringify(updated));
+  } catch {}
+}
+
+export function isThreadDeleted(email: string): boolean {
+  return getDeletedThreads().includes(email.toLowerCase().trim());
+}
+
 export function getCachedThreads(): Record<string, Msg[]> {
+  const deleted = getDeletedThreads();
+  const base: Record<string, Msg[]> = {};
+  Object.keys(initialThreads).forEach((k) => {
+    if (!deleted.includes(k.toLowerCase().trim())) {
+      base[k] = initialThreads[k];
+    }
+  });
+
   try {
     const raw = localStorage.getItem("barangay_message_threads");
     if (raw) {
       const parsed = JSON.parse(raw);
       if (parsed && typeof parsed === "object") {
-        return { ...initialThreads, ...parsed };
+        const merged: Record<string, Msg[]> = { ...base };
+        Object.keys(parsed).forEach((k) => {
+          if (!deleted.includes(k.toLowerCase().trim())) {
+            merged[k] = parsed[k];
+          }
+        });
+        return merged;
       }
     }
   } catch {}
-  return initialThreads;
+  return base;
 }
 
 export function saveCachedThreads(threads: Record<string, Msg[]>) {
@@ -2931,10 +2977,11 @@ export default function App() {
           .order("created_at", { ascending: true });
 
         if (!error && dbMsgs && dbMsgs.length > 0) {
+          const deleted = getDeletedThreads();
           const newThreads: Record<string, Msg[]> = {};
           dbMsgs.forEach((row: any) => {
             const em = (row.resident_email || "").toLowerCase().trim();
-            if (!em) return;
+            if (!em || deleted.includes(em)) return;
             if (!newThreads[em]) newThreads[em] = [];
             const d = new Date(row.created_at);
             const dateStr = isNaN(d.getTime())
@@ -2959,11 +3006,16 @@ export default function App() {
           });
 
           setThreads((prev) => {
-            // DB data takes full precedence; only keep local threads for emails
-            // that have no DB record yet (e.g. optimistic new messages)
-            const merged = { ...prev };
+            const merged: Record<string, Msg[]> = {};
+            Object.keys(prev).forEach((em) => {
+              if (!deleted.includes(em)) {
+                merged[em] = prev[em];
+              }
+            });
             Object.keys(newThreads).forEach((em) => {
-              merged[em] = newThreads[em];
+              if (!deleted.includes(em)) {
+                merged[em] = newThreads[em];
+              }
             });
             saveCachedThreads(merged);
             return merged;
@@ -4035,25 +4087,39 @@ export default function App() {
     }
   }
 
-  async function clearThread(email: string) {
+  async function deleteThread(email: string) {
     const cleanEmail = email.toLowerCase().trim();
+    // 1. Mark permanently deleted in storage
+    markThreadDeleted(cleanEmail);
+
+    // 2. Remove the thread key completely from state and cache
     setThreads((prev) => {
-      const updated = {
-        ...prev,
-        [cleanEmail]: [],
-      };
+      const updated = { ...prev };
+      delete updated[cleanEmail];
       saveCachedThreads(updated);
       return updated;
     });
-    showToast("Conversation cleared.");
+
+    // 3. Clear activeThread if it was this one
+    setActiveThread((prev) =>
+      prev?.toLowerCase().trim() === cleanEmail ? null : prev,
+    );
+
+    showToast("Conversation deleted.");
+
+    // 4. Delete all messages for this email in Supabase
     try {
       await supabase
         .from("messages")
         .delete()
         .eq("resident_email", cleanEmail);
     } catch (err) {
-      console.warn("Supabase clear messages error:", err);
+      console.warn("Supabase delete thread messages error:", err);
     }
+  }
+
+  async function clearThread(email: string) {
+    await deleteThread(email);
   }
 
   async function sendMessage(
@@ -4062,6 +4128,9 @@ export default function App() {
     from: "admin" | "resident",
   ) {
     const cleanEmail = email.toLowerCase().trim();
+    // Un-delete thread if it was previously marked deleted
+    unmarkThreadDeleted(cleanEmail);
+
     const now = new Date();
     const timeStr =
       now.toLocaleDateString("en-US", { month: "short", day: "numeric" }) +
@@ -5555,7 +5624,7 @@ export default function App() {
               onDeleteMessage={(email, dbId, ts) =>
                 deleteMessage(email, dbId, ts)
               }
-              onClearThread={(email) => clearThread(email)}
+              onDeleteThread={(email) => deleteThread(email)}
               allRequests={requests}
               onViewDocRequest={(req) => {
                 setViewingRequest(req);
@@ -11250,7 +11319,7 @@ function AdminMessagesPage({
   onSelectThread,
   onSend,
   onDeleteMessage,
-  onClearThread,
+  onDeleteThread,
   allRequests,
   onViewDocRequest,
 }: {
@@ -11263,16 +11332,19 @@ function AdminMessagesPage({
     dbId: number | undefined,
     timestamp: number | undefined,
   ) => void;
-  onClearThread: (email: string) => void;
+  onDeleteThread: (email: string) => void;
   allRequests: DocumentRequest[];
   onViewDocRequest: (req: DocumentRequest) => void;
 }) {
   const [draft, setDraft] = useState("");
   const [search, setSearch] = useState("");
+  const [threadToDelete, setThreadToDelete] = useState<string | null>(null);
   const chatRef = useRef<HTMLDivElement>(null);
 
-  // Collect all emails that have threads
-  const allEmails = Object.keys(threads);
+  // Collect all emails that have active threads (filter out deleted ones)
+  const allEmails = Object.keys(threads).filter(
+    (email) => !isThreadDeleted(email),
+  );
   const residents = allEmails.filter((email) => {
     if (!search) return true;
     const q = search.toLowerCase();
@@ -11354,27 +11426,43 @@ function AdminMessagesPage({
             const displayName = meta.name || email;
             const initials = getInitialsFromEmail(email, displayName);
             return (
-              <button
+              <div
                 key={email}
-                className={`thread-item${activeThread === email ? " active" : ""}`}
-                onClick={() => onSelectThread(email)}
+                className={`thread-item-wrapper${activeThread === email ? " active" : ""}`}
               >
-                <Avatar
-                  initials={initials}
-                  tone={hasUnread ? "amber" : "green"}
-                />
-                <div className="thread-meta">
-                  <strong>{displayName}</strong>
-                  <small>
-                    {last
-                      ? (last.from === "admin" ? "You: " : "") +
-                        last.text.slice(0, 42) +
-                        (last.text.length > 42 ? "…" : "")
-                      : "No messages yet"}
-                  </small>
-                </div>
-                {hasUnread && <span className="msg-badge" />}
-              </button>
+                <button
+                  type="button"
+                  className={`thread-item${activeThread === email ? " active" : ""}`}
+                  onClick={() => onSelectThread(email)}
+                >
+                  <Avatar
+                    initials={initials}
+                    tone={hasUnread ? "amber" : "green"}
+                  />
+                  <div className="thread-meta">
+                    <strong>{displayName}</strong>
+                    <small>
+                      {last
+                        ? (last.from === "admin" ? "You: " : "") +
+                          last.text.slice(0, 42) +
+                          (last.text.length > 42 ? "…" : "")
+                        : "No messages yet"}
+                    </small>
+                  </div>
+                  {hasUnread && <span className="msg-badge" />}
+                </button>
+                <button
+                  type="button"
+                  className="thread-delete-btn"
+                  title={`Delete conversation with ${displayName}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setThreadToDelete(email);
+                  }}
+                >
+                  <Icon name="trash" size={13} />
+                </button>
+              </div>
             );
           })}
         </div>
@@ -11408,6 +11496,7 @@ function AdminMessagesPage({
                 </button>
               )}
               <button
+                type="button"
                 className="ghost-button"
                 style={{
                   fontSize: 12,
@@ -11415,16 +11504,8 @@ function AdminMessagesPage({
                   color: "#dc2626",
                   borderColor: "#fecaca",
                 }}
-                onClick={() => {
-                  if (
-                    window.confirm(
-                      `Are you sure you want to clear all messages with ${activeResidentMeta?.name || activeThread}?`,
-                    )
-                  ) {
-                    onClearThread(activeThread);
-                  }
-                }}
-                title="Clear all messages in this conversation"
+                onClick={() => setThreadToDelete(activeThread)}
+                title="Delete this conversation and remove from list"
               >
                 <Icon name="trash" size={13} /> Clear
               </button>
@@ -11509,6 +11590,52 @@ function AdminMessagesPage({
           </div>
         )}
       </div>
+
+      {threadToDelete && (
+        <Modal
+          title="Delete Conversation"
+          close={() => setThreadToDelete(null)}
+          maxWidth={440}
+        >
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <p
+              style={{
+                margin: 0,
+                fontSize: 13,
+                color: "#374151",
+                lineHeight: 1.6,
+              }}
+            >
+              Are you sure you want to delete the conversation with{" "}
+              <strong>
+                {resolveResidentMeta(threadToDelete).name || threadToDelete}
+              </strong>
+              ? This will remove it from your messages list and permanently delete all chat history.
+            </p>
+            <div
+              style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}
+            >
+              <button
+                type="button"
+                className="secondary-button"
+                onClick={() => setThreadToDelete(null)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="danger-button"
+                onClick={() => {
+                  onDeleteThread(threadToDelete);
+                  setThreadToDelete(null);
+                }}
+              >
+                Delete Conversation
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 }
@@ -11536,6 +11663,7 @@ function ResidentMessagesPage({
   myRequests: DocumentRequest[];
 }) {
   const [draft, setDraft] = useState("");
+  const [confirmClearOpen, setConfirmClearOpen] = useState(false);
   const chatRef = useRef<HTMLDivElement>(null);
 
   // Inject preset draft (e.g. follow-up from documents page)
@@ -11599,6 +11727,7 @@ function ResidentMessagesPage({
             </div>
             {thread.length > 0 && (
               <button
+                type="button"
                 className="ghost-button"
                 style={{
                   fontSize: 12,
@@ -11606,15 +11735,7 @@ function ResidentMessagesPage({
                   color: "#dc2626",
                   borderColor: "#fecaca",
                 }}
-                onClick={() => {
-                  if (
-                    window.confirm(
-                      "Are you sure you want to clear your message history with the barangay office?",
-                    )
-                  ) {
-                    onClearThread();
-                  }
-                }}
+                onClick={() => setConfirmClearOpen(true)}
                 title="Clear your message history"
               >
                 <Icon name="trash" size={13} /> Clear chat
@@ -11701,6 +11822,49 @@ function ResidentMessagesPage({
           </div>
         </div>
       </div>
+
+      {confirmClearOpen && (
+        <Modal
+          title="Clear Chat History"
+          close={() => setConfirmClearOpen(false)}
+          maxWidth={440}
+        >
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <p
+              style={{
+                margin: 0,
+                fontSize: 13,
+                color: "#374151",
+                lineHeight: 1.6,
+              }}
+            >
+              Are you sure you want to clear your conversation with the Barangay
+              Office? This will remove all messages from your chat.
+            </p>
+            <div
+              style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}
+            >
+              <button
+                type="button"
+                className="secondary-button"
+                onClick={() => setConfirmClearOpen(false)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="danger-button"
+                onClick={() => {
+                  onClearThread();
+                  setConfirmClearOpen(false);
+                }}
+              >
+                Clear Chat
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 }
