@@ -209,12 +209,22 @@ function Avatar({
 }) {
   if (photoUrl) {
     return (
-      <span className={`avatar avatar-${tone}`} style={{ padding: 0, overflow: "hidden" }}>
+      <span
+        className={`avatar avatar-${tone}`}
+        style={{ padding: 0, overflow: "hidden" }}
+      >
         <img
           src={photoUrl}
           alt={initials}
-          style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }}
-          onError={(e) => { (e.currentTarget as HTMLElement).style.display = "none"; }}
+          style={{
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            borderRadius: "50%",
+          }}
+          onError={(e) => {
+            (e.currentTarget as HTMLElement).style.display = "none";
+          }}
         />
       </span>
     );
@@ -381,16 +391,26 @@ const PRESET_BANNERS = [
 
 function getTagClass(tag: string): string {
   switch (tag) {
-    case "Health & Wellness": return "tag-health";
-    case "Emergency Notice": return "tag-emergency";
-    case "Community Advisory": return "tag-advisory";
-    case "Youth & Sports": return "tag-sports";
-    case "Environment": return "tag-environment";
-    case "Public Safety": return "tag-safety";
-    case "Infrastructure": return "tag-infrastructure";
-    case "Senior Citizens": return "tag-senior";
-    case "Events & Programs": return "tag-events";
-    default: return "tag-default";
+    case "Health & Wellness":
+      return "tag-health";
+    case "Emergency Notice":
+      return "tag-emergency";
+    case "Community Advisory":
+      return "tag-advisory";
+    case "Youth & Sports":
+      return "tag-sports";
+    case "Environment":
+      return "tag-environment";
+    case "Public Safety":
+      return "tag-safety";
+    case "Infrastructure":
+      return "tag-infrastructure";
+    case "Senior Citizens":
+      return "tag-senior";
+    case "Events & Programs":
+      return "tag-events";
+    default:
+      return "tag-default";
   }
 }
 
@@ -404,10 +424,11 @@ function parseDbAnnouncement(a: any): Announcement {
     scheduledAt = schedMatch[1];
   }
 
-  const cleanAccentText = rawAccentText
-    .replace(/\[PINNED\]\s*/g, "")
-    .replace(/\[SCHEDULED:[^\]]+\]\s*/g, "")
-    .trim() || "Recently posted";
+  const cleanAccentText =
+    rawAccentText
+      .replace(/\[PINNED\]\s*/g, "")
+      .replace(/\[SCHEDULED:[^\]]+\]\s*/g, "")
+      .trim() || "Recently posted";
 
   let imageUrl: string | undefined = undefined;
   let cleanAccent = a.accent || "Official announcement";
@@ -415,16 +436,22 @@ function parseDbAnnouncement(a: any): Announcement {
     const endIdx = cleanAccent.indexOf("]");
     if (endIdx > 5) {
       imageUrl = cleanAccent.slice(5, endIdx);
-      cleanAccent = cleanAccent.slice(endIdx + 1).trim() || "Official announcement";
+      cleanAccent =
+        cleanAccent.slice(endIdx + 1).trim() || "Official announcement";
     }
   }
 
   // Pre-seed image for known defaults if missing
   if (!imageUrl) {
     if (a.title?.toLowerCase().includes("water")) {
-      imageUrl = "https://images.unsplash.com/photo-1541888946425-d0fbb186f5f7?auto=format&fit=crop&w=1200&q=80";
-    } else if (a.title?.toLowerCase().includes("medical") || a.tag === "Health & Wellness") {
-      imageUrl = "https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=1200&q=80";
+      imageUrl =
+        "https://images.unsplash.com/photo-1541888946425-d0fbb186f5f7?auto=format&fit=crop&w=1200&q=80";
+    } else if (
+      a.title?.toLowerCase().includes("medical") ||
+      a.tag === "Health & Wellness"
+    ) {
+      imageUrl =
+        "https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=1200&q=80";
     }
   }
 
@@ -558,7 +585,8 @@ const initialAnnouncements: Announcement[] = [
     accentText: "June 18 · 8:00 AM – 3:00 PM",
     reactions: 48,
     pinned: true,
-    imageUrl: "https://images.unsplash.com/photo-1541888946425-d0fbb186f5f7?auto=format&fit=crop&w=1200&q=80",
+    imageUrl:
+      "https://images.unsplash.com/photo-1541888946425-d0fbb186f5f7?auto=format&fit=crop&w=1200&q=80",
   },
   {
     id: 2,
@@ -572,7 +600,8 @@ const initialAnnouncements: Announcement[] = [
     accentText: "June 21 · 8:00 AM – 12:00 PM",
     reactions: 76,
     pinned: false,
-    imageUrl: "https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=1200&q=80",
+    imageUrl:
+      "https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=1200&q=80",
   },
 ];
 
@@ -611,7 +640,8 @@ const initialEvents: CommunityEvent[] = [
     time: "9:00 AM",
     location: "Barangay Hall",
     type: "meeting",
-    description: "Monthly assembly, welfare allowance updates, and wellness consultation for seniors.",
+    description:
+      "Monthly assembly, welfare allowance updates, and wellness consultation for seniors.",
     organizer: "Office for Senior Citizens Affairs (OSCA)",
   },
   {
@@ -622,7 +652,8 @@ const initialEvents: CommunityEvent[] = [
     time: "6:00 AM",
     location: "Main Road & Creek",
     type: "community",
-    description: "Community bayanihan clean-up and dengue prevention drive. Gloves and trash bags provided.",
+    description:
+      "Community bayanihan clean-up and dengue prevention drive. Gloves and trash bags provided.",
     organizer: "Barangay Clean & Green Committee",
   },
   {
@@ -633,7 +664,8 @@ const initialEvents: CommunityEvent[] = [
     time: "8:00 AM – 4:00 PM",
     location: "Mabini Street Area",
     type: "advisory",
-    description: "Scheduled water pipe repair and maintenance works by the water utility. Residents are advised to store water.",
+    description:
+      "Scheduled water pipe repair and maintenance works by the water utility. Residents are advised to store water.",
     organizer: "Barangay Infrastructure Desk",
   },
   {
@@ -644,7 +676,8 @@ const initialEvents: CommunityEvent[] = [
     time: "8:00 AM – 1:00 PM",
     location: "Barangay Covered Court",
     type: "health",
-    description: "Free medical checkups, essential vitamins and maintenance medicines, dental check and tooth extractions.",
+    description:
+      "Free medical checkups, essential vitamins and maintenance medicines, dental check and tooth extractions.",
     organizer: "Barangay Health & Wellness Center",
   },
   {
@@ -655,7 +688,8 @@ const initialEvents: CommunityEvent[] = [
     time: "2:00 PM – 7:00 PM",
     location: "Covered Court",
     type: "sports",
-    description: "Inter-purok basketball and volleyball tournament organized by Sangguniang Kabataan with exciting prizes.",
+    description:
+      "Inter-purok basketball and volleyball tournament organized by Sangguniang Kabataan with exciting prizes.",
     organizer: "Sangguniang Kabataan (SK) Council",
   },
 ];
@@ -750,7 +784,8 @@ export const defaultDocumentServices: DocumentService[] = [
     days: 3,
     fee: "₱ 50",
     requirements: "Valid Government ID, 6-Month Proof of Residency",
-    description: "General clearance for employment, postal ID, bank transactions, and legal verification.",
+    description:
+      "General clearance for employment, postal ID, bank transactions, and legal verification.",
     enabled: true,
   },
   {
@@ -759,7 +794,8 @@ export const defaultDocumentServices: DocumentService[] = [
     days: 2,
     fee: "₱ 30",
     requirements: "Valid Government ID, Proof of Address (Billing / Lease)",
-    description: "Official certification verifying resident address standing within the barangay.",
+    description:
+      "Official certification verifying resident address standing within the barangay.",
     enabled: true,
   },
   {
@@ -767,8 +803,10 @@ export const defaultDocumentServices: DocumentService[] = [
     name: "Business Clearance",
     days: 5,
     fee: "₱ 200",
-    requirements: "DTI / SEC Registration, Contract of Lease, Barangay Inspection Endorsement",
-    description: "Required for establishing or renewing municipal business operations and permits.",
+    requirements:
+      "DTI / SEC Registration, Contract of Lease, Barangay Inspection Endorsement",
+    description:
+      "Required for establishing or renewing municipal business operations and permits.",
     enabled: true,
   },
   {
@@ -777,7 +815,8 @@ export const defaultDocumentServices: DocumentService[] = [
     days: 2,
     fee: "Free",
     requirements: "Case Study / Purok Leader Certification, Valid ID",
-    description: "Assistance document for financial, medical, scholarship, or legal aid applications.",
+    description:
+      "Assistance document for financial, medical, scholarship, or legal aid applications.",
     enabled: true,
   },
   {
@@ -786,7 +825,8 @@ export const defaultDocumentServices: DocumentService[] = [
     days: 7,
     fee: "₱ 100",
     requirements: "2x2 ID Photo, Proof of Residence, Valid Secondary ID",
-    description: "Official digitized community identification card with QR verification.",
+    description:
+      "Official digitized community identification card with QR verification.",
     enabled: true,
   },
   {
@@ -795,7 +835,8 @@ export const defaultDocumentServices: DocumentService[] = [
     days: 3,
     fee: "₱ 50",
     requirements: "Valid Government ID, Purok Clearance / No Blotter Record",
-    description: "Certification of clean community standing for school, employment, or scholarship.",
+    description:
+      "Certification of clean community standing for school, employment, or scholarship.",
     enabled: true,
   },
 ];
@@ -813,7 +854,10 @@ export function getCachedDocumentServices(): DocumentService[] {
 
 export function saveCachedDocumentServices(services: DocumentService[]) {
   try {
-    localStorage.setItem("barangay_document_services", JSON.stringify(services));
+    localStorage.setItem(
+      "barangay_document_services",
+      JSON.stringify(services),
+    );
   } catch {}
 }
 
@@ -847,7 +891,10 @@ export function getCachedSchedule(): OperatingDay[] {
 
 export function saveCachedSchedule(schedule: OperatingDay[]) {
   try {
-    localStorage.setItem("barangay_operating_schedule", JSON.stringify(schedule));
+    localStorage.setItem(
+      "barangay_operating_schedule",
+      JSON.stringify(schedule),
+    );
   } catch {}
 }
 
@@ -922,7 +969,6 @@ export function saveCachedSecurityPrefs(prefs: SecurityAccessPrefs) {
     localStorage.setItem("barangay_security_prefs", JSON.stringify(prefs));
   } catch {}
 }
-
 
 // ─── Messaging & Document Types ──────────────────────────────────────────────
 
@@ -1000,11 +1046,18 @@ export function getCachedThreads(): Record<string, Msg[]> {
 export function saveCachedThreads(threads: Record<string, Msg[]>) {
   try {
     localStorage.setItem("barangay_message_threads", JSON.stringify(threads));
-    window.dispatchEvent(new CustomEvent("barangay_threads_updated", { detail: threads }));
+    window.dispatchEvent(
+      new CustomEvent("barangay_threads_updated", { detail: threads }),
+    );
   } catch {}
 }
 
-export type RequestStatus = "Pending" | "Approved" | "Ready for Pickup" | "Released" | "Declined";
+export type RequestStatus =
+  | "Pending"
+  | "Approved"
+  | "Ready for Pickup"
+  | "Released"
+  | "Declined";
 export type PaymentStatus = "Unpaid" | "Paid at Counter" | "Waived";
 
 export type DocumentRequest = {
@@ -1052,7 +1105,8 @@ export const initialDocumentRequests: DocumentRequest[] = [
     timeFiled: "09:30 AM",
     createdAt: "2026-10-22T09:30:00.000Z",
     updatedAt: "2026-10-23T10:45:00.000Z",
-    adminFeedback: "Document has been reviewed and cleared by Barangay Office. Signed by Punong Barangay Roberto Gomez.",
+    adminFeedback:
+      "Document has been reviewed and cleared by Barangay Office. Signed by Punong Barangay Roberto Gomez.",
     pickupWindow: "Window 2 (Mon–Fri 8AM–5PM)",
     controlNo: "BC-2026-0042",
   },
@@ -1075,7 +1129,8 @@ export const initialDocumentRequests: DocumentRequest[] = [
     timeFiled: "02:15 PM",
     createdAt: "2026-10-23T14:15:00.000Z",
     updatedAt: "2026-10-24T08:30:00.000Z",
-    adminFeedback: "Ready for claiming at Window 1. Please present 1 valid government ID.",
+    adminFeedback:
+      "Ready for claiming at Window 1. Please present 1 valid government ID.",
     pickupWindow: "Window 1",
     controlNo: "CR-2026-0038",
   },
@@ -1119,7 +1174,8 @@ export const initialDocumentRequests: DocumentRequest[] = [
     timeFiled: "11:20 AM",
     createdAt: "2026-10-21T11:20:00.000Z",
     updatedAt: "2026-10-22T14:00:00.000Z",
-    adminFeedback: "Indigency evaluation verified with Purok 4 leader. Approved.",
+    adminFeedback:
+      "Indigency evaluation verified with Purok 4 leader. Approved.",
     pickupWindow: "Window 3 (Social Services)",
     controlNo: "CI-2026-0031",
   },
@@ -1164,7 +1220,8 @@ export const initialDocumentRequests: DocumentRequest[] = [
     timeFiled: "10:15 AM",
     createdAt: "2026-10-18T10:15:00.000Z",
     updatedAt: "2026-10-19T09:00:00.000Z",
-    adminFeedback: "Residency record under 6 months; please present proof of previous barangay clearance or updated billing statement.",
+    adminFeedback:
+      "Residency record under 6 months; please present proof of previous barangay clearance or updated billing statement.",
     controlNo: "GM-2026-0019",
   },
 ];
@@ -1182,8 +1239,13 @@ export function getCachedDocumentRequests(): DocumentRequest[] {
 
 export function saveCachedDocumentRequests(requests: DocumentRequest[]) {
   try {
-    localStorage.setItem("barangay_document_requests", JSON.stringify(requests));
-    window.dispatchEvent(new CustomEvent("barangay_requests_updated", { detail: requests }));
+    localStorage.setItem(
+      "barangay_document_requests",
+      JSON.stringify(requests),
+    );
+    window.dispatchEvent(
+      new CustomEvent("barangay_requests_updated", { detail: requests }),
+    );
   } catch {}
 }
 
@@ -1192,7 +1254,8 @@ export function getPromotedAdminEmails(): string[] {
     const raw = localStorage.getItem("brgy_promoted_admins");
     if (raw) {
       const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed)) return parsed.map((e: string) => String(e).toLowerCase().trim());
+      if (Array.isArray(parsed))
+        return parsed.map((e: string) => String(e).toLowerCase().trim());
     }
   } catch {}
   return [];
@@ -1211,7 +1274,8 @@ export function parsePromotedAdminsFromDesc(desc?: string): string[] {
   if (match) {
     try {
       const parsed = JSON.parse(match[1]);
-      if (Array.isArray(parsed)) return parsed.map((e: string) => String(e).toLowerCase().trim());
+      if (Array.isArray(parsed))
+        return parsed.map((e: string) => String(e).toLowerCase().trim());
     } catch {}
   }
   return [];
@@ -1219,10 +1283,87 @@ export function parsePromotedAdminsFromDesc(desc?: string): string[] {
 
 export function cleanBarangayDescription(desc?: string): string {
   if (!desc) return "";
-  return desc.replace(/<!--\s*ADMIN_ROLES:\s*\[.*?\]\s*-->/g, "").trim();
+  return desc
+    .replace(/<!--\s*ADMIN_ROLES:\s*\[.*?\]\s*-->/g, "")
+    .replace(/<!--\s*ACTIVE_RESETS:\s*\{.*?\}\s*-->/g, "")
+    .trim();
 }
 
-export async function syncPromotedAdminEmail(email: string, isPromote: boolean): Promise<string[]> {
+export function parseActiveResetsFromDesc(
+  desc?: string,
+): Record<string, { tempPassword: string; resetAt: string }> {
+  if (!desc) return {};
+  const match = desc.match(/<!--\s*ACTIVE_RESETS:\s*(\{.*?\})\s*-->/);
+  if (!match) return {};
+  try {
+    return JSON.parse(match[1]);
+  } catch {
+    return {};
+  }
+}
+
+export async function syncActiveReset(
+  email: string,
+  tempPassword: string | null,
+): Promise<void> {
+  const cleanEmail = email.toLowerCase().trim();
+  if (!cleanEmail) return;
+
+  try {
+    const tempMap = JSON.parse(
+      localStorage.getItem("brgy_temp_passwords") || "{}",
+    );
+    if (tempPassword) {
+      tempMap[cleanEmail] = { tempPassword, resetAt: new Date().toISOString() };
+    } else {
+      delete tempMap[cleanEmail];
+    }
+    localStorage.setItem("brgy_temp_passwords", JSON.stringify(tempMap));
+  } catch {}
+
+  try {
+    const { data: dbSettings } = await supabase
+      .from("barangay_settings")
+      .select("description")
+      .eq("id", 1)
+      .maybeSingle();
+
+    const currentDesc = dbSettings?.description || "";
+    const cleanDesc = cleanBarangayDescription(currentDesc);
+    const adminRolesMatch = currentDesc.match(
+      /<!--\s*ADMIN_ROLES:\s*(\[.*?\])\s*-->/,
+    );
+    const activeResets = parseActiveResetsFromDesc(currentDesc);
+
+    if (tempPassword) {
+      activeResets[cleanEmail] = {
+        tempPassword,
+        resetAt: new Date().toISOString(),
+      };
+    } else {
+      delete activeResets[cleanEmail];
+    }
+
+    let updatedDesc = cleanDesc;
+    if (adminRolesMatch) {
+      updatedDesc += `\n<!-- ADMIN_ROLES: ${adminRolesMatch[1]} -->`;
+    }
+    if (Object.keys(activeResets).length > 0) {
+      updatedDesc += `\n<!-- ACTIVE_RESETS: ${JSON.stringify(activeResets)} -->`;
+    }
+
+    await supabase
+      .from("barangay_settings")
+      .upsert({ id: 1, description: updatedDesc });
+  } catch (err) {
+    console.warn("Failed to sync active resets to Supabase:", err);
+  }
+}
+
+export async function syncPromotedAdminEmail(
+  email: string,
+  isPromote: boolean,
+): Promise<string[]> {
   const cleanEmail = email.toLowerCase().trim();
   if (!cleanEmail) return getPromotedAdminEmails();
 
@@ -1236,7 +1377,9 @@ export async function syncPromotedAdminEmail(email: string, isPromote: boolean):
 
   try {
     localStorage.setItem("brgy_promoted_admins", JSON.stringify(nextList));
-    window.dispatchEvent(new CustomEvent("brgy_promoted_admins_updated", { detail: nextList }));
+    window.dispatchEvent(
+      new CustomEvent("brgy_promoted_admins_updated", { detail: nextList }),
+    );
   } catch {}
 
   // Sync to Supabase barangay_settings row 1
@@ -1247,14 +1390,20 @@ export async function syncPromotedAdminEmail(email: string, isPromote: boolean):
       .eq("id", 1)
       .maybeSingle();
 
-    const currentDesc = dbSettings?.description || defaultBarangayInfo.description;
+    const currentDesc =
+      dbSettings?.description || defaultBarangayInfo.description;
     const cleanDesc = cleanBarangayDescription(currentDesc);
-    const updatedDesc = `${cleanDesc}\n<!-- ADMIN_ROLES: ${JSON.stringify(nextList)} -->`;
+    const activeResetsMatch = currentDesc.match(
+      /<!--\s*ACTIVE_RESETS:\s*(\{.*?\})\s*-->/,
+    );
+    let updatedDesc = `${cleanDesc}\n<!-- ADMIN_ROLES: ${JSON.stringify(nextList)} -->`;
+    if (activeResetsMatch) {
+      updatedDesc += `\n<!-- ACTIVE_RESETS: ${activeResetsMatch[1]} -->`;
+    }
 
     await supabase
       .from("barangay_settings")
-      .update({ description: updatedDesc })
-      .eq("id", 1);
+      .upsert({ id: 1, description: updatedDesc });
   } catch (err) {
     console.warn("Failed to sync admin roles to Supabase:", err);
   }
@@ -1264,7 +1413,11 @@ export async function syncPromotedAdminEmail(email: string, isPromote: boolean):
 
 export function parseDbDocRequest(row: any): DocumentRequest {
   let meta: any = {};
-  if (row.feedback && typeof row.feedback === "string" && row.feedback.trim().startsWith("{")) {
+  if (
+    row.feedback &&
+    typeof row.feedback === "string" &&
+    row.feedback.trim().startsWith("{")
+  ) {
     try {
       meta = JSON.parse(row.feedback);
     } catch {}
@@ -1290,7 +1443,11 @@ export function parseDbDocRequest(row: any): DocumentRequest {
   let adminRemarks = "";
   if (meta.feedback !== undefined) {
     adminRemarks = meta.feedback;
-  } else if (rawFeedback && typeof rawFeedback === "string" && !rawFeedback.startsWith("{")) {
+  } else if (
+    rawFeedback &&
+    typeof rawFeedback === "string" &&
+    !rawFeedback.startsWith("{")
+  ) {
     adminRemarks = rawFeedback;
   }
 
@@ -1307,10 +1464,27 @@ export function parseDbDocRequest(row: any): DocumentRequest {
     purpose: row.purpose || meta.purpose || "Official Requirement",
     notes: meta.notes || "",
     fee: meta.fee || "₱ 50",
-    paymentStatus: (meta.paymentStatus as PaymentStatus) || (row.status === "Released" ? "Paid at Counter" : "Unpaid"),
+    paymentStatus:
+      (meta.paymentStatus as PaymentStatus) ||
+      (row.status === "Released" ? "Paid at Counter" : "Unpaid"),
     status: (row.status as RequestStatus) || "Pending",
-    dateFiled: row.date || (row.created_at ? new Date(row.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "Today"),
-    timeFiled: meta.timeFiled || (row.created_at ? new Date(row.created_at).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) : "09:00 AM"),
+    dateFiled:
+      row.date ||
+      (row.created_at
+        ? new Date(row.created_at).toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+          })
+        : "Today"),
+    timeFiled:
+      meta.timeFiled ||
+      (row.created_at
+        ? new Date(row.created_at).toLocaleTimeString("en-US", {
+            hour: "numeric",
+            minute: "2-digit",
+          })
+        : "09:00 AM"),
     createdAt: row.created_at || new Date().toISOString(),
     updatedAt: meta.updatedAt || row.created_at || new Date().toISOString(),
     adminFeedback: adminRemarks,
@@ -1320,7 +1494,10 @@ export function parseDbDocRequest(row: any): DocumentRequest {
   };
 }
 
-export function getResidentDirectory(): Record<string, { name: string; purok: string; phone: string; address: string }> {
+export function getResidentDirectory(): Record<
+  string,
+  { name: string; purok: string; phone: string; address: string }
+> {
   return {
     "maria.santos@email.com": {
       name: "Maria Santos",
@@ -1373,11 +1550,21 @@ export function getResidentDirectory(): Record<string, { name: string; purok: st
   };
 }
 
-export function resolveResidentMeta(email: string, fallbackName?: string): { name: string; purok: string; phone: string; address: string } {
+export function resolveResidentMeta(
+  email: string,
+  fallbackName?: string,
+): { name: string; purok: string; phone: string; address: string } {
   const dir = getResidentDirectory();
   const lower = email.toLowerCase().trim();
   if (dir[lower]) return dir[lower];
-  const name = fallbackName || lower.split("@")[0].split(/[._-]/).map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ") || "Resident";
+  const name =
+    fallbackName ||
+    lower
+      .split("@")[0]
+      .split(/[._-]/)
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(" ") ||
+    "Resident";
   return {
     name,
     purok: "Purok 1",
@@ -1478,7 +1665,8 @@ const initialIncidents: IncidentReport[] = [
     complainantEmail: "maria.reyes@email.com",
     category: "Dispute / Noise",
     purok: "Purok 2 (Mabini St.)",
-    description: "Repeated late night videoke and loud disturbance after 11:00 PM on weekdays along Mabini St.",
+    description:
+      "Repeated late night videoke and loud disturbance after 11:00 PM on weekdays along Mabini St.",
     date: "Jun 16, 2025",
     status: "Scheduled Hearing",
     hearingDate: "June 20, 2025 · 2:00 PM at Lupon Tagapamayapa Hall",
@@ -1491,10 +1679,12 @@ const initialIncidents: IncidentReport[] = [
     complainantEmail: "juan.dc@email.com",
     category: "Street Hazard",
     purok: "Purok 1 (Sampaguita Rd.)",
-    description: "Fallen tree branch leaning on electric cables near the daycare center after the heavy rain.",
+    description:
+      "Fallen tree branch leaning on electric cables near the daycare center after the heavy rain.",
     date: "Jun 15, 2025",
     status: "Under Review",
-    officerNotes: "Endorsed to Barangay Maintenance & Tanod team for urgent clearing.",
+    officerNotes:
+      "Endorsed to Barangay Maintenance & Tanod team for urgent clearing.",
     isUrgent: true,
   },
   {
@@ -1503,7 +1693,8 @@ const initialIncidents: IncidentReport[] = [
     complainantEmail: "ana.s@email.com",
     category: "Sanitation",
     purok: "Purok 3",
-    description: "Uncollected garbage piled at corner lot causing foul odor and blocking sidewalk.",
+    description:
+      "Uncollected garbage piled at corner lot causing foul odor and blocking sidewalk.",
     date: "Jun 10, 2025",
     status: "Resolved",
     officerNotes: "Clean-up team deployed and garbage cleared on Jun 11.",
@@ -1598,7 +1789,11 @@ function UserProfileModal({
   onToast?: (msg: string) => void;
 }) {
   const storedPhoto = (() => {
-    try { return localStorage.getItem(`brgy_profile_photo_${user.id}`) || ""; } catch { return ""; }
+    try {
+      return localStorage.getItem(`brgy_profile_photo_${user.id}`) || "";
+    } catch {
+      return "";
+    }
   })();
 
   const [activeTab, setActiveTab] = useState<"profile" | "password">("profile");
@@ -1606,10 +1801,18 @@ function UserProfileModal({
   // Profile state
   const [name, setName] = useState(user.name);
   const [mobile, setMobile] = useState(() => {
-    try { return localStorage.getItem(`brgy_profile_mobile_${user.id}`) || ""; } catch { return ""; }
+    try {
+      return localStorage.getItem(`brgy_profile_mobile_${user.id}`) || "";
+    } catch {
+      return "";
+    }
   });
   const [address, setAddress] = useState(() => {
-    try { return localStorage.getItem(`brgy_profile_address_${user.id}`) || ""; } catch { return ""; }
+    try {
+      return localStorage.getItem(`brgy_profile_address_${user.id}`) || "";
+    } catch {
+      return "";
+    }
   });
   const [photoUrl, setPhotoUrl] = useState(storedPhoto);
   const [saving, setSaving] = useState(false);
@@ -1642,12 +1845,18 @@ function UserProfileModal({
     setSaving(true);
     try {
       try {
-        if (photoUrl) localStorage.setItem(`brgy_profile_photo_${user.id}`, photoUrl);
+        if (photoUrl)
+          localStorage.setItem(`brgy_profile_photo_${user.id}`, photoUrl);
         else localStorage.removeItem(`brgy_profile_photo_${user.id}`);
-        if (mobile) localStorage.setItem(`brgy_profile_mobile_${user.id}`, mobile);
-        if (address) localStorage.setItem(`brgy_profile_address_${user.id}`, address);
+        if (mobile)
+          localStorage.setItem(`brgy_profile_mobile_${user.id}`, mobile);
+        if (address)
+          localStorage.setItem(`brgy_profile_address_${user.id}`, address);
       } catch {}
-      await supabase.from("accounts").update({ full_name: name.trim() }).eq("id", user.id);
+      await supabase
+        .from("accounts")
+        .update({ full_name: name.trim() })
+        .eq("id", user.id);
       onSave({ name: name.trim(), photoUrl });
     } catch (e) {
       console.error("Profile save error:", e);
@@ -1679,20 +1888,25 @@ function UserProfileModal({
       return;
     }
     if (newPassword === currentPassword) {
-      setPasswordError("New password must be different from your current password.");
+      setPasswordError(
+        "New password must be different from your current password.",
+      );
       return;
     }
 
     setPasswordLoading(true);
     try {
       // 1. Verify current password by authenticating against Supabase
-      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-        email: user.email.trim().toLowerCase(),
-        password: currentPassword,
-      });
+      const { data: signInData, error: signInError } =
+        await supabase.auth.signInWithPassword({
+          email: user.email.trim().toLowerCase(),
+          password: currentPassword,
+        });
 
       if (signInError || !signInData.user) {
-        setPasswordError("Current password is incorrect. Please verify and try again.");
+        setPasswordError(
+          "Current password is incorrect. Please verify and try again.",
+        );
         setPasswordLoading(false);
         return;
       }
@@ -1703,7 +1917,9 @@ function UserProfileModal({
       });
 
       if (updateError) {
-        setPasswordError(updateError.message || "Failed to update password. Please try again.");
+        setPasswordError(
+          updateError.message || "Failed to update password. Please try again.",
+        );
         setPasswordLoading(false);
         return;
       }
@@ -1717,7 +1933,9 @@ function UserProfileModal({
         onToast("Password changed successfully! ✅");
       }
     } catch (err: any) {
-      setPasswordError(err?.message || "An unexpected error occurred while updating password.");
+      setPasswordError(
+        err?.message || "An unexpected error occurred while updating password.",
+      );
     } finally {
       setPasswordLoading(false);
     }
@@ -1727,10 +1945,21 @@ function UserProfileModal({
     <Modal title="My Profile Settings" close={onClose} maxWidth="480px">
       <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
         {/* Navigation Tabs */}
-        <div style={{ display: "flex", gap: "8px", borderBottom: "1px solid #e2ebe6", paddingBottom: "10px" }}>
+        <div
+          style={{
+            display: "flex",
+            gap: "8px",
+            borderBottom: "1px solid #e2ebe6",
+            paddingBottom: "10px",
+          }}
+        >
           <button
             type="button"
-            onClick={() => { setActiveTab("profile"); setPasswordError(""); setPasswordSuccess(""); }}
+            onClick={() => {
+              setActiveTab("profile");
+              setPasswordError("");
+              setPasswordSuccess("");
+            }}
             style={{
               padding: "7px 14px",
               borderRadius: "8px",
@@ -1750,7 +1979,11 @@ function UserProfileModal({
           </button>
           <button
             type="button"
-            onClick={() => { setActiveTab("password"); setPasswordError(""); setPasswordSuccess(""); }}
+            onClick={() => {
+              setActiveTab("password");
+              setPasswordError("");
+              setPasswordSuccess("");
+            }}
             style={{
               padding: "7px 14px",
               borderRadius: "8px",
@@ -1773,34 +2006,112 @@ function UserProfileModal({
         {activeTab === "profile" ? (
           <>
             {/* Avatar / Photo Upload */}
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "12px", paddingBottom: "14px", borderBottom: "1px solid #e8eee9" }}>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: "12px",
+                paddingBottom: "14px",
+                borderBottom: "1px solid #e8eee9",
+              }}
+            >
               <div style={{ position: "relative", display: "inline-block" }}>
-                <div style={{ width: 88, height: 88, borderRadius: "50%", overflow: "hidden", background: "#e0f2fe", border: "3px solid #bae6fd", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <div
+                  style={{
+                    width: 88,
+                    height: 88,
+                    borderRadius: "50%",
+                    overflow: "hidden",
+                    background: "#e0f2fe",
+                    border: "3px solid #bae6fd",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
                   {photoUrl ? (
-                    <img src={photoUrl} alt="Profile" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    <img
+                      src={photoUrl}
+                      alt="Profile"
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                      }}
+                    />
                   ) : (
-                    <span style={{ fontSize: 28, fontWeight: 700, color: "#0369a1", letterSpacing: 1 }}>{getInitials(name || user.name)}</span>
+                    <span
+                      style={{
+                        fontSize: 28,
+                        fontWeight: 700,
+                        color: "#0369a1",
+                        letterSpacing: 1,
+                      }}
+                    >
+                      {getInitials(name || user.name)}
+                    </span>
                   )}
                 </div>
                 <button
                   type="button"
                   onClick={() => fileRef.current?.click()}
-                  style={{ position: "absolute", bottom: 0, right: 0, background: "#16a34a", color: "white", border: "2px solid white", borderRadius: "50%", width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxShadow: "0 2px 6px rgba(0,0,0,0.15)" }}
+                  style={{
+                    position: "absolute",
+                    bottom: 0,
+                    right: 0,
+                    background: "#16a34a",
+                    color: "white",
+                    border: "2px solid white",
+                    borderRadius: "50%",
+                    width: 28,
+                    height: 28,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    cursor: "pointer",
+                    boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
+                  }}
                   title="Upload profile photo"
                 >
                   <Icon name="image" size={14} />
                 </button>
               </div>
-              <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handlePhotoUpload} />
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/*"
+                style={{ display: "none" }}
+                onChange={handlePhotoUpload}
+              />
               <div style={{ textAlign: "center" }}>
-                <strong style={{ fontSize: "14px", color: "#18362b", display: "block" }}>{user.name}</strong>
-                <small style={{ color: "#6b7f77", fontSize: "11.5px" }}>{user.email} · {user.role === "admin" ? "Administrator" : "Resident"}</small>
+                <strong
+                  style={{
+                    fontSize: "14px",
+                    color: "#18362b",
+                    display: "block",
+                  }}
+                >
+                  {user.name}
+                </strong>
+                <small style={{ color: "#6b7f77", fontSize: "11.5px" }}>
+                  {user.email} ·{" "}
+                  {user.role === "admin" ? "Administrator" : "Resident"}
+                </small>
               </div>
               {photoUrl && (
                 <button
                   type="button"
                   onClick={() => setPhotoUrl("")}
-                  style={{ fontSize: "10.5px", color: "#b91c1c", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: "6px", padding: "3px 10px", cursor: "pointer" }}
+                  style={{
+                    fontSize: "10.5px",
+                    color: "#b91c1c",
+                    background: "#fef2f2",
+                    border: "1px solid #fecaca",
+                    borderRadius: "6px",
+                    padding: "3px 10px",
+                    cursor: "pointer",
+                  }}
                 >
                   Remove photo
                 </button>
@@ -1808,7 +2119,9 @@ function UserProfileModal({
             </div>
 
             {/* Profile Fields */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+            <div
+              style={{ display: "flex", flexDirection: "column", gap: "12px" }}
+            >
               <label className="field">
                 Full Name *
                 <input
@@ -1836,7 +2149,14 @@ function UserProfileModal({
             </div>
 
             <div className="modal-actions">
-              <button type="button" className="ghost-button" onClick={onClose} disabled={saving}>Cancel</button>
+              <button
+                type="button"
+                className="ghost-button"
+                onClick={onClose}
+                disabled={saving}
+              >
+                Cancel
+              </button>
               <button
                 type="button"
                 className="primary-button"
@@ -1848,20 +2168,56 @@ function UserProfileModal({
             </div>
           </>
         ) : (
-          <form onSubmit={handlePasswordChange} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-            <p style={{ margin: 0, fontSize: "12.5px", color: "#64748b", lineHeight: 1.5 }}>
-              To change your password, verify your <strong>current password</strong> first. Your new password must be at least 8 characters long.
+          <form
+            onSubmit={handlePasswordChange}
+            style={{ display: "flex", flexDirection: "column", gap: "14px" }}
+          >
+            <p
+              style={{
+                margin: 0,
+                fontSize: "12.5px",
+                color: "#64748b",
+                lineHeight: 1.5,
+              }}
+            >
+              To change your password, verify your{" "}
+              <strong>current password</strong> first. Your new password must be
+              at least 8 characters long.
             </p>
 
             {passwordError && (
-              <div style={{ background: "#fef2f2", color: "#991b1b", border: "1px solid #fecaca", padding: "10px 14px", borderRadius: "8px", fontSize: "13px", display: "flex", alignItems: "center", gap: "8px" }}>
+              <div
+                style={{
+                  background: "#fef2f2",
+                  color: "#991b1b",
+                  border: "1px solid #fecaca",
+                  padding: "10px 14px",
+                  borderRadius: "8px",
+                  fontSize: "13px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                }}
+              >
                 <Icon name="alert" size={16} />
                 <span>{passwordError}</span>
               </div>
             )}
 
             {passwordSuccess && (
-              <div style={{ background: "#f0fdf4", color: "#166534", border: "1px solid #bbf7d0", padding: "10px 14px", borderRadius: "8px", fontSize: "13px", display: "flex", alignItems: "center", gap: "8px" }}>
+              <div
+                style={{
+                  background: "#f0fdf4",
+                  color: "#166534",
+                  border: "1px solid #bbf7d0",
+                  padding: "10px 14px",
+                  borderRadius: "8px",
+                  fontSize: "13px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                }}
+              >
                 <Icon name="check" size={16} />
                 <span>{passwordSuccess}</span>
               </div>
@@ -1870,7 +2226,13 @@ function UserProfileModal({
             {/* Current Password Field */}
             <label className="field">
               Current Password *
-              <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+              <div
+                style={{
+                  position: "relative",
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
                 <input
                   type={showCurrentPassword ? "text" : "password"}
                   value={currentPassword}
@@ -1892,18 +2254,38 @@ function UserProfileModal({
                     display: "flex",
                     alignItems: "center",
                   }}
-                  aria-label={showCurrentPassword ? "Hide password" : "Show password"}
+                  aria-label={
+                    showCurrentPassword ? "Hide password" : "Show password"
+                  }
                 >
                   {showCurrentPassword ? (
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
-                      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
-                      <line x1="1" y1="1" x2="23" y2="23"/>
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+                      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+                      <line x1="1" y1="1" x2="23" y2="23" />
                     </svg>
                   ) : (
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                      <circle cx="12" cy="12" r="3"/>
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                      <circle cx="12" cy="12" r="3" />
                     </svg>
                   )}
                 </button>
@@ -1913,7 +2295,13 @@ function UserProfileModal({
             {/* New Password Field */}
             <label className="field">
               New Password *
-              <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+              <div
+                style={{
+                  position: "relative",
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
                 <input
                   type={showNewPassword ? "text" : "password"}
                   value={newPassword}
@@ -1935,18 +2323,38 @@ function UserProfileModal({
                     display: "flex",
                     alignItems: "center",
                   }}
-                  aria-label={showNewPassword ? "Hide password" : "Show password"}
+                  aria-label={
+                    showNewPassword ? "Hide password" : "Show password"
+                  }
                 >
                   {showNewPassword ? (
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
-                      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
-                      <line x1="1" y1="1" x2="23" y2="23"/>
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+                      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+                      <line x1="1" y1="1" x2="23" y2="23" />
                     </svg>
                   ) : (
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                      <circle cx="12" cy="12" r="3"/>
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                      <circle cx="12" cy="12" r="3" />
                     </svg>
                   )}
                 </button>
@@ -1956,7 +2364,13 @@ function UserProfileModal({
             {/* Confirm New Password Field */}
             <label className="field">
               Confirm New Password *
-              <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+              <div
+                style={{
+                  position: "relative",
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
                 <input
                   type={showConfirmPassword ? "text" : "password"}
                   value={confirmPassword}
@@ -1978,18 +2392,38 @@ function UserProfileModal({
                     display: "flex",
                     alignItems: "center",
                   }}
-                  aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                  aria-label={
+                    showConfirmPassword ? "Hide password" : "Show password"
+                  }
                 >
                   {showConfirmPassword ? (
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
-                      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
-                      <line x1="1" y1="1" x2="23" y2="23"/>
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+                      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+                      <line x1="1" y1="1" x2="23" y2="23" />
                     </svg>
                   ) : (
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                      <circle cx="12" cy="12" r="3"/>
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                      <circle cx="12" cy="12" r="3" />
                     </svg>
                   )}
                 </button>
@@ -1997,13 +2431,27 @@ function UserProfileModal({
             </label>
 
             <div className="modal-actions" style={{ marginTop: "6px" }}>
-              <button type="button" className="ghost-button" onClick={onClose} disabled={passwordLoading}>Cancel</button>
+              <button
+                type="button"
+                className="ghost-button"
+                onClick={onClose}
+                disabled={passwordLoading}
+              >
+                Cancel
+              </button>
               <button
                 type="submit"
                 className="primary-button"
-                disabled={passwordLoading || !currentPassword || !newPassword || !confirmPassword}
+                disabled={
+                  passwordLoading ||
+                  !currentPassword ||
+                  !newPassword ||
+                  !confirmPassword
+                }
               >
-                {passwordLoading ? "Verifying & Updating..." : "Update Password"}
+                {passwordLoading
+                  ? "Verifying & Updating..."
+                  : "Update Password"}
               </button>
             </div>
           </form>
@@ -2031,23 +2479,33 @@ export default function App() {
   const [postTag, setPostTag] = useState("Community Advisory");
   const [postAccent, setPostAccent] = useState("");
   const [postAccentDate, setPostAccentDate] = useState("");
-  const [announcements, setAnnouncements] = useState<Announcement[]>(initialAnnouncements);
+  const [announcements, setAnnouncements] =
+    useState<Announcement[]>(initialAnnouncements);
   // Announcement management state
-  const [editingAnnouncement, setEditingAnnouncement] = useState<Announcement | null>(null);
-  const [deleteAnnouncementItem, setDeleteAnnouncementItem] = useState<Announcement | null>(null);
-  const [viewAnnouncementItem, setViewAnnouncementItem] = useState<Announcement | null>(null);
+  const [editingAnnouncement, setEditingAnnouncement] =
+    useState<Announcement | null>(null);
+  const [deleteAnnouncementItem, setDeleteAnnouncementItem] =
+    useState<Announcement | null>(null);
+  const [viewAnnouncementItem, setViewAnnouncementItem] =
+    useState<Announcement | null>(null);
   const [announcementFilter, setAnnouncementFilter] = useState("all");
   const [announcementSearch, setAnnouncementSearch] = useState("");
-  const [announcementMoreMenu, setAnnouncementMoreMenu] = useState<number | null>(null);
+  const [announcementMoreMenu, setAnnouncementMoreMenu] = useState<
+    number | null
+  >(null);
   const [postImageUrl, setPostImageUrl] = useState("");
   const [postPinned, setPostPinned] = useState(false);
   const [postAuthor, setPostAuthor] = useState("Barangay San Isidro");
   const [postScheduledAt, setPostScheduledAt] = useState("");
   const [isSchedulingEnabled, setIsSchedulingEnabled] = useState(false);
   const [showPresetPicker, setShowPresetPicker] = useState(false);
-  const [inquiryModalPost, setInquiryModalPost] = useState<Announcement | null>(null);
+  const [inquiryModalPost, setInquiryModalPost] = useState<Announcement | null>(
+    null,
+  );
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [activeFilterTab, setActiveFilterTab] = useState<"all" | "pinned" | "saved">("all");
+  const [activeFilterTab, setActiveFilterTab] = useState<
+    "all" | "pinned" | "saved"
+  >("all");
   const [savedPostIds, setSavedPostIds] = useState<number[]>(() => {
     try {
       return JSON.parse(localStorage.getItem("brgy_saved_posts") || "[]");
@@ -2055,14 +2513,18 @@ export default function App() {
       return [];
     }
   });
-  const [acknowledgedPostIds, setAcknowledgedPostIds] = useState<number[]>(() => {
-    try {
-      return JSON.parse(localStorage.getItem("brgy_user_ack") || "[]");
-    } catch {
-      return [1];
-    }
-  });
-  const [commentsMap, setCommentsMap] = useState<Record<number, AnnouncementComment[]>>(() => {
+  const [acknowledgedPostIds, setAcknowledgedPostIds] = useState<number[]>(
+    () => {
+      try {
+        return JSON.parse(localStorage.getItem("brgy_user_ack") || "[]");
+      } catch {
+        return [1];
+      }
+    },
+  );
+  const [commentsMap, setCommentsMap] = useState<
+    Record<number, AnnouncementComment[]>
+  >(() => {
     try {
       const stored = localStorage.getItem("brgy_announcement_comments");
       return stored ? JSON.parse(stored) : initialComments;
@@ -2070,22 +2532,37 @@ export default function App() {
       return initialComments;
     }
   });
-  const [expandedCommentPostId, setExpandedCommentPostId] = useState<number | null>(null);
+  const [expandedCommentPostId, setExpandedCommentPostId] = useState<
+    number | null
+  >(null);
   const [commentInput, setCommentInput] = useState("");
   const [toast, setToast] = useState("");
-  const [threads, setThreads] = useState<Record<string, Msg[]>>(getCachedThreads);
-  const [requests, setRequests] = useState<DocumentRequest[]>(getCachedDocumentRequests);
-  const [promotedAdmins, setPromotedAdmins] = useState<string[]>(getPromotedAdminEmails);
-  const [incidents, setIncidents] = useState<IncidentReport[]>(initialIncidents);
-  const [hotlines, setHotlines] = useState<EmergencyHotline[]>(initialEmergencyHotlines);
+  const [threads, setThreads] =
+    useState<Record<string, Msg[]>>(getCachedThreads);
+  const [requests, setRequests] = useState<DocumentRequest[]>(
+    getCachedDocumentRequests,
+  );
+  const [promotedAdmins, setPromotedAdmins] = useState<string[]>(
+    getPromotedAdminEmails,
+  );
+  const [incidents, setIncidents] =
+    useState<IncidentReport[]>(initialIncidents);
+  const [hotlines, setHotlines] = useState<EmergencyHotline[]>(
+    initialEmergencyHotlines,
+  );
   // For admin: which resident thread is open
   const [activeThread, setActiveThread] = useState<string | null>(null);
-  const [printingRequest, setPrintingRequest] = useState<DocumentRequest | null>(null);
-  const [viewingRequest, setViewingRequest] = useState<DocumentRequest | null>(null);
+  const [printingRequest, setPrintingRequest] =
+    useState<DocumentRequest | null>(null);
+  const [viewingRequest, setViewingRequest] = useState<DocumentRequest | null>(
+    null,
+  );
   const [presetMessageDraft, setPresetMessageDraft] = useState<string>("");
-  const [selectedDocForModal, setSelectedDocForModal] = useState<string>("Barangay Clearance");
+  const [selectedDocForModal, setSelectedDocForModal] =
+    useState<string>("Barangay Clearance");
   const [newRequestPurpose, setNewRequestPurpose] = useState<string>("");
-  const [newRequestCustomPurpose, setNewRequestCustomPurpose] = useState<string>("");
+  const [newRequestCustomPurpose, setNewRequestCustomPurpose] =
+    useState<string>("");
   const [newRequestNotes, setNewRequestNotes] = useState<string>("");
   const [newRequestPhone, setNewRequestPhone] = useState<string>("");
   const [newRequestAddress, setNewRequestAddress] = useState<string>("");
@@ -2131,11 +2608,17 @@ export default function App() {
   function handleToggleRsvp(eventId: number) {
     setUserRsvps((prev) => {
       const exists = prev.includes(eventId);
-      const next = exists ? prev.filter((id) => id !== eventId) : [...prev, eventId];
+      const next = exists
+        ? prev.filter((id) => id !== eventId)
+        : [...prev, eventId];
       try {
         localStorage.setItem("brgy_user_event_rsvps", JSON.stringify(next));
       } catch {}
-      showToast(exists ? "Removed from your attending schedule." : "Marked as attending! Added to your schedule.");
+      showToast(
+        exists
+          ? "Removed from your attending schedule."
+          : "Marked as attending! Added to your schedule.",
+      );
       return next;
     });
   }
@@ -2145,7 +2628,9 @@ export default function App() {
     const newEvent: CommunityEvent = { ...ev, id: tempId };
     setCalendarEvents((prev) => {
       const next = [...prev, newEvent];
-      try { localStorage.setItem("brgy_events_cache", JSON.stringify(next)); } catch {}
+      try {
+        localStorage.setItem("brgy_events_cache", JSON.stringify(next));
+      } catch {}
       return next;
     });
     showToast("Community event added to the calendar!");
@@ -2159,10 +2644,16 @@ export default function App() {
         type: ev.type,
         description: `[DATE:${ev.date}] ${ev.description.trim()}`,
       };
-      const { data: inserted, error } = await supabase.from("events").insert([dbPayload]).select().single();
+      const { data: inserted, error } = await supabase
+        .from("events")
+        .insert([dbPayload])
+        .select()
+        .single();
       if (inserted && !error) {
         const parsed = parseDbEvent(inserted);
-        setCalendarEvents((prev) => prev.map((e) => (e.id === tempId ? parsed : e)));
+        setCalendarEvents((prev) =>
+          prev.map((e) => (e.id === tempId ? parsed : e)),
+        );
       }
     } catch (e) {
       console.error("Failed to insert event to Supabase", e);
@@ -2172,7 +2663,9 @@ export default function App() {
   async function handleUpdateEvent(ev: CommunityEvent) {
     setCalendarEvents((prev) => {
       const next = prev.map((e) => (e.id === ev.id ? ev : e));
-      try { localStorage.setItem("brgy_events_cache", JSON.stringify(next)); } catch {}
+      try {
+        localStorage.setItem("brgy_events_cache", JSON.stringify(next));
+      } catch {}
       return next;
     });
     if (viewingEvent && viewingEvent.id === ev.id) {
@@ -2198,7 +2691,9 @@ export default function App() {
   async function handleDeleteEvent(id: number) {
     setCalendarEvents((prev) => {
       const next = prev.filter((e) => e.id !== id);
-      try { localStorage.setItem("brgy_events_cache", JSON.stringify(next)); } catch {}
+      try {
+        localStorage.setItem("brgy_events_cache", JSON.stringify(next));
+      } catch {}
       return next;
     });
     if (viewingEvent && viewingEvent.id === id) {
@@ -2214,7 +2709,10 @@ export default function App() {
   }
 
   // Resolve an auth user session → Account object
-  async function resolveAccount(authUser: { id: string; email?: string }): Promise<Account | null> {
+  async function resolveAccount(authUser: {
+    id: string;
+    email?: string;
+  }): Promise<Account | null> {
     try {
       const { data: profile, error } = await supabase
         .from("accounts")
@@ -2248,7 +2746,8 @@ export default function App() {
       }
 
       const name = profile.full_name || authUser.email || "User";
-      const isAdm = profile.role === "admin" || isPromotedAdmin(authUser.email ?? "");
+      const isAdm =
+        profile.role === "admin" || isPromotedAdmin(authUser.email ?? "");
       return {
         id: authUser.id,
         email: authUser.email ?? "",
@@ -2277,8 +2776,19 @@ export default function App() {
         const account = await resolveAccount(session.user);
         setUser(account);
       } else {
-        // Definitively no session — clear any stale state
-        setUser(null);
+        // Fallback: check custom session (e.g. for temporary password logins)
+        try {
+          const customSession = JSON.parse(
+            localStorage.getItem("brgy_auth_session") || "null",
+          );
+          if (customSession?.user) {
+            setUser(customSession.user);
+          } else {
+            setUser(null);
+          }
+        } catch {
+          setUser(null);
+        }
       }
       setLoading(null);
     });
@@ -2287,21 +2797,24 @@ export default function App() {
     // Only update user state on meaningful auth transitions, NOT on
     // INITIAL_SESSION (handled above by getSession) or TOKEN_REFRESHED
     // (session is still valid — no need to re-resolve or logout).
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (event === "SIGNED_IN") {
-          if (session?.user) {
-            const account = await resolveAccount(session.user);
-            setUser(account);
-          }
-        } else if (event === "SIGNED_OUT") {
-          setUser(null);
-        } else if (event === "TOKEN_REFRESHED" || event === "INITIAL_SESSION") {
-          // Session is still valid — do nothing to avoid flickering logout.
-          // getSession() on mount already handled INITIAL_SESSION.
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === "SIGNED_IN") {
+        if (session?.user) {
+          const account = await resolveAccount(session.user);
+          setUser(account);
         }
+      } else if (event === "SIGNED_OUT") {
+        try {
+          localStorage.removeItem("brgy_auth_session");
+        } catch {}
+        setUser(null);
+      } else if (event === "TOKEN_REFRESHED" || event === "INITIAL_SESSION") {
+        // Session is still valid — do nothing to avoid flickering logout.
+        // getSession() on mount already handled INITIAL_SESSION.
       }
-    );
+    });
 
     // ── 3. Load community data & pending accounts ────────────────────────
     async function fetchLiveDocumentRequests() {
@@ -2320,8 +2833,14 @@ export default function App() {
             const localOnly = prev.filter(
               (p) =>
                 p.id.startsWith("req-") &&
-                !["req-101","req-102","req-103","req-104","req-105"].includes(p.id) &&
-                !parsed.some((db) => db.trackingNo === p.trackingNo)
+                ![
+                  "req-101",
+                  "req-102",
+                  "req-103",
+                  "req-104",
+                  "req-105",
+                ].includes(p.id) &&
+                !parsed.some((db) => db.trackingNo === p.trackingNo),
             );
             const merged = [...localOnly, ...parsed];
             saveCachedDocumentRequests(merged);
@@ -2351,8 +2870,18 @@ export default function App() {
             if (!em) return;
             if (!newThreads[em]) newThreads[em] = [];
             const d = new Date(row.created_at);
-            const dateStr = isNaN(d.getTime()) ? "Today" : d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-            const timeStr = isNaN(d.getTime()) ? "Just now" : d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+            const dateStr = isNaN(d.getTime())
+              ? "Today"
+              : d.toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                });
+            const timeStr = isNaN(d.getTime())
+              ? "Just now"
+              : d.toLocaleTimeString("en-US", {
+                  hour: "numeric",
+                  minute: "2-digit",
+                });
             newThreads[em].push({
               from: row.sender === "admin" ? "admin" : "resident",
               text: row.text,
@@ -2386,11 +2915,37 @@ export default function App() {
           .maybeSingle();
 
         if (!error && dbSettings) {
-          const adminEmails = parsePromotedAdminsFromDesc(dbSettings.description);
-          setPromotedAdmins(adminEmails);
+          const adminEmails = parsePromotedAdminsFromDesc(
+            dbSettings.description,
+          );
+          setPromotedAdmins((prev) => {
+            if (JSON.stringify(prev) === JSON.stringify(adminEmails))
+              return prev;
+            return adminEmails;
+          });
           try {
-            localStorage.setItem("brgy_promoted_admins", JSON.stringify(adminEmails));
+            localStorage.setItem(
+              "brgy_promoted_admins",
+              JSON.stringify(adminEmails),
+            );
           } catch {}
+
+          // Synchronize active resets from description into local storage
+          const activeResets = parseActiveResetsFromDesc(
+            dbSettings.description,
+          );
+          if (Object.keys(activeResets).length > 0) {
+            try {
+              const currentLocal = JSON.parse(
+                localStorage.getItem("brgy_temp_passwords") || "{}",
+              );
+              const merged = { ...currentLocal, ...activeResets };
+              localStorage.setItem(
+                "brgy_temp_passwords",
+                JSON.stringify(merged),
+              );
+            } catch {}
+          }
 
           const cleanDesc = cleanBarangayDescription(dbSettings.description);
           const loadedInfo: BarangayInfo = {
@@ -2402,14 +2957,35 @@ export default function App() {
             email: dbSettings.email || defaultBarangayInfo.email,
             address: dbSettings.address || defaultBarangayInfo.address,
             description: cleanDesc || defaultBarangayInfo.description,
-            weekdayHours: dbSettings.weekday_hours || defaultBarangayInfo.weekdayHours,
-            saturdayHours: dbSettings.saturday_hours || defaultBarangayInfo.saturdayHours,
-            sundayHours: dbSettings.sunday_hours || defaultBarangayInfo.sundayHours,
+            weekdayHours:
+              dbSettings.weekday_hours || defaultBarangayInfo.weekdayHours,
+            saturdayHours:
+              dbSettings.saturday_hours || defaultBarangayInfo.saturdayHours,
+            sundayHours:
+              dbSettings.sunday_hours || defaultBarangayInfo.sundayHours,
           };
-          setBarangay(loadedInfo);
-          try {
-            localStorage.setItem("barangay_info", JSON.stringify(loadedInfo));
-          } catch {}
+
+          setBarangay((prev) => {
+            if (
+              prev.name === loadedInfo.name &&
+              prev.city === loadedInfo.city &&
+              prev.district === loadedInfo.district &&
+              prev.captain === loadedInfo.captain &&
+              prev.phone === loadedInfo.phone &&
+              prev.email === loadedInfo.email &&
+              prev.address === loadedInfo.address &&
+              prev.description === loadedInfo.description &&
+              prev.weekdayHours === loadedInfo.weekdayHours &&
+              prev.saturdayHours === loadedInfo.saturdayHours &&
+              prev.sundayHours === loadedInfo.sundayHours
+            ) {
+              return prev; // keep identical reference so no re-renders or clobbering!
+            }
+            try {
+              localStorage.setItem("barangay_info", JSON.stringify(loadedInfo));
+            } catch {}
+            return loadedInfo;
+          });
         }
       } catch (err) {
         console.warn("fetchLiveSettingsAndRoles error:", err);
@@ -2423,7 +2999,9 @@ export default function App() {
           .from("accounts")
           .select("id, status");
         if (dbAccounts) {
-          const pending = dbAccounts.filter((a: any) => a.status === "pending").length;
+          const pending = dbAccounts.filter(
+            (a: any) => a.status === "pending",
+          ).length;
           setPendingResidents(pending);
         }
 
@@ -2444,28 +3022,33 @@ export default function App() {
         } else {
           // If Supabase table is empty, seed it with the default announcements
           try {
-            const { data: seeded } = await supabase.from("announcements").insert([
-              {
-                author: "Barangay San Isidro",
-                initials: "SI",
-                tag: "Community Advisory",
-                title: "Scheduled Water Interruption",
-                body: "Please be advised that there will be a scheduled water interruption on June 18, from 8:00 AM to 3:00 PM due to maintenance works along Mabini Street. We encourage everyone to store enough water in advance.",
-                accent: "[IMG:https://images.unsplash.com/photo-1541888946425-d0fbb186f5f7?auto=format&fit=crop&w=1200&q=80]Water service advisory",
-                accent_text: "[PINNED] June 18 · 8:00 AM – 3:00 PM",
-                reactions: 48,
-              },
-              {
-                author: "Barangay Health Center",
-                initials: "HC",
-                tag: "Health & Wellness",
-                title: "Free Medical and Dental Mission",
-                body: "Our health center is inviting all residents to a free medical and dental mission this Saturday. Services include basic check-ups, blood pressure monitoring, and dental consultation.",
-                accent: "[IMG:https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=1200&q=80]Barangay Covered Court",
-                accent_text: "June 21 · 8:00 AM – 12:00 PM",
-                reactions: 76,
-              },
-            ]).select();
+            const { data: seeded } = await supabase
+              .from("announcements")
+              .insert([
+                {
+                  author: "Barangay San Isidro",
+                  initials: "SI",
+                  tag: "Community Advisory",
+                  title: "Scheduled Water Interruption",
+                  body: "Please be advised that there will be a scheduled water interruption on June 18, from 8:00 AM to 3:00 PM due to maintenance works along Mabini Street. We encourage everyone to store enough water in advance.",
+                  accent:
+                    "[IMG:https://images.unsplash.com/photo-1541888946425-d0fbb186f5f7?auto=format&fit=crop&w=1200&q=80]Water service advisory",
+                  accent_text: "[PINNED] June 18 · 8:00 AM – 3:00 PM",
+                  reactions: 48,
+                },
+                {
+                  author: "Barangay Health Center",
+                  initials: "HC",
+                  tag: "Health & Wellness",
+                  title: "Free Medical and Dental Mission",
+                  body: "Our health center is inviting all residents to a free medical and dental mission this Saturday. Services include basic check-ups, blood pressure monitoring, and dental consultation.",
+                  accent:
+                    "[IMG:https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=1200&q=80]Barangay Covered Court",
+                  accent_text: "June 21 · 8:00 AM – 12:00 PM",
+                  reactions: 76,
+                },
+              ])
+              .select();
             if (seeded && seeded.length > 0) {
               setAnnouncements(seeded.map(parseDbAnnouncement));
             }
@@ -2519,10 +3102,15 @@ export default function App() {
                 respondentName: m.respondentName || "",
                 respondentAddress: m.respondentAddress || "",
                 respondentContact: m.respondentContact || "",
-                hearingStage: m.hearingStage || "1st Patawag (Notice of Hearing)",
-                hearingVenue: m.hearingVenue || "Lupon Tagapamayapa Hall, 2nd Flr",
-                assignedOfficer: m.assignedOfficer || "Hon. Roberto Gomez (Punong Brgy)",
-                deletedAt: m.deletedAt || (i.status === "Deleted" ? "Archived" : undefined),
+                hearingStage:
+                  m.hearingStage || "1st Patawag (Notice of Hearing)",
+                hearingVenue:
+                  m.hearingVenue || "Lupon Tagapamayapa Hall, 2nd Flr",
+                assignedOfficer:
+                  m.assignedOfficer || "Hon. Roberto Gomez (Punong Brgy)",
+                deletedAt:
+                  m.deletedAt ||
+                  (i.status === "Deleted" ? "Archived" : undefined),
               };
             }),
           );
@@ -2535,7 +3123,9 @@ export default function App() {
         if (dbEvents && dbEvents.length > 0) {
           const parsed = dbEvents.map(parseDbEvent);
           setCalendarEvents(parsed);
-          try { localStorage.setItem("brgy_events_cache", JSON.stringify(parsed)); } catch {}
+          try {
+            localStorage.setItem("brgy_events_cache", JSON.stringify(parsed));
+          } catch {}
         }
       } catch (err) {
         console.error("Supabase load error:", err);
@@ -2554,7 +3144,9 @@ export default function App() {
             .from("accounts")
             .select("id, status");
           if (dbAccounts) {
-            const pending = dbAccounts.filter((a: any) => a.status === "pending").length;
+            const pending = dbAccounts.filter(
+              (a: any) => a.status === "pending",
+            ).length;
             setPendingResidents(pending);
           }
           // Re-resolve role for the currently logged-in user if their record changed
@@ -2563,14 +3155,15 @@ export default function App() {
             if (!currentUser) return currentUser;
             const changedRecord = payload?.new;
             if (changedRecord && changedRecord.id === currentUser.id) {
-              const newRole = changedRecord.role === "admin" ? "admin" : "resident";
+              const newRole =
+                changedRecord.role === "admin" ? "admin" : "resident";
               if (newRole !== currentUser.role) {
                 return { ...currentUser, role: newRole };
               }
             }
             return currentUser;
           });
-        }
+        },
       )
       .subscribe();
 
@@ -2604,15 +3197,20 @@ export default function App() {
                   respondentName: m.respondentName || "",
                   respondentAddress: m.respondentAddress || "",
                   respondentContact: m.respondentContact || "",
-                  hearingStage: m.hearingStage || "1st Patawag (Notice of Hearing)",
-                  hearingVenue: m.hearingVenue || "Lupon Tagapamayapa Hall, 2nd Flr",
-                  assignedOfficer: m.assignedOfficer || "Hon. Roberto Gomez (Punong Brgy)",
-                  deletedAt: m.deletedAt || (i.status === "Deleted" ? "Archived" : undefined),
+                  hearingStage:
+                    m.hearingStage || "1st Patawag (Notice of Hearing)",
+                  hearingVenue:
+                    m.hearingVenue || "Lupon Tagapamayapa Hall, 2nd Flr",
+                  assignedOfficer:
+                    m.assignedOfficer || "Hon. Roberto Gomez (Punong Brgy)",
+                  deletedAt:
+                    m.deletedAt ||
+                    (i.status === "Deleted" ? "Archived" : undefined),
                 };
               }),
             );
           }
-        }
+        },
       )
       .subscribe();
 
@@ -2640,7 +3238,7 @@ export default function App() {
               })),
             );
           }
-        }
+        },
       )
       .subscribe();
 
@@ -2657,7 +3255,7 @@ export default function App() {
           if (dbAnnouncements) {
             setAnnouncements(dbAnnouncements.map(parseDbAnnouncement));
           }
-        }
+        },
       )
       .subscribe();
 
@@ -2674,9 +3272,11 @@ export default function App() {
           if (dbEvents) {
             const parsed = dbEvents.map(parseDbEvent);
             setCalendarEvents(parsed);
-            try { localStorage.setItem("brgy_events_cache", JSON.stringify(parsed)); } catch {}
+            try {
+              localStorage.setItem("brgy_events_cache", JSON.stringify(parsed));
+            } catch {}
           }
-        }
+        },
       )
       .subscribe();
 
@@ -2687,7 +3287,7 @@ export default function App() {
         { event: "*", schema: "public", table: "document_requests" },
         () => {
           fetchLiveDocumentRequests();
-        }
+        },
       )
       .subscribe();
 
@@ -2698,7 +3298,7 @@ export default function App() {
         { event: "*", schema: "public", table: "messages" },
         () => {
           fetchLiveMessages();
-        }
+        },
       )
       .subscribe();
 
@@ -2709,7 +3309,7 @@ export default function App() {
         { event: "*", schema: "public", table: "barangay_settings" },
         () => {
           fetchLiveSettingsAndRoles();
-        }
+        },
       )
       .subscribe();
 
@@ -2738,7 +3338,8 @@ export default function App() {
     };
     const handleCustomThreads = () => setThreads(getCachedThreads());
     const handleCustomRequests = () => setRequests(getCachedDocumentRequests());
-    const handleCustomAdmins = () => setPromotedAdmins(getPromotedAdminEmails());
+    const handleCustomAdmins = () =>
+      setPromotedAdmins(getPromotedAdminEmails());
     window.addEventListener("storage", handleStorageUpdate);
     window.addEventListener("barangay_threads_updated", handleCustomThreads);
     window.addEventListener("barangay_requests_updated", handleCustomRequests);
@@ -2748,9 +3349,18 @@ export default function App() {
       clearInterval(liveHeartbeat);
       clearInterval(messageFastPoll);
       window.removeEventListener("storage", handleStorageUpdate);
-      window.removeEventListener("barangay_threads_updated", handleCustomThreads);
-      window.removeEventListener("barangay_requests_updated", handleCustomRequests);
-      window.removeEventListener("brgy_promoted_admins_updated", handleCustomAdmins);
+      window.removeEventListener(
+        "barangay_threads_updated",
+        handleCustomThreads,
+      );
+      window.removeEventListener(
+        "barangay_requests_updated",
+        handleCustomRequests,
+      );
+      window.removeEventListener(
+        "brgy_promoted_admins_updated",
+        handleCustomAdmins,
+      );
       subscription.unsubscribe();
       accountsChannel.unsubscribe();
       incidentsChannel.unsubscribe();
@@ -2789,12 +3399,19 @@ export default function App() {
       setPostAccentDate(ann.accentText);
       setPostImageUrl(ann.imageUrl || "");
       setPostPinned(!!ann.pinned);
-      setPostAuthor(ann.author || (barangay.name ? `${barangay.name} Administration` : "Barangay Administration"));
+      setPostAuthor(
+        ann.author ||
+          (barangay.name
+            ? `${barangay.name} Administration`
+            : "Barangay Administration"),
+      );
       if (ann.scheduledAt) {
         setIsSchedulingEnabled(true);
         try {
           const d = new Date(ann.scheduledAt);
-          const localIso = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+          const localIso = new Date(d.getTime() - d.getTimezoneOffset() * 60000)
+            .toISOString()
+            .slice(0, 16);
           setPostScheduledAt(localIso);
         } catch {
           setPostScheduledAt("");
@@ -2813,7 +3430,11 @@ export default function App() {
       setPostAccentDate("");
       setPostImageUrl("");
       setPostPinned(false);
-      setPostAuthor(barangay.name ? `${barangay.name} Administration` : "Barangay San Isidro");
+      setPostAuthor(
+        barangay.name
+          ? `${barangay.name} Administration`
+          : "Barangay San Isidro",
+      );
       setIsSchedulingEnabled(false);
       setPostScheduledAt("");
     }
@@ -2832,9 +3453,10 @@ export default function App() {
       minute: "2-digit",
     }).format(new Date());
 
-    const scheduledIso = (isSchedulingEnabled && postScheduledAt)
-      ? new Date(postScheduledAt).toISOString()
-      : undefined;
+    const scheduledIso =
+      isSchedulingEnabled && postScheduledAt
+        ? new Date(postScheduledAt).toISOString()
+        : undefined;
 
     const cleanAccentText = (postAccentDate || "Posted · " + nowLabel)
       .replace(/\[PINNED\]\s*/g, "")
@@ -2848,7 +3470,7 @@ export default function App() {
 
     const formattedAccent = postImageUrl.trim()
       ? `[IMG:${postImageUrl.trim()}]${postAccent.trim() || "Official announcement"}`
-      : (postAccent.trim() || "Official announcement");
+      : postAccent.trim() || "Official announcement";
 
     if (editingAnnouncement) {
       // Update existing
@@ -2864,10 +3486,18 @@ export default function App() {
         pinned: postPinned,
         scheduledAt: scheduledIso,
       };
-      setAnnouncements((prev) => prev.map((a) => (a.id === updated.id ? updated : a)));
+      setAnnouncements((prev) =>
+        prev.map((a) => (a.id === updated.id ? updated : a)),
+      );
       setComposerOpen(false);
       setEditingAnnouncement(null);
-      setPostText(""); setPostTitle(""); setPostAccent(""); setPostAccentDate(""); setPostImageUrl(""); setPostScheduledAt(""); setIsSchedulingEnabled(false);
+      setPostText("");
+      setPostTitle("");
+      setPostAccent("");
+      setPostAccentDate("");
+      setPostImageUrl("");
+      setPostScheduledAt("");
+      setIsSchedulingEnabled(false);
       showToast("Announcement updated successfully!");
       try {
         await supabase
@@ -2900,7 +3530,13 @@ export default function App() {
     };
 
     setComposerOpen(false);
-    setPostText(""); setPostTitle(""); setPostAccent(""); setPostAccentDate(""); setPostImageUrl(""); setPostScheduledAt(""); setIsSchedulingEnabled(false);
+    setPostText("");
+    setPostTitle("");
+    setPostAccent("");
+    setPostAccentDate("");
+    setPostImageUrl("");
+    setPostScheduledAt("");
+    setIsSchedulingEnabled(false);
 
     try {
       const { data: inserted, error } = await supabase
@@ -2911,7 +3547,10 @@ export default function App() {
 
       if (inserted && !error) {
         const parsed = parseDbAnnouncement(inserted);
-        setAnnouncements((prev) => [parsed, ...prev.filter((a) => a.id !== parsed.id)]);
+        setAnnouncements((prev) => [
+          parsed,
+          ...prev.filter((a) => a.id !== parsed.id),
+        ]);
       } else {
         const fallback: Announcement = {
           id: Date.now(),
@@ -2931,7 +3570,11 @@ export default function App() {
         };
         setAnnouncements((prev) => [fallback, ...prev]);
       }
-      showToast(scheduledIso ? "Announcement scheduled successfully!" : "Announcement published live to community!");
+      showToast(
+        scheduledIso
+          ? "Announcement scheduled successfully!"
+          : "Announcement published live to community!",
+      );
     } catch (e) {
       console.error("Failed to save announcement to Supabase", e);
       showToast("Announcement saved locally.");
@@ -2939,17 +3582,28 @@ export default function App() {
   }
 
   async function publishScheduledNow(ann: Announcement) {
-    const cleanAccentText = (ann.accentText || "").replace(/\[SCHEDULED:[^\]]+\]\s*/g, "").trim();
+    const cleanAccentText = (ann.accentText || "")
+      .replace(/\[SCHEDULED:[^\]]+\]\s*/g, "")
+      .trim();
     const updatedAccentText = (ann.pinned ? "[PINNED] " : "") + cleanAccentText;
-    const updated: Announcement = { ...ann, scheduledAt: undefined, accentText: cleanAccentText };
-    setAnnouncements((prev) => prev.map((a) => (a.id === ann.id ? updated : a)));
+    const updated: Announcement = {
+      ...ann,
+      scheduledAt: undefined,
+      accentText: cleanAccentText,
+    };
+    setAnnouncements((prev) =>
+      prev.map((a) => (a.id === ann.id ? updated : a)),
+    );
     if (viewAnnouncementItem && viewAnnouncementItem.id === ann.id) {
       setViewAnnouncementItem(updated);
     }
     setAnnouncementMoreMenu(null);
     showToast(`"${ann.title}" is now published live to residents!`);
     try {
-      await supabase.from("announcements").update({ accent_text: updatedAccentText }).eq("id", ann.id);
+      await supabase
+        .from("announcements")
+        .update({ accent_text: updatedAccentText })
+        .eq("id", ann.id);
     } catch (e) {
       console.error("Failed to publish now", e);
     }
@@ -2957,17 +3611,33 @@ export default function App() {
 
   async function togglePinAnnouncement(ann: Announcement) {
     const newPinned = !ann.pinned;
-    const cleanAccentText = (ann.accentText || "").replace(/^\[PINNED\]\s*/, "");
+    const cleanAccentText = (ann.accentText || "").replace(
+      /^\[PINNED\]\s*/,
+      "",
+    );
     const updatedAccentText = (newPinned ? "[PINNED] " : "") + cleanAccentText;
-    const updated: Announcement = { ...ann, pinned: newPinned, accentText: cleanAccentText };
-    setAnnouncements((prev) => prev.map((a) => (a.id === ann.id ? updated : a)));
+    const updated: Announcement = {
+      ...ann,
+      pinned: newPinned,
+      accentText: cleanAccentText,
+    };
+    setAnnouncements((prev) =>
+      prev.map((a) => (a.id === ann.id ? updated : a)),
+    );
     if (viewAnnouncementItem && viewAnnouncementItem.id === ann.id) {
       setViewAnnouncementItem(updated);
     }
     setAnnouncementMoreMenu(null);
-    showToast(newPinned ? `"${ann.title}" pinned to top of feed` : `"${ann.title}" unpinned`);
+    showToast(
+      newPinned
+        ? `"${ann.title}" pinned to top of feed`
+        : `"${ann.title}" unpinned`,
+    );
     try {
-      await supabase.from("announcements").update({ accent_text: updatedAccentText }).eq("id", ann.id);
+      await supabase
+        .from("announcements")
+        .update({ accent_text: updatedAccentText })
+        .eq("id", ann.id);
     } catch (e) {
       console.error("Failed to pin/unpin", e);
     }
@@ -3019,7 +3689,10 @@ export default function App() {
     }
 
     try {
-      await supabase.from("announcements").update({ reactions: newCount }).eq("id", postId);
+      await supabase
+        .from("announcements")
+        .update({ reactions: newCount })
+        .eq("id", postId);
     } catch (e) {
       console.error("Failed to update reactions in Supabase", e);
     }
@@ -3034,7 +3707,11 @@ export default function App() {
     try {
       localStorage.setItem("brgy_saved_posts", JSON.stringify(nextSaved));
     } catch {}
-    showToast(isSaved ? "Announcement removed from saved bookmarks." : "Announcement saved to bookmarks!");
+    showToast(
+      isSaved
+        ? "Announcement removed from saved bookmarks."
+        : "Announcement saved to bookmarks!",
+    );
   }
 
   async function handleShareAnnouncement(post: Announcement) {
@@ -3145,7 +3822,10 @@ export default function App() {
     setCommentsMap(updatedMap);
     setCommentInput("");
     try {
-      localStorage.setItem("brgy_announcement_comments", JSON.stringify(updatedMap));
+      localStorage.setItem(
+        "brgy_announcement_comments",
+        JSON.stringify(updatedMap),
+      );
     } catch {}
     showToast("Question/comment posted!");
   }
@@ -3158,7 +3838,10 @@ export default function App() {
     };
     setCommentsMap(updatedMap);
     try {
-      localStorage.setItem("brgy_announcement_comments", JSON.stringify(updatedMap));
+      localStorage.setItem(
+        "brgy_announcement_comments",
+        JSON.stringify(updatedMap),
+      );
     } catch {}
     showToast("Comment deleted.");
   }
@@ -3170,23 +3853,31 @@ export default function App() {
   ) {
     const cleanEmail = email.toLowerCase().trim();
     const now = new Date();
-    const timeStr = now.toLocaleDateString("en-US", { month: "short", day: "numeric" }) + " · " + now.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+    const timeStr =
+      now.toLocaleDateString("en-US", { month: "short", day: "numeric" }) +
+      " · " +
+      now.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
     const msg: Msg = { from, text, time: timeStr, timestamp: Date.now() };
 
     // 1. Update local state immediately for instant feedback
     setThreads((prev) => {
-      const updated = { ...prev, [cleanEmail]: [...(prev[cleanEmail] ?? []), msg] };
+      const updated = {
+        ...prev,
+        [cleanEmail]: [...(prev[cleanEmail] ?? []), msg],
+      };
       saveCachedThreads(updated);
       return updated;
     });
 
     // 2. Sync to Supabase messages table for cross-browser live chat
     try {
-      await supabase.from("messages").insert([{
-        resident_email: cleanEmail,
-        sender: from,
-        text: text.trim(),
-      }]);
+      await supabase.from("messages").insert([
+        {
+          resident_email: cleanEmail,
+          sender: from,
+          text: text.trim(),
+        },
+      ]);
     } catch (err) {
       console.warn("Supabase messages insert error:", err);
     }
@@ -3201,8 +3892,15 @@ export default function App() {
   ) {
     if (!user) return;
     const now = new Date();
-    const dateFiled = now.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-    const timeFiled = now.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+    const dateFiled = now.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+    const timeFiled = now.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+    });
     const randomNum = Math.floor(1000 + Math.random() * 9000);
     const trackingNo = `BRGY-${now.getFullYear()}-${randomNum}`;
     const allServices = getCachedDocumentServices();
@@ -3272,19 +3970,27 @@ export default function App() {
         timeFiled,
       };
 
-      const { data: dbInserted, error } = await supabase.from("document_requests").insert([{
-        name: user.name,
-        email: user.email,
-        doc: docType,
-        purpose,
-        status: "Pending",
-        feedback: JSON.stringify(metaPayload),
-        date: dateFiled,
-      }]).select().single();
+      const { data: dbInserted, error } = await supabase
+        .from("document_requests")
+        .insert([
+          {
+            name: user.name,
+            email: user.email,
+            doc: docType,
+            purpose,
+            status: "Pending",
+            feedback: JSON.stringify(metaPayload),
+            date: dateFiled,
+          },
+        ])
+        .select()
+        .single();
 
       if (dbInserted?.id) {
         setRequests((prev) => {
-          const updated = prev.map((r) => r.id === newReq.id ? { ...r, id: String(dbInserted.id) } : r);
+          const updated = prev.map((r) =>
+            r.id === newReq.id ? { ...r, id: String(dbInserted.id) } : r,
+          );
           saveCachedDocumentRequests(updated);
           return updated;
         });
@@ -3294,12 +4000,19 @@ export default function App() {
     }
   }
 
-  async function handleUpdateRequest(id: string, updates: Partial<DocumentRequest>) {
+  async function handleUpdateRequest(
+    id: string,
+    updates: Partial<DocumentRequest>,
+  ) {
     let targetReq: DocumentRequest | null = null;
     setRequests((prev) => {
       const updated = prev.map((r) => {
         if (r.id === id) {
-          const reqUpdated = { ...r, ...updates, updatedAt: new Date().toISOString() };
+          const reqUpdated = {
+            ...r,
+            ...updates,
+            updatedAt: new Date().toISOString(),
+          };
           targetReq = reqUpdated;
           return reqUpdated;
         }
@@ -3335,14 +4048,50 @@ export default function App() {
         if (updates.status) dbPayload.status = updates.status;
 
         if (!isNaN(numId)) {
-          await supabase.from("document_requests").update(dbPayload).eq("id", numId);
+          await supabase
+            .from("document_requests")
+            .update(dbPayload)
+            .eq("id", numId);
         } else if (target.trackingNo) {
-          await supabase.from("document_requests").update(dbPayload).eq("email", target.residentEmail).eq("doc", target.docType);
+          await supabase
+            .from("document_requests")
+            .update(dbPayload)
+            .eq("email", target.residentEmail)
+            .eq("doc", target.docType);
         }
       }
     } catch (err) {
       console.warn("Supabase document_requests update error:", err);
     }
+  }
+
+  async function handleDeleteDocumentRequest(id: string) {
+    let targetReq: DocumentRequest | null = null;
+    setRequests((prev) => {
+      targetReq = prev.find((r) => r.id === id) || null;
+      const updated = prev.filter((r) => r.id !== id);
+      saveCachedDocumentRequests(updated);
+      return updated;
+    });
+
+    try {
+      const numId = parseInt(id, 10);
+      if (!isNaN(numId)) {
+        await supabase.from("document_requests").delete().eq("id", numId);
+      } else if (targetReq) {
+        const t = targetReq as DocumentRequest;
+        if (t.trackingNo) {
+          await supabase
+            .from("document_requests")
+            .delete()
+            .eq("email", t.residentEmail)
+            .eq("doc", t.docType);
+        }
+      }
+    } catch (err) {
+      console.warn("Supabase document_requests delete error:", err);
+    }
+    showToast("Document request removed.");
   }
 
   type LiveNotification = {
@@ -3355,7 +4104,9 @@ export default function App() {
     onAction?: () => void;
   };
 
-  const isAdmin = user?.role === "admin" || (!!user?.email && isPromotedAdmin(user.email, promotedAdmins));
+  const isAdmin =
+    user?.role === "admin" ||
+    (!!user?.email && isPromotedAdmin(user.email, promotedAdmins));
   const userEmail = user?.email || "";
 
   // Dynamic role synchronization: automatically upgrade session if promoted to admin externally
@@ -3364,7 +4115,9 @@ export default function App() {
       const hasAdminRights = isPromotedAdmin(user.email, promotedAdmins);
       if (hasAdminRights && user.role !== "admin") {
         setUser((prev) => (prev ? { ...prev, role: "admin" } : null));
-        setToast("👑 Your account was granted Barangay Administrator privileges!");
+        setToast(
+          "👑 Your account was granted Barangay Administrator privileges!",
+        );
       }
     }
   }, [promotedAdmins, user?.email]);
@@ -3409,7 +4162,7 @@ export default function App() {
         list.push({
           id: `admin-msg-${latestThread[0]}-${lastMsg?.text?.slice(0, 10)}`,
           title: `New Message from ${residentName}`,
-          body: `"${lastMsg?.text?.slice(0, 45) || 'New message'}..."`,
+          body: `"${lastMsg?.text?.slice(0, 45) || "New message"}..."`,
           time: lastMsg?.time || "Recent",
           icon: "message",
           targetTab: "messages",
@@ -3418,7 +4171,9 @@ export default function App() {
       }
     } else {
       // Resident: Document status updates
-      const myDocs = requests.filter((r) => r.residentEmail === userEmail || r.residentId === user.id);
+      const myDocs = requests.filter(
+        (r) => r.residentEmail === userEmail || r.residentId === user.id,
+      );
       const readyDoc = myDocs.find((r) => r.status === "Ready for Pickup");
       if (readyDoc) {
         list.push({
@@ -3447,7 +4202,9 @@ export default function App() {
         list.push({
           id: `ann-${ann.id}`,
           title: ann.title || "Barangay Advisory",
-          body: ann.body ? ann.body.slice(0, 60) + "..." : "New official announcement posted.",
+          body: ann.body
+            ? ann.body.slice(0, 60) + "..."
+            : "New official announcement posted.",
           time: ann.time || "Recently",
           icon: "megaphone",
           targetTab: "announcements",
@@ -3484,9 +4241,20 @@ export default function App() {
     }
 
     return list;
-  }, [user, isAdmin, pendingResidents, threads, requests, announcements, calendarEvents, userEmail]);
+  }, [
+    user,
+    isAdmin,
+    pendingResidents,
+    threads,
+    requests,
+    announcements,
+    calendarEvents,
+    userEmail,
+  ]);
 
-  const unreadNotifCount = activeNotifications.filter((n) => !readNotifIds.includes(n.id)).length;
+  const unreadNotifCount = activeNotifications.filter(
+    (n) => !readNotifIds.includes(n.id),
+  ).length;
 
   function markAllNotifsRead() {
     const allIds = activeNotifications.map((n) => n.id);
@@ -3558,28 +4326,50 @@ export default function App() {
               >
                 <Icon name={item.icon} />
                 <span>{item.label}</span>
-                {item.id === "messages" && (
-                  isAdmin ? (
-                    Object.values(threads).filter((t) => t.at(-1)?.from === "resident").length > 0 && (
-                      <b className="count">{Object.values(threads).filter((t) => t.at(-1)?.from === "resident").length}</b>
-                    )
-                  ) : (
-                    (threads[userEmail] ?? []).at(-1)?.from === "admin" && (
-                      <b className="count">1</b>
-                    )
-                  )
-                )}
-                {item.id === "documents" && (
-                  isAdmin ? (
-                    requests.filter((r) => r.status === "Pending").length > 0 && (
-                      <b className="count">{requests.filter((r) => r.status === "Pending").length}</b>
-                    )
-                  ) : (
-                    requests.filter((r) => (r.residentEmail === userEmail || r.residentId === user?.id) && r.status === "Ready for Pickup").length > 0 && (
-                      <b className="count">{requests.filter((r) => (r.residentEmail === userEmail || r.residentId === user?.id) && r.status === "Ready for Pickup").length}</b>
-                    )
-                  )
-                )}
+                {item.id === "messages" &&
+                  (isAdmin
+                    ? Object.values(threads).filter(
+                        (t) => t.at(-1)?.from === "resident",
+                      ).length > 0 && (
+                        <b className="count">
+                          {
+                            Object.values(threads).filter(
+                              (t) => t.at(-1)?.from === "resident",
+                            ).length
+                          }
+                        </b>
+                      )
+                    : (threads[userEmail] ?? []).at(-1)?.from === "admin" && (
+                        <b className="count">1</b>
+                      ))}
+                {item.id === "documents" &&
+                  (isAdmin
+                    ? requests.filter((r) => r.status === "Pending").length >
+                        0 && (
+                        <b className="count">
+                          {
+                            requests.filter((r) => r.status === "Pending")
+                              .length
+                          }
+                        </b>
+                      )
+                    : requests.filter(
+                        (r) =>
+                          (r.residentEmail === userEmail ||
+                            r.residentId === user?.id) &&
+                          r.status === "Ready for Pickup",
+                      ).length > 0 && (
+                        <b className="count">
+                          {
+                            requests.filter(
+                              (r) =>
+                                (r.residentEmail === userEmail ||
+                                  r.residentId === user?.id) &&
+                                r.status === "Ready for Pickup",
+                            ).length
+                          }
+                        </b>
+                      ))}
               </button>
             ))}
           {isAdmin && (
@@ -3641,7 +4431,11 @@ export default function App() {
               className="icon-button notification-button"
               onClick={() => setNotifOpen(!notifOpen)}
               aria-label="Notifications"
-              title={unreadNotifCount > 0 ? `${unreadNotifCount} unread notifications` : "Notifications"}
+              title={
+                unreadNotifCount > 0
+                  ? `${unreadNotifCount} unread notifications`
+                  : "Notifications"
+              }
             >
               <Icon name="bell" />
               {unreadNotifCount > 0 && <span />}
@@ -3654,7 +4448,16 @@ export default function App() {
               <Avatar
                 initials={user.initials}
                 tone={isAdmin ? "blue" : "amber"}
-                photoUrl={(() => { try { return localStorage.getItem(`brgy_profile_photo_${user.id}`) || undefined; } catch { return undefined; } })()}
+                photoUrl={(() => {
+                  try {
+                    return (
+                      localStorage.getItem(`brgy_profile_photo_${user.id}`) ||
+                      undefined
+                    );
+                  } catch {
+                    return undefined;
+                  }
+                })()}
               />
               <span className="profile-copy">
                 <strong>{user.name}</strong>
@@ -3704,6 +4507,9 @@ export default function App() {
                   onClick={async () => {
                     setAcctOpen(false);
                     setLoading("logout");
+                    try {
+                      localStorage.removeItem("brgy_auth_session");
+                    } catch {}
                     await supabase.auth.signOut();
                     setUser(null);
                     setActive("announcements");
@@ -3736,37 +4542,118 @@ export default function App() {
             </section>
             <div className="dashboard-grid">
               <section className="feed">
-                <div className="section-title" style={{ flexDirection: "column", alignItems: "stretch", gap: "10px" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "8px" }}>
+                <div
+                  className="section-title"
+                  style={{
+                    flexDirection: "column",
+                    alignItems: "stretch",
+                    gap: "10px",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "flex-start",
+                      flexWrap: "wrap",
+                      gap: "8px",
+                    }}
+                  >
                     <div>
                       <h2>Community announcements</h2>
-                      <p>Official news, schedules, and advisories from your barangay</p>
+                      <p>
+                        Official news, schedules, and advisories from your
+                        barangay
+                      </p>
                     </div>
                     {/* Search & Category Filter */}
-                    <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
-                      <label style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "11px", color: "#50655d" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: "8px",
+                        alignItems: "center",
+                        flexWrap: "wrap",
+                      }}
+                    >
+                      <label
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "5px",
+                          fontSize: "11px",
+                          color: "#50655d",
+                        }}
+                      >
                         <Icon name="filter" size={13} />
                         <select
                           value={announcementFilter}
-                          onChange={(e) => setAnnouncementFilter(e.target.value)}
-                          style={{ border: "1px solid #dfe7e3", background: "white", borderRadius: "7px", padding: "5px 8px", fontSize: "11px", color: "#344941", outline: "none" }}
+                          onChange={(e) =>
+                            setAnnouncementFilter(e.target.value)
+                          }
+                          style={{
+                            border: "1px solid #dfe7e3",
+                            background: "white",
+                            borderRadius: "7px",
+                            padding: "5px 8px",
+                            fontSize: "11px",
+                            color: "#344941",
+                            outline: "none",
+                          }}
                         >
                           <option value="all">All Categories</option>
-                          {ANNOUNCEMENT_TAGS.map((t) => <option key={t} value={t}>{t}</option>)}
+                          {ANNOUNCEMENT_TAGS.map((t) => (
+                            <option key={t} value={t}>
+                              {t}
+                            </option>
+                          ))}
                         </select>
                       </label>
-                      <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
-                        <span style={{ position: "absolute", left: "8px", color: "#6a7d75" }}><Icon name="search" size={13} /></span>
+                      <div
+                        style={{
+                          position: "relative",
+                          display: "flex",
+                          alignItems: "center",
+                        }}
+                      >
+                        <span
+                          style={{
+                            position: "absolute",
+                            left: "8px",
+                            color: "#6a7d75",
+                          }}
+                        >
+                          <Icon name="search" size={13} />
+                        </span>
                         <input
                           value={announcementSearch}
-                          onChange={(e) => setAnnouncementSearch(e.target.value)}
+                          onChange={(e) =>
+                            setAnnouncementSearch(e.target.value)
+                          }
                           placeholder="Search announcements..."
-                          style={{ border: "1px solid #dfe7e3", background: "white", borderRadius: "7px", padding: "5px 26px 5px 26px", fontSize: "11px", color: "#344941", outline: "none", width: "170px" }}
+                          style={{
+                            border: "1px solid #dfe7e3",
+                            background: "white",
+                            borderRadius: "7px",
+                            padding: "5px 26px 5px 26px",
+                            fontSize: "11px",
+                            color: "#344941",
+                            outline: "none",
+                            width: "170px",
+                          }}
                         />
                         {announcementSearch && (
                           <button
                             onClick={() => setAnnouncementSearch("")}
-                            style={{ position: "absolute", right: "6px", border: 0, background: "transparent", color: "#8a9a93", cursor: "pointer", fontSize: "11px", padding: "2px" }}
+                            style={{
+                              position: "absolute",
+                              right: "6px",
+                              border: 0,
+                              background: "transparent",
+                              color: "#8a9a93",
+                              cursor: "pointer",
+                              fontSize: "11px",
+                              padding: "2px",
+                            }}
                             aria-label="Clear search"
                           >
                             ✕
@@ -3782,19 +4669,24 @@ export default function App() {
                       className={`announcement-tab ${activeFilterTab === "all" ? "active" : ""}`}
                       onClick={() => setActiveFilterTab("all")}
                     >
-                      All Advisories <span className="tab-badge">{announcements.length}</span>
+                      All Advisories{" "}
+                      <span className="tab-badge">{announcements.length}</span>
                     </button>
                     <button
                       className={`announcement-tab ${activeFilterTab === "pinned" ? "active" : ""}`}
                       onClick={() => setActiveFilterTab("pinned")}
                     >
-                      📌 Pinned <span className="tab-badge">{announcements.filter((a) => a.pinned).length}</span>
+                      📌 Pinned{" "}
+                      <span className="tab-badge">
+                        {announcements.filter((a) => a.pinned).length}
+                      </span>
                     </button>
                     <button
                       className={`announcement-tab ${activeFilterTab === "saved" ? "active" : ""}`}
                       onClick={() => setActiveFilterTab("saved")}
                     >
-                      🔖 Bookmarked <span className="tab-badge">{savedPostIds.length}</span>
+                      🔖 Bookmarked{" "}
+                      <span className="tab-badge">{savedPostIds.length}</span>
                     </button>
                   </div>
                 </div>
@@ -3837,19 +4729,27 @@ export default function App() {
                   // Filter out scheduled announcements that haven't arrived yet for residents
                   if (!isAdmin) {
                     const now = Date.now();
-                    filtered = filtered.filter((p) => !p.scheduledAt || new Date(p.scheduledAt).getTime() <= now);
+                    filtered = filtered.filter(
+                      (p) =>
+                        !p.scheduledAt ||
+                        new Date(p.scheduledAt).getTime() <= now,
+                    );
                   }
 
                   // Tab filter
                   if (activeFilterTab === "pinned") {
                     filtered = filtered.filter((p) => p.pinned);
                   } else if (activeFilterTab === "saved") {
-                    filtered = filtered.filter((p) => savedPostIds.includes(p.id as number));
+                    filtered = filtered.filter((p) =>
+                      savedPostIds.includes(p.id as number),
+                    );
                   }
 
                   // Category filter
                   if (announcementFilter !== "all") {
-                    filtered = filtered.filter((p) => p.tag === announcementFilter);
+                    filtered = filtered.filter(
+                      (p) => p.tag === announcementFilter,
+                    );
                   }
 
                   // Search filter
@@ -3861,7 +4761,7 @@ export default function App() {
                         p.body.toLowerCase().includes(q) ||
                         p.tag.toLowerCase().includes(q) ||
                         p.accent.toLowerCase().includes(q) ||
-                        p.accentText.toLowerCase().includes(q)
+                        p.accentText.toLowerCase().includes(q),
                     );
                   }
 
@@ -3874,17 +4774,42 @@ export default function App() {
 
                   if (filtered.length === 0) {
                     return (
-                      <div className="empty-state" style={{ minHeight: "220px", background: "white", borderRadius: "14px", padding: "30px", border: "1px solid #e3e9e6" }}>
+                      <div
+                        className="empty-state"
+                        style={{
+                          minHeight: "220px",
+                          background: "white",
+                          borderRadius: "14px",
+                          padding: "30px",
+                          border: "1px solid #e3e9e6",
+                        }}
+                      >
                         <Icon name="megaphone" size={36} />
-                        <h3 style={{ margin: "12px 0 4px", color: "#163e32", fontSize: "16px" }}>No announcements found</h3>
-                        <p style={{ margin: "0 0 12px", fontSize: "12px", color: "#6a7d75" }}>
+                        <h3
+                          style={{
+                            margin: "12px 0 4px",
+                            color: "#163e32",
+                            fontSize: "16px",
+                          }}
+                        >
+                          No announcements found
+                        </h3>
+                        <p
+                          style={{
+                            margin: "0 0 12px",
+                            fontSize: "12px",
+                            color: "#6a7d75",
+                          }}
+                        >
                           {activeFilterTab === "saved"
                             ? "You haven't bookmarked any announcements yet. Click the bookmark icon on any post to save it here!"
                             : activeFilterTab === "pinned"
                               ? "There are currently no pinned announcements."
                               : "No announcements matched your search or category filter."}
                         </p>
-                        {(announcementFilter !== "all" || announcementSearch || activeFilterTab !== "all") && (
+                        {(announcementFilter !== "all" ||
+                          announcementSearch ||
+                          activeFilterTab !== "all") && (
                           <button
                             className="row-action"
                             onClick={() => {
@@ -3912,52 +4837,127 @@ export default function App() {
                         key={post.id}
                       >
                         {post.pinned && (
-                          <div style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "10.5px", color: "#0f766e", fontWeight: 700, marginBottom: "8px", background: "#f0fdf9", border: "1px solid #ccfbf1", padding: "4px 10px", borderRadius: "6px", width: "fit-content" }}>
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "5px",
+                              fontSize: "10.5px",
+                              color: "#0f766e",
+                              fontWeight: 700,
+                              marginBottom: "8px",
+                              background: "#f0fdf9",
+                              border: "1px solid #ccfbf1",
+                              padding: "4px 10px",
+                              borderRadius: "6px",
+                              width: "fit-content",
+                            }}
+                          >
                             📌 Pinned announcement
                           </div>
                         )}
 
                         {/* Scheduled badge for admins */}
-                        {post.scheduledAt && new Date(post.scheduledAt).getTime() > Date.now() && (
-                          <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "10.5px", color: "#92400e", fontWeight: 700, marginBottom: "8px", background: "#fef3c7", border: "1px solid #fde68a", padding: "4px 10px", borderRadius: "6px", width: "fit-content" }}>
-                            🕒 Scheduled · Goes live {new Intl.DateTimeFormat("en-PH", { dateStyle: "medium", timeStyle: "short" }).format(new Date(post.scheduledAt))}
-                          </div>
-                        )}
+                        {post.scheduledAt &&
+                          new Date(post.scheduledAt).getTime() > Date.now() && (
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "6px",
+                                fontSize: "10.5px",
+                                color: "#92400e",
+                                fontWeight: 700,
+                                marginBottom: "8px",
+                                background: "#fef3c7",
+                                border: "1px solid #fde68a",
+                                padding: "4px 10px",
+                                borderRadius: "6px",
+                                width: "fit-content",
+                              }}
+                            >
+                              🕒 Scheduled · Goes live{" "}
+                              {new Intl.DateTimeFormat("en-PH", {
+                                dateStyle: "medium",
+                                timeStyle: "short",
+                              }).format(new Date(post.scheduledAt))}
+                            </div>
+                          )}
 
                         <div className="post-head">
                           <Avatar
                             initials={post.initials}
-                            tone={post.tag === "Health & Wellness" ? "green" : post.tag === "Emergency Notice" ? "amber" : "blue"}
+                            tone={
+                              post.tag === "Health & Wellness"
+                                ? "green"
+                                : post.tag === "Emergency Notice"
+                                  ? "amber"
+                                  : "blue"
+                            }
                           />
-                          <div className="post-author-info" style={{ flex: "1 1 auto", minWidth: 0 }}>
+                          <div
+                            className="post-author-info"
+                            style={{ flex: "1 1 auto", minWidth: 0 }}
+                          >
                             <strong>
                               {post.author}
-                              <span className="verified" title="Official Barangay Authority">✓</span>
+                              <span
+                                className="verified"
+                                title="Official Barangay Authority"
+                              >
+                                ✓
+                              </span>
                             </strong>
                             <small>{post.time} · Public Advisory</small>
                           </div>
-                          <div className="post-actions-menu" style={{ marginLeft: "auto", flex: "0 0 auto", position: "relative" }}>
+                          <div
+                            className="post-actions-menu"
+                            style={{
+                              marginLeft: "auto",
+                              flex: "0 0 auto",
+                              position: "relative",
+                            }}
+                          >
                             <button
                               className="icon-button"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setAnnouncementMoreMenu(announcementMoreMenu === postId ? null : postId);
+                                setAnnouncementMoreMenu(
+                                  announcementMoreMenu === postId
+                                    ? null
+                                    : postId,
+                                );
                               }}
                               aria-label="More options"
                             >
                               <Icon name="more" />
                             </button>
                             {announcementMoreMenu === postId && (
-                              <div className="dropdown-menu" style={{ right: 0, top: "100%", minWidth: "175px", zIndex: 50 }}>
-                                {post.scheduledAt && new Date(post.scheduledAt).getTime() > Date.now() && isAdmin && (
-                                  <button
-                                    className="dropdown-item"
-                                    onClick={() => publishScheduledNow(post)}
-                                    style={{ color: "#047857", fontWeight: 700 }}
-                                  >
-                                    <Icon name="megaphone" size={14} /> Publish live now
-                                  </button>
-                                )}
+                              <div
+                                className="dropdown-menu"
+                                style={{
+                                  right: 0,
+                                  top: "100%",
+                                  minWidth: "175px",
+                                  zIndex: 50,
+                                }}
+                              >
+                                {post.scheduledAt &&
+                                  new Date(post.scheduledAt).getTime() >
+                                    Date.now() &&
+                                  isAdmin && (
+                                    <button
+                                      className="dropdown-item"
+                                      onClick={() => publishScheduledNow(post)}
+                                      style={{
+                                        color: "#047857",
+                                        fontWeight: 700,
+                                      }}
+                                    >
+                                      <Icon name="megaphone" size={14} />{" "}
+                                      Publish live now
+                                    </button>
+                                  )}
                                 <button
                                   className="dropdown-item"
                                   onClick={() => {
@@ -3965,7 +4965,8 @@ export default function App() {
                                     setAnnouncementMoreMenu(null);
                                   }}
                                 >
-                                  <Icon name="document" size={14} /> View full details
+                                  <Icon name="document" size={14} /> View full
+                                  details
                                 </button>
                                 <button
                                   className="dropdown-item"
@@ -3974,7 +4975,10 @@ export default function App() {
                                     setAnnouncementMoreMenu(null);
                                   }}
                                 >
-                                  <span>{isSaved ? "★" : "☆"}</span> {isSaved ? "Remove bookmark" : "Save / Bookmark"}
+                                  <span>{isSaved ? "★" : "☆"}</span>{" "}
+                                  {isSaved
+                                    ? "Remove bookmark"
+                                    : "Save / Bookmark"}
                                 </button>
                                 <button
                                   className="dropdown-item"
@@ -3989,15 +4993,21 @@ export default function App() {
                                   <>
                                     <button
                                       className="dropdown-item"
-                                      onClick={() => togglePinAnnouncement(post)}
+                                      onClick={() =>
+                                        togglePinAnnouncement(post)
+                                      }
                                     >
-                                      <Icon name="megaphone" size={14} /> {post.pinned ? "Unpin from top" : "Pin to top of feed"}
+                                      <Icon name="megaphone" size={14} />{" "}
+                                      {post.pinned
+                                        ? "Unpin from top"
+                                        : "Pin to top of feed"}
                                     </button>
                                     <button
                                       className="dropdown-item"
                                       onClick={() => openComposer(post)}
                                     >
-                                      <Icon name="edit" size={14} /> Edit announcement
+                                      <Icon name="edit" size={14} /> Edit
+                                      announcement
                                     </button>
                                     <button
                                       className="dropdown-item"
@@ -4006,7 +5016,8 @@ export default function App() {
                                         setAnnouncementMoreMenu(null);
                                       }}
                                     >
-                                      <Icon name="document" size={14} /> Print bulletin
+                                      <Icon name="document" size={14} /> Print
+                                      bulletin
                                     </button>
                                     <button
                                       className="dropdown-item danger"
@@ -4015,7 +5026,8 @@ export default function App() {
                                         setAnnouncementMoreMenu(null);
                                       }}
                                     >
-                                      <Icon name="trash" size={14} /> Delete announcement
+                                      <Icon name="trash" size={14} /> Delete
+                                      announcement
                                     </button>
                                   </>
                                 )}
@@ -4033,12 +5045,15 @@ export default function App() {
                             onClick={() => setViewAnnouncementItem(post)}
                             loading="lazy"
                             onError={(e) => {
-                              (e.currentTarget as HTMLElement).style.display = "none";
+                              (e.currentTarget as HTMLElement).style.display =
+                                "none";
                             }}
                           />
                         )}
 
-                        <span className={`post-tag ${getTagClass(post.tag)}`}>{post.tag}</span>
+                        <span className={`post-tag ${getTagClass(post.tag)}`}>
+                          {post.tag}
+                        </span>
                         <h3
                           style={{ cursor: "pointer", color: "#163e32" }}
                           onClick={() => setViewAnnouncementItem(post)}
@@ -4049,7 +5064,17 @@ export default function App() {
 
                         <div className="post-highlight">
                           <span className="highlight-icon">
-                            <Icon name={post.tag === "Health & Wellness" || post.tag === "Youth & Sports" ? "users" : post.tag === "Emergency Notice" || post.tag === "Public Safety" ? "alert" : "megaphone"} />
+                            <Icon
+                              name={
+                                post.tag === "Health & Wellness" ||
+                                post.tag === "Youth & Sports"
+                                  ? "users"
+                                  : post.tag === "Emergency Notice" ||
+                                      post.tag === "Public Safety"
+                                    ? "alert"
+                                    : "megaphone"
+                              }
+                            />
                           </span>
                           <span>
                             <strong>{post.accent}</strong>
@@ -4064,9 +5089,16 @@ export default function App() {
                           <button
                             className={`post-action-btn ${isAcknowledged ? "active-react" : ""}`}
                             onClick={() => handleToggleReaction(postId)}
-                            title={isAcknowledged ? "Click to un-acknowledge" : "Click to acknowledge this advisory"}
+                            title={
+                              isAcknowledged
+                                ? "Click to un-acknowledge"
+                                : "Click to acknowledge this advisory"
+                            }
                           >
-                            <b>{isAcknowledged ? "♥" : "♡"}</b> {post.reactions} {post.reactions === 1 ? "resident acknowledged" : "residents acknowledged"}
+                            <b>{isAcknowledged ? "♥" : "♡"}</b> {post.reactions}{" "}
+                            {post.reactions === 1
+                              ? "resident acknowledged"
+                              : "residents acknowledged"}
                           </button>
 
                           <button
@@ -4077,7 +5109,10 @@ export default function App() {
                             }}
                             title="Open resident inquiries & questions modal"
                           >
-                            <span>💬</span> {postComments.length} {postComments.length === 1 ? "inquiry" : "inquiries"}
+                            <span>💬</span> {postComments.length}{" "}
+                            {postComments.length === 1
+                              ? "inquiry"
+                              : "inquiries"}
                           </button>
                         </div>
                       </article>
@@ -4102,11 +5137,16 @@ export default function App() {
                     </button>
                   </div>
                   {calendarEvents.slice(0, 3).map((event) => {
-                    const evDate = event.date ? new Date(event.date + "T00:00:00") : null;
+                    const evDate = event.date
+                      ? new Date(event.date + "T00:00:00")
+                      : null;
                     const monthLabel = evDate
-                      ? evDate.toLocaleString("en-US", { month: "short" }).toUpperCase()
+                      ? evDate
+                          .toLocaleString("en-US", { month: "short" })
+                          .toUpperCase()
                       : "OCT";
-                    const dayLabel = event.day || (evDate ? evDate.getDate() : 1);
+                    const dayLabel =
+                      event.day || (evDate ? evDate.getDate() : 1);
                     return (
                       <div
                         className="event-row"
@@ -4118,7 +5158,9 @@ export default function App() {
                         }}
                         title="Click to view details"
                       >
-                        <span className={`date-box event-${event.type || "community"}`}>
+                        <span
+                          className={`date-box event-${event.type || "community"}`}
+                        >
                           <small>{monthLabel}</small>
                           <strong>{dayLabel}</strong>
                         </span>
@@ -4133,7 +5175,13 @@ export default function App() {
                     );
                   })}
                   {calendarEvents.length === 0 && (
-                    <p style={{ fontSize: "0.85rem", color: "#64748b", margin: "10px 0" }}>
+                    <p
+                      style={{
+                        fontSize: "0.85rem",
+                        color: "#64748b",
+                        margin: "10px 0",
+                      }}
+                    >
                       No upcoming events scheduled.
                     </p>
                   )}
@@ -4154,10 +5202,13 @@ export default function App() {
                     .filter((d) => d.enabled)
                     .slice(0, 3)
                     .map((doc) => (
-                      <button key={doc.id} onClick={() => {
-                        setSelectedDocForModal(doc.name);
-                        setRequestOpen(true);
-                      }}>
+                      <button
+                        key={doc.id}
+                        onClick={() => {
+                          setSelectedDocForModal(doc.name);
+                          setRequestOpen(true);
+                        }}
+                      >
                         <span>{doc.name}</span>
                         <Icon name="chevron" size={16} />
                       </button>
@@ -4166,7 +5217,10 @@ export default function App() {
                 <div className="rail-card quick-card">
                   <div className="rail-title">
                     <div>
-                      <span className="rail-icon" style={{ background: "#fde8e8", color: "#c81e1e" }}>
+                      <span
+                        className="rail-icon"
+                        style={{ background: "#fde8e8", color: "#c81e1e" }}
+                      >
                         <Icon name="phone" />
                       </span>
                       <span>
@@ -4181,7 +5235,9 @@ export default function App() {
                   {hotlines.slice(0, 2).map((hl) => (
                     <div className="rail-hotline-item" key={hl.id}>
                       <div>
-                        <strong>{hl.name.split(" ")[0]} {hl.name.split(" ")[1] || ""}</strong>
+                        <strong>
+                          {hl.name.split(" ")[0]} {hl.name.split(" ")[1] || ""}
+                        </strong>
                         <small style={{ display: "block" }}>{hl.number}</small>
                       </div>
                       <button
@@ -4233,6 +5289,7 @@ export default function App() {
             <AdminDocumentsPage
               requests={requests}
               onUpdateRequest={handleUpdateRequest}
+              onDeleteRequest={handleDeleteDocumentRequest}
               onToast={showToast}
               onOpenChat={(email) => {
                 setActiveThread(email);
@@ -4244,10 +5301,17 @@ export default function App() {
           ) : (
             <ResidentDocumentsPage
               user={user}
-              requests={requests.filter((r) => r.residentEmail === userEmail || r.residentId === user.id)}
+              requests={requests.filter(
+                (r) =>
+                  r.residentEmail === userEmail || r.residentId === user.id,
+              )}
               onRequest={() => setRequestOpen(true)}
+              onDeleteRequest={handleDeleteDocumentRequest}
+              onToast={showToast}
               onOpenChat={(doc) => {
-                setPresetMessageDraft(`Good day po! Follow-up inquiry regarding my ${doc.docType} (Tracking No. ${doc.trackingNo}).`);
+                setPresetMessageDraft(
+                  `Good day po! Follow-up inquiry regarding my ${doc.docType} (Tracking No. ${doc.trackingNo}).`,
+                );
                 setActive("messages");
               }}
               onPrintCertificate={(req) => setPrintingRequest(req)}
@@ -4274,7 +5338,10 @@ export default function App() {
               onSend={(text) => sendMessage(userEmail, text, "resident")}
               presetDraft={presetMessageDraft}
               onClearPresetDraft={() => setPresetMessageDraft("")}
-              myRequests={requests.filter((r) => r.residentEmail === userEmail || r.residentId === user.id)}
+              myRequests={requests.filter(
+                (r) =>
+                  r.residentEmail === userEmail || r.residentId === user.id,
+              )}
             />
           ))}
 
@@ -4307,7 +5374,7 @@ export default function App() {
             }}
             onEditHotline={async (updated) => {
               setHotlines((prev) =>
-                prev.map((h) => (h.id === updated.id ? updated : h))
+                prev.map((h) => (h.id === updated.id ? updated : h)),
               );
               showToast("Hotline details updated");
               try {
@@ -4369,7 +5436,7 @@ export default function App() {
             }}
             onUpdateIncident={async (updated) => {
               setIncidents((prev) =>
-                prev.map((item) => (item.id === updated.id ? updated : item))
+                prev.map((item) => (item.id === updated.id ? updated : item)),
               );
               saveIncidentMeta(updated.id, {
                 respondentName: updated.respondentName,
@@ -4406,8 +5473,8 @@ export default function App() {
               saveIncidentMeta(id, { deletedAt: now });
               setIncidents((prev) =>
                 prev.map((i) =>
-                  i.id === id ? { ...i, status: "Deleted", deletedAt: now } : i
-                )
+                  i.id === id ? { ...i, status: "Deleted", deletedAt: now } : i,
+                ),
               );
               showToast(`Blotter ${id} moved to Archived Cases`);
               try {
@@ -4423,8 +5490,10 @@ export default function App() {
               removeIncidentDeletedMeta(id);
               setIncidents((prev) =>
                 prev.map((i) =>
-                  i.id === id ? { ...i, status: "Under Review", deletedAt: undefined } : i
-                )
+                  i.id === id
+                    ? { ...i, status: "Under Review", deletedAt: undefined }
+                    : i,
+                ),
               );
               showToast(`Blotter ${id} restored to Active Records`);
               try {
@@ -4476,15 +5545,19 @@ export default function App() {
           onClose={() => setProfileSettingsOpen(false)}
           onSave={({ name, photoUrl }) => {
             setUser((prev) =>
-              prev ? { ...prev, name, initials: getInitials(name) } : prev
+              prev ? { ...prev, name, initials: getInitials(name) } : prev,
             );
             setProfileSettingsOpen(false);
             showToast("Profile updated successfully! ✅");
             // Force avatar refresh by storing photo
             if (photoUrl) {
-              try { localStorage.setItem(`brgy_profile_photo_${user.id}`, photoUrl); } catch {}
+              try {
+                localStorage.setItem(`brgy_profile_photo_${user.id}`, photoUrl);
+              } catch {}
             } else {
-              try { localStorage.removeItem(`brgy_profile_photo_${user.id}`); } catch {}
+              try {
+                localStorage.removeItem(`brgy_profile_photo_${user.id}`);
+              } catch {}
             }
           }}
           onToast={showToast}
@@ -4492,12 +5565,28 @@ export default function App() {
       )}
 
       {notifOpen && (
-        <div className="notification-panel" style={{ maxHeight: "480px", display: "flex", flexDirection: "column" }}>
-          <div className="panel-head" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div
+          className="notification-panel"
+          style={{
+            maxHeight: "480px",
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          <div
+            className="panel-head"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
             <div>
               <h3 style={{ margin: 0, fontSize: "14px" }}>Notifications</h3>
               <small style={{ color: "#64748b", fontSize: "11px" }}>
-                {unreadNotifCount > 0 ? `${unreadNotifCount} unread update${unreadNotifCount > 1 ? "s" : ""}` : "All caught up"}
+                {unreadNotifCount > 0
+                  ? `${unreadNotifCount} unread update${unreadNotifCount > 1 ? "s" : ""}`
+                  : "All caught up"}
               </small>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
@@ -4519,17 +5608,37 @@ export default function App() {
                   Mark all read
                 </button>
               )}
-              <button className="icon-button" onClick={() => setNotifOpen(false)} aria-label="Close notifications">
+              <button
+                className="icon-button"
+                onClick={() => setNotifOpen(false)}
+                aria-label="Close notifications"
+              >
                 <Icon name="x" size={16} />
               </button>
             </div>
           </div>
 
-          <div style={{ overflowY: "auto", flex: 1, display: "flex", flexDirection: "column" }}>
+          <div
+            style={{
+              overflowY: "auto",
+              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
             {activeNotifications.length === 0 ? (
-              <div style={{ textAlign: "center", padding: "30px 15px", color: "#64748b", fontSize: "12px" }}>
+              <div
+                style={{
+                  textAlign: "center",
+                  padding: "30px 15px",
+                  color: "#64748b",
+                  fontSize: "12px",
+                }}
+              >
                 <Icon name="bell" size={24} />
-                <p style={{ marginTop: "8px", marginBottom: 0 }}>No new notifications at the moment.</p>
+                <p style={{ marginTop: "8px", marginBottom: 0 }}>
+                  No new notifications at the moment.
+                </p>
               </div>
             ) : (
               activeNotifications.map((n) => {
@@ -4557,17 +5666,42 @@ export default function App() {
                       borderBottom: "1px solid #f1f5f9",
                     }}
                   >
-                    <span className={isUnread ? "unread-dot" : ""} style={{ flexShrink: 0, marginTop: "2px" }}>
+                    <span
+                      className={isUnread ? "unread-dot" : ""}
+                      style={{ flexShrink: 0, marginTop: "2px" }}
+                    >
                       <Icon name={n.icon} size={18} />
                     </span>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <strong style={{ display: "block", fontSize: "12px", color: "#1e293b", lineHeight: 1.3 }}>
+                      <strong
+                        style={{
+                          display: "block",
+                          fontSize: "12px",
+                          color: "#1e293b",
+                          lineHeight: 1.3,
+                        }}
+                      >
                         {n.title}
                       </strong>
-                      <p style={{ margin: "2px 0 0", fontSize: "11px", color: "#64748b", lineHeight: 1.4, wordBreak: "break-word" }}>
+                      <p
+                        style={{
+                          margin: "2px 0 0",
+                          fontSize: "11px",
+                          color: "#64748b",
+                          lineHeight: 1.4,
+                          wordBreak: "break-word",
+                        }}
+                      >
                         {n.body}
                       </p>
-                      <small style={{ display: "block", marginTop: "3px", fontSize: "10px", color: "#94a3b8" }}>
+                      <small
+                        style={{
+                          display: "block",
+                          marginTop: "3px",
+                          fontSize: "10px",
+                          color: "#94a3b8",
+                        }}
+                      >
                         {n.time}
                       </small>
                     </div>
@@ -4581,31 +5715,97 @@ export default function App() {
 
       {composerOpen && (
         <Modal
-          title={editingAnnouncement ? "Edit Announcement" : "Create Announcement"}
-          close={() => { setComposerOpen(false); setEditingAnnouncement(null); }}
+          title={
+            editingAnnouncement ? "Edit Announcement" : "Create Announcement"
+          }
+          close={() => {
+            setComposerOpen(false);
+            setEditingAnnouncement(null);
+          }}
           maxWidth="640px"
         >
           {/* Facebook-style Creator Header */}
-          <div style={{ display: "flex", alignItems: "center", gap: "11px", marginBottom: "14px", paddingBottom: "12px", borderBottom: "1px solid #e8eee9" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "11px",
+              marginBottom: "14px",
+              paddingBottom: "12px",
+              borderBottom: "1px solid #e8eee9",
+            }}
+          >
             <Avatar initials={getInitials(postAuthor || "BP")} tone="blue" />
             <div style={{ flex: 1, minWidth: 0 }}>
-              <strong style={{ fontSize: "12.5px", color: "#18362b", display: "block" }}>
+              <strong
+                style={{
+                  fontSize: "12.5px",
+                  color: "#18362b",
+                  display: "block",
+                }}
+              >
                 {postAuthor}
               </strong>
-              <div style={{ display: "flex", alignItems: "center", gap: "6px", marginTop: "3px", flexWrap: "wrap" }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  marginTop: "3px",
+                  flexWrap: "wrap",
+                }}
+              >
                 <select
                   value={postAuthor}
                   onChange={(e) => setPostAuthor(e.target.value)}
-                  style={{ border: "1px solid #d5e3dc", background: "#f2f7f4", borderRadius: "6px", padding: "3px 8px", fontSize: "10.5px", color: "#2d4c40", outline: "none", fontWeight: 600, cursor: "pointer" }}
+                  style={{
+                    border: "1px solid #d5e3dc",
+                    background: "#f2f7f4",
+                    borderRadius: "6px",
+                    padding: "3px 8px",
+                    fontSize: "10.5px",
+                    color: "#2d4c40",
+                    outline: "none",
+                    fontWeight: 600,
+                    cursor: "pointer",
+                  }}
                 >
-                  <option value={`${barangay.name || "Bagong Pook"} Administration`}>{barangay.name || "Bagong Pook"} Administration</option>
-                  <option value={`Office of the Punong Barangay (${barangay.captain || "Hon. Roberto Gomez"})`}>Office of the Punong Barangay</option>
-                  <option value="Barangay Health & Wellness Center">Barangay Health & Wellness Center</option>
-                  <option value="Lupon Tagapamayapa Desk">Lupon Tagapamayapa Desk</option>
-                  <option value="Disaster Risk Reduction Council (BDRRMC)">Disaster Risk Reduction Council (BDRRMC)</option>
-                  <option value="Sangguniang Kabataan (SK) Council">Sangguniang Kabataan (SK) Council</option>
+                  <option
+                    value={`${barangay.name || "Bagong Pook"} Administration`}
+                  >
+                    {barangay.name || "Bagong Pook"} Administration
+                  </option>
+                  <option
+                    value={`Office of the Punong Barangay (${barangay.captain || "Hon. Roberto Gomez"})`}
+                  >
+                    Office of the Punong Barangay
+                  </option>
+                  <option value="Barangay Health & Wellness Center">
+                    Barangay Health & Wellness Center
+                  </option>
+                  <option value="Lupon Tagapamayapa Desk">
+                    Lupon Tagapamayapa Desk
+                  </option>
+                  <option value="Disaster Risk Reduction Council (BDRRMC)">
+                    Disaster Risk Reduction Council (BDRRMC)
+                  </option>
+                  <option value="Sangguniang Kabataan (SK) Council">
+                    Sangguniang Kabataan (SK) Council
+                  </option>
                 </select>
-                <span style={{ fontSize: "9.5px", background: "#e8f3ee", color: "#1b6b4e", padding: "2px 7px", borderRadius: "6px", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "3px" }}>
+                <span
+                  style={{
+                    fontSize: "9.5px",
+                    background: "#e8f3ee",
+                    color: "#1b6b4e",
+                    padding: "2px 7px",
+                    borderRadius: "6px",
+                    fontWeight: 700,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "3px",
+                  }}
+                >
                   🌐 Public Announcement
                 </span>
               </div>
@@ -4614,7 +5814,15 @@ export default function App() {
 
           {/* Announcement Title */}
           <div style={{ marginBottom: "10px" }}>
-            <label style={{ fontSize: "10.5px", fontWeight: 700, color: "#365147", display: "block", marginBottom: "4px" }}>
+            <label
+              style={{
+                fontSize: "10.5px",
+                fontWeight: 700,
+                color: "#365147",
+                display: "block",
+                marginBottom: "4px",
+              }}
+            >
               Announcement Title *
             </label>
             <input
@@ -4622,51 +5830,136 @@ export default function App() {
               value={postTitle}
               onChange={(e) => setPostTitle(e.target.value)}
               placeholder="e.g. Scheduled Water Interruption, Free Medical Mission, Road Advisory..."
-              style={{ width: "100%", border: "1px solid #d5e3dc", background: "white", borderRadius: "9px", padding: "10px 12px", fontSize: "12.5px", fontWeight: 700, color: "#18362b", outline: "none" }}
+              style={{
+                width: "100%",
+                border: "1px solid #d5e3dc",
+                background: "white",
+                borderRadius: "9px",
+                padding: "10px 12px",
+                fontSize: "12.5px",
+                fontWeight: 700,
+                color: "#18362b",
+                outline: "none",
+              }}
             />
           </div>
 
           {/* Category / Tag */}
           <div style={{ marginBottom: "10px" }}>
-            <label style={{ fontSize: "10.5px", fontWeight: 700, color: "#365147", display: "block", marginBottom: "4px" }}>
+            <label
+              style={{
+                fontSize: "10.5px",
+                fontWeight: 700,
+                color: "#365147",
+                display: "block",
+                marginBottom: "4px",
+              }}
+            >
               Category / Advisory Tag *
             </label>
             <select
               value={postTag}
               onChange={(e) => setPostTag(e.target.value)}
-              style={{ width: "100%", border: "1px solid #d5e3dc", background: "white", borderRadius: "8px", padding: "8px 11px", fontSize: "11px", color: "#253f34", outline: "none", fontWeight: 600 }}
+              style={{
+                width: "100%",
+                border: "1px solid #d5e3dc",
+                background: "white",
+                borderRadius: "8px",
+                padding: "8px 11px",
+                fontSize: "11px",
+                color: "#253f34",
+                outline: "none",
+                fontWeight: 600,
+              }}
             >
-              {ANNOUNCEMENT_TAGS.map((t) => <option key={t} value={t}>{t}</option>)}
+              {ANNOUNCEMENT_TAGS.map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
+              ))}
             </select>
           </div>
 
           {/* Caption / Content body */}
           <div style={{ marginBottom: "12px" }}>
-            <label style={{ fontSize: "10.5px", fontWeight: 700, color: "#365147", display: "block", marginBottom: "4px" }}>
+            <label
+              style={{
+                fontSize: "10.5px",
+                fontWeight: 700,
+                color: "#365147",
+                display: "block",
+                marginBottom: "4px",
+              }}
+            >
               Announcement Content / Caption *
             </label>
             <textarea
               value={postText}
               onChange={(e) => setPostText(e.target.value)}
               placeholder="What would you like the community to know? Write details, instructions, or advisory caption here..."
-              style={{ width: "100%", minHeight: "110px", border: "1px solid #d5e3dc", background: "#fcfdfc", borderRadius: "9px", padding: "11px 13px", fontSize: "12px", color: "#243d33", lineHeight: 1.6, outline: "none", resize: "vertical" }}
+              style={{
+                width: "100%",
+                minHeight: "110px",
+                border: "1px solid #d5e3dc",
+                background: "#fcfdfc",
+                borderRadius: "9px",
+                padding: "11px 13px",
+                fontSize: "12px",
+                color: "#243d33",
+                lineHeight: 1.6,
+                outline: "none",
+                resize: "vertical",
+              }}
             />
           </div>
 
           {/* Image Preview with remove and change buttons */}
           {postImageUrl && (
-            <div style={{ position: "relative", marginBottom: "12px", borderRadius: "10px", overflow: "hidden", border: "1px solid #cce0d6", background: "#f2f7f4" }}>
+            <div
+              style={{
+                position: "relative",
+                marginBottom: "12px",
+                borderRadius: "10px",
+                overflow: "hidden",
+                border: "1px solid #cce0d6",
+                background: "#f2f7f4",
+              }}
+            >
               <img
                 src={postImageUrl}
                 alt="Uploaded announcement banner"
-                style={{ width: "100%", maxHeight: "240px", objectFit: "cover", display: "block" }}
-                onError={(e) => { (e.currentTarget as HTMLElement).style.display = "none"; }}
+                style={{
+                  width: "100%",
+                  maxHeight: "240px",
+                  objectFit: "cover",
+                  display: "block",
+                }}
+                onError={(e) => {
+                  (e.currentTarget as HTMLElement).style.display = "none";
+                }}
               />
-              <div style={{ position: "absolute", top: "8px", right: "8px", display: "flex", gap: "6px" }}>
+              <div
+                style={{
+                  position: "absolute",
+                  top: "8px",
+                  right: "8px",
+                  display: "flex",
+                  gap: "6px",
+                }}
+              >
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  style={{ border: 0, background: "rgba(18, 40, 30, 0.82)", color: "white", padding: "5px 10px", borderRadius: "6px", fontSize: "10.5px", fontWeight: 600, cursor: "pointer" }}
+                  style={{
+                    border: 0,
+                    background: "rgba(18, 40, 30, 0.82)",
+                    color: "white",
+                    padding: "5px 10px",
+                    borderRadius: "6px",
+                    fontSize: "10.5px",
+                    fontWeight: 600,
+                    cursor: "pointer",
+                  }}
                 >
                   Change Photo
                 </button>
@@ -4676,13 +5969,32 @@ export default function App() {
                     setPostImageUrl("");
                     if (fileInputRef.current) fileInputRef.current.value = "";
                   }}
-                  style={{ border: 0, background: "rgba(220, 38, 38, 0.88)", color: "white", padding: "5px 10px", borderRadius: "6px", fontSize: "10.5px", fontWeight: 600, cursor: "pointer" }}
+                  style={{
+                    border: 0,
+                    background: "rgba(220, 38, 38, 0.88)",
+                    color: "white",
+                    padding: "5px 10px",
+                    borderRadius: "6px",
+                    fontSize: "10.5px",
+                    fontWeight: 600,
+                    cursor: "pointer",
+                  }}
                   title="Remove Photo"
                 >
                   ✕ Remove
                 </button>
               </div>
-              <div style={{ padding: "6px 12px", background: "rgba(255,255,255,0.92)", fontSize: "10px", color: "#3b584e", display: "flex", alignItems: "center", gap: "6px" }}>
+              <div
+                style={{
+                  padding: "6px 12px",
+                  background: "rgba(255,255,255,0.92)",
+                  fontSize: "10px",
+                  color: "#3b584e",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                }}
+              >
                 <span>📷 Photo preview attached to announcement</span>
               </div>
             </div>
@@ -4701,7 +6013,9 @@ export default function App() {
               background: "#f8faf9",
             }}
           >
-            <span style={{ fontSize: "11px", fontWeight: 700, color: "#2a493e" }}>
+            <span
+              style={{ fontSize: "11px", fontWeight: 700, color: "#2a493e" }}
+            >
               Add to your announcement:
             </span>
 
@@ -4751,7 +6065,9 @@ export default function App() {
                 type="button"
                 onClick={() => setIsSchedulingEnabled(!isSchedulingEnabled)}
                 style={{
-                  border: isSchedulingEnabled ? "1px solid #166534" : "1px solid #c5d9cf",
+                  border: isSchedulingEnabled
+                    ? "1px solid #166534"
+                    : "1px solid #c5d9cf",
                   background: isSchedulingEnabled ? "#dcfce7" : "white",
                   color: isSchedulingEnabled ? "#166534" : "#446257",
                   borderRadius: "7px",
@@ -4773,7 +6089,9 @@ export default function App() {
                 type="button"
                 onClick={() => setShowPresetPicker(!showPresetPicker)}
                 style={{
-                  border: showPresetPicker ? "1px solid #176b4d" : "1px solid #c5d9cf",
+                  border: showPresetPicker
+                    ? "1px solid #176b4d"
+                    : "1px solid #c5d9cf",
                   background: showPresetPicker ? "#eaf5f0" : "white",
                   color: showPresetPicker ? "#176b4d" : "#446257",
                   borderRadius: "7px",
@@ -4794,13 +6112,42 @@ export default function App() {
 
           {/* Preset Banners Gallery */}
           {showPresetPicker && (
-            <div style={{ marginBottom: "12px", padding: "10px", background: "#f5f9f7", borderRadius: "9px", border: "1px solid #d5e3dc" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
-                <span style={{ fontSize: "10px", fontWeight: 700, color: "#365348" }}>Select a preset banner photo:</span>
+            <div
+              style={{
+                marginBottom: "12px",
+                padding: "10px",
+                background: "#f5f9f7",
+                borderRadius: "9px",
+                border: "1px solid #d5e3dc",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: "6px",
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: "10px",
+                    fontWeight: 700,
+                    color: "#365348",
+                  }}
+                >
+                  Select a preset banner photo:
+                </span>
                 <button
                   type="button"
                   onClick={() => setShowPresetPicker(false)}
-                  style={{ border: 0, background: "transparent", fontSize: "11px", color: "#8a9b94", cursor: "pointer" }}
+                  style={{
+                    border: 0,
+                    background: "transparent",
+                    fontSize: "11px",
+                    color: "#8a9b94",
+                    cursor: "pointer",
+                  }}
                 >
                   ✕
                 </button>
@@ -4826,9 +6173,32 @@ export default function App() {
 
           {/* Optional Schedule Picker */}
           {isSchedulingEnabled && (
-            <div style={{ marginBottom: "12px", padding: "11px 13px", background: "#fef9ee", border: "1px solid #fde5b2", borderRadius: "9px" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "6px" }}>
-                <strong style={{ fontSize: "11.5px", color: "#92400e", display: "flex", alignItems: "center", gap: "5px" }}>
+            <div
+              style={{
+                marginBottom: "12px",
+                padding: "11px 13px",
+                background: "#fef9ee",
+                border: "1px solid #fde5b2",
+                borderRadius: "9px",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  marginBottom: "6px",
+                }}
+              >
+                <strong
+                  style={{
+                    fontSize: "11.5px",
+                    color: "#92400e",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "5px",
+                  }}
+                >
                   🕒 Set Announcement Schedule
                 </strong>
                 <button
@@ -4837,13 +6207,27 @@ export default function App() {
                     setIsSchedulingEnabled(false);
                     setPostScheduledAt("");
                   }}
-                  style={{ border: 0, background: "transparent", color: "#b45309", fontSize: "10.5px", cursor: "pointer", fontWeight: 600 }}
+                  style={{
+                    border: 0,
+                    background: "transparent",
+                    color: "#b45309",
+                    fontSize: "10.5px",
+                    cursor: "pointer",
+                    fontWeight: 600,
+                  }}
                 >
                   Remove schedule
                 </button>
               </div>
-              <p style={{ margin: "0 0 8px", fontSize: "10.5px", color: "#78350f" }}>
-                Choose when this announcement will automatically appear on residents' feeds:
+              <p
+                style={{
+                  margin: "0 0 8px",
+                  fontSize: "10.5px",
+                  color: "#78350f",
+                }}
+              >
+                Choose when this announcement will automatically appear on
+                residents' feeds:
               </p>
               <input
                 type="datetime-local"
@@ -4864,46 +6248,106 @@ export default function App() {
           )}
 
           {/* Location & Schedule inputs */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "12px" }}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: "10px",
+              marginBottom: "12px",
+            }}
+          >
             <div>
-              <label style={{ fontSize: "10px", fontWeight: 700, color: "#4f675e", display: "block", marginBottom: "4px" }}>
+              <label
+                style={{
+                  fontSize: "10px",
+                  fontWeight: 700,
+                  color: "#4f675e",
+                  display: "block",
+                  marginBottom: "4px",
+                }}
+              >
                 Location / Venue (Optional)
               </label>
               <input
                 value={postAccent}
                 onChange={(e) => setPostAccent(e.target.value)}
                 placeholder="e.g. Covered Court, Mabini St."
-                style={{ width: "100%", border: "1px solid #dfe7e3", background: "white", borderRadius: "8px", padding: "8px 10px", fontSize: "11px", color: "#2e473f", outline: "none" }}
+                style={{
+                  width: "100%",
+                  border: "1px solid #dfe7e3",
+                  background: "white",
+                  borderRadius: "8px",
+                  padding: "8px 10px",
+                  fontSize: "11px",
+                  color: "#2e473f",
+                  outline: "none",
+                }}
               />
             </div>
             <div>
-              <label style={{ fontSize: "10px", fontWeight: 700, color: "#4f675e", display: "block", marginBottom: "4px" }}>
+              <label
+                style={{
+                  fontSize: "10px",
+                  fontWeight: 700,
+                  color: "#4f675e",
+                  display: "block",
+                  marginBottom: "4px",
+                }}
+              >
                 Schedule / Date Text (Optional)
               </label>
               <input
                 value={postAccentDate}
                 onChange={(e) => setPostAccentDate(e.target.value)}
                 placeholder="e.g. June 21 · 8:00 AM – 12:00 PM"
-                style={{ width: "100%", border: "1px solid #dfe7e3", background: "white", borderRadius: "8px", padding: "8px 10px", fontSize: "11px", color: "#2e473f", outline: "none" }}
+                style={{
+                  width: "100%",
+                  border: "1px solid #dfe7e3",
+                  background: "white",
+                  borderRadius: "8px",
+                  padding: "8px 10px",
+                  fontSize: "11px",
+                  color: "#2e473f",
+                  outline: "none",
+                }}
               />
             </div>
           </div>
 
           {/* Pin Announcement Switch */}
-          <div style={{ margin: "0 0 14px", padding: "9px 12px", background: "#f0fbf6", border: "1px solid #c7f1df", borderRadius: "9px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div
+            style={{
+              margin: "0 0 14px",
+              padding: "9px 12px",
+              background: "#f0fbf6",
+              border: "1px solid #c7f1df",
+              borderRadius: "9px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
             <div>
-              <strong style={{ fontSize: "11px", color: "#14533e", display: "block" }}>
+              <strong
+                style={{ fontSize: "11px", color: "#14533e", display: "block" }}
+              >
                 📌 Pin to top of feed
               </strong>
               <small style={{ fontSize: "9.5px", color: "#4f7a6b" }}>
-                Featured advisories will stay at the top of the resident announcements page.
+                Featured advisories will stay at the top of the resident
+                announcements page.
               </small>
             </div>
             <input
               type="checkbox"
               checked={postPinned}
               onChange={(e) => setPostPinned(e.target.checked)}
-              style={{ width: "17px", height: "17px", cursor: "pointer", accentColor: "#176b4d" }}
+              style={{
+                width: "17px",
+                height: "17px",
+                cursor: "pointer",
+                accentColor: "#176b4d",
+              }}
             />
           </div>
 
@@ -4914,7 +6358,9 @@ export default function App() {
           >
             {isSchedulingEnabled && postScheduledAt
               ? "Schedule Announcement 🕒"
-              : (editingAnnouncement ? "Save Changes" : "Publish Announcement")}
+              : editingAnnouncement
+                ? "Save Changes"
+                : "Publish Announcement"}
           </button>
         </Modal>
       )}
@@ -4926,33 +6372,117 @@ export default function App() {
           close={() => setInquiryModalPost(null)}
           maxWidth="580px"
         >
-          <div style={{ marginBottom: "14px", paddingBottom: "12px", borderBottom: "1px solid #e5ede9" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
-              <span className={`post-tag ${getTagClass(inquiryModalPost.tag)}`}>{inquiryModalPost.tag}</span>
-              <span style={{ fontSize: "11px", color: "#6a7e76" }}>• Posted {inquiryModalPost.time}</span>
+          <div
+            style={{
+              marginBottom: "14px",
+              paddingBottom: "12px",
+              borderBottom: "1px solid #e5ede9",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                marginBottom: "4px",
+              }}
+            >
+              <span className={`post-tag ${getTagClass(inquiryModalPost.tag)}`}>
+                {inquiryModalPost.tag}
+              </span>
+              <span style={{ fontSize: "11px", color: "#6a7e76" }}>
+                • Posted {inquiryModalPost.time}
+              </span>
             </div>
-            <h3 style={{ margin: "2px 0 4px", fontSize: "15px", color: "#163e32" }}>{inquiryModalPost.title}</h3>
-            <p style={{ margin: 0, fontSize: "11.5px", color: "#546e65", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+            <h3
+              style={{
+                margin: "2px 0 4px",
+                fontSize: "15px",
+                color: "#163e32",
+              }}
+            >
+              {inquiryModalPost.title}
+            </h3>
+            <p
+              style={{
+                margin: 0,
+                fontSize: "11.5px",
+                color: "#546e65",
+                display: "-webkit-box",
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: "vertical",
+                overflow: "hidden",
+              }}
+            >
               {inquiryModalPost.body}
             </p>
           </div>
 
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: "10px",
+            }}
+          >
             <strong style={{ fontSize: "12px", color: "#203b32" }}>
-              Community Inquiries ({(commentsMap[inquiryModalPost.id as number] || []).length})
+              Community Inquiries (
+              {(commentsMap[inquiryModalPost.id as number] || []).length})
             </strong>
             <span style={{ fontSize: "10.5px", color: "#778b84" }}>
               Direct resident inquiry & response channel
             </span>
           </div>
 
-          <div style={{ maxHeight: "360px", overflowY: "auto", display: "flex", flexDirection: "column", gap: "10px", paddingRight: "4px", marginBottom: "16px" }}>
+          <div
+            style={{
+              maxHeight: "360px",
+              overflowY: "auto",
+              display: "flex",
+              flexDirection: "column",
+              gap: "10px",
+              paddingRight: "4px",
+              marginBottom: "16px",
+            }}
+          >
             {(commentsMap[inquiryModalPost.id as number] || []).length === 0 ? (
-              <div style={{ textAlign: "center", padding: "28px 16px", background: "#f8faf9", borderRadius: "10px", border: "1px dashed #dbe5e0" }}>
-                <span style={{ fontSize: "30px", display: "block", marginBottom: "6px" }}>💬</span>
-                <strong style={{ fontSize: "12px", color: "#2d423b", display: "block" }}>No inquiries yet</strong>
-                <p style={{ margin: "4px 0 0", fontSize: "11px", color: "#778b84" }}>
-                  Have questions or need assistance about this announcement? Submit your inquiry below!
+              <div
+                style={{
+                  textAlign: "center",
+                  padding: "28px 16px",
+                  background: "#f8faf9",
+                  borderRadius: "10px",
+                  border: "1px dashed #dbe5e0",
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: "30px",
+                    display: "block",
+                    marginBottom: "6px",
+                  }}
+                >
+                  💬
+                </span>
+                <strong
+                  style={{
+                    fontSize: "12px",
+                    color: "#2d423b",
+                    display: "block",
+                  }}
+                >
+                  No inquiries yet
+                </strong>
+                <p
+                  style={{
+                    margin: "4px 0 0",
+                    fontSize: "11px",
+                    color: "#778b84",
+                  }}
+                >
+                  Have questions or need assistance about this announcement?
+                  Submit your inquiry below!
                 </p>
               </div>
             ) : (
@@ -4962,32 +6492,79 @@ export default function App() {
                   style={{
                     padding: "10px 12px",
                     background: c.userRole === "admin" ? "#eef7f3" : "#f6faf8",
-                    border: c.userRole === "admin" ? "1px solid #cce8dc" : "1px solid #e2ebe6",
+                    border:
+                      c.userRole === "admin"
+                        ? "1px solid #cce8dc"
+                        : "1px solid #e2ebe6",
                     borderRadius: "10px",
                   }}
                 >
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px" }}>
-                    <Avatar initials={c.userInitials} tone={c.userRole === "admin" ? "blue" : "amber"} />
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      marginBottom: "6px",
+                    }}
+                  >
+                    <Avatar
+                      initials={c.userInitials}
+                      tone={c.userRole === "admin" ? "blue" : "amber"}
+                    />
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                        <strong style={{ fontSize: "11.5px", color: "#223b32" }}>{c.userName}</strong>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "6px",
+                        }}
+                      >
+                        <strong
+                          style={{ fontSize: "11.5px", color: "#223b32" }}
+                        >
+                          {c.userName}
+                        </strong>
                         <span className={`comment-role-pill ${c.userRole}`}>
-                          {c.userRole === "admin" ? "Barangay Official" : "Resident"}
+                          {c.userRole === "admin"
+                            ? "Barangay Official"
+                            : "Resident"}
                         </span>
                       </div>
-                      <small style={{ fontSize: "9.5px", color: "#8a9a93" }}>{c.time}</small>
+                      <small style={{ fontSize: "9.5px", color: "#8a9a93" }}>
+                        {c.time}
+                      </small>
                     </div>
                     {(isAdmin || c.userName === user.name) && (
                       <button
-                        onClick={() => handleDeleteComment(inquiryModalPost.id as number, c.id)}
-                        style={{ border: 0, background: "transparent", color: "#dc2626", cursor: "pointer", fontSize: "12px", padding: "2px 4px" }}
+                        onClick={() =>
+                          handleDeleteComment(
+                            inquiryModalPost.id as number,
+                            c.id,
+                          )
+                        }
+                        style={{
+                          border: 0,
+                          background: "transparent",
+                          color: "#dc2626",
+                          cursor: "pointer",
+                          fontSize: "12px",
+                          padding: "2px 4px",
+                        }}
                         title="Delete inquiry"
                       >
                         ✕
                       </button>
                     )}
                   </div>
-                  <p style={{ margin: 0, fontSize: "11.5px", color: "#324840", lineHeight: 1.5, whiteSpace: "pre-wrap" }}>
+                  <p
+                    style={{
+                      margin: 0,
+                      fontSize: "11.5px",
+                      color: "#324840",
+                      lineHeight: 1.5,
+                      whiteSpace: "pre-wrap",
+                    }}
+                  >
                     {c.text}
                   </p>
                 </div>
@@ -5001,12 +6578,22 @@ export default function App() {
               e.preventDefault();
               handleAddComment(inquiryModalPost.id as number);
             }}
-            style={{ display: "flex", gap: "8px", alignItems: "center", borderTop: "1px solid #e6eeea", paddingTop: "12px" }}
+            style={{
+              display: "flex",
+              gap: "8px",
+              alignItems: "center",
+              borderTop: "1px solid #e6eeea",
+              paddingTop: "12px",
+            }}
           >
             <input
               value={commentInput}
               onChange={(e) => setCommentInput(e.target.value)}
-              placeholder={isAdmin ? "Reply officially as Barangay Administration..." : "Type your inquiry or question here..."}
+              placeholder={
+                isAdmin
+                  ? "Reply officially as Barangay Administration..."
+                  : "Type your inquiry or question here..."
+              }
               style={{
                 flex: 1,
                 border: "1px solid #d4dfda",
@@ -5025,7 +6612,8 @@ export default function App() {
               className="primary-button"
               style={{ padding: "10px 16px", flexShrink: 0 }}
             >
-              <Icon name="send" size={13} /> {isAdmin ? "Reply" : "Submit Inquiry"}
+              <Icon name="send" size={13} />{" "}
+              {isAdmin ? "Reply" : "Submit Inquiry"}
             </button>
           </form>
         </Modal>
@@ -5038,9 +6626,24 @@ export default function App() {
           close={() => setViewAnnouncementItem(null)}
           maxWidth="640px"
         >
-          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "12px" }}
+          >
             {viewAnnouncementItem.pinned && (
-              <div style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "10.5px", color: "#0f766e", fontWeight: 700, background: "#f0fdf9", border: "1px solid #ccfbf1", padding: "6px 12px", borderRadius: "7px" }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "5px",
+                  fontSize: "10.5px",
+                  color: "#0f766e",
+                  fontWeight: 700,
+                  background: "#f0fdf9",
+                  border: "1px solid #ccfbf1",
+                  padding: "6px 12px",
+                  borderRadius: "7px",
+                }}
+              >
                 📌 Pinned announcement · Official Barangay Advisory
               </div>
             )}
@@ -5050,59 +6653,132 @@ export default function App() {
               <img
                 src={viewAnnouncementItem.imageUrl}
                 alt={viewAnnouncementItem.title}
-                style={{ width: "100%", maxHeight: "240px", objectFit: "cover", borderRadius: "10px", border: "1px solid #e5ebe8" }}
+                style={{
+                  width: "100%",
+                  maxHeight: "240px",
+                  objectFit: "cover",
+                  borderRadius: "10px",
+                  border: "1px solid #e5ebe8",
+                }}
               />
             )}
 
             <div className="post-head" style={{ marginBottom: 0 }}>
               <Avatar
                 initials={viewAnnouncementItem.initials}
-                tone={viewAnnouncementItem.tag === "Health & Wellness" ? "green" : viewAnnouncementItem.tag === "Emergency Notice" ? "amber" : "blue"}
+                tone={
+                  viewAnnouncementItem.tag === "Health & Wellness"
+                    ? "green"
+                    : viewAnnouncementItem.tag === "Emergency Notice"
+                      ? "amber"
+                      : "blue"
+                }
               />
               <div>
-                <strong>{viewAnnouncementItem.author} <span className="verified">✓</span></strong>
+                <strong>
+                  {viewAnnouncementItem.author}{" "}
+                  <span className="verified">✓</span>
+                </strong>
                 <small>{viewAnnouncementItem.time} · Public Advisory</small>
               </div>
             </div>
 
-            <span className={`post-tag ${getTagClass(viewAnnouncementItem.tag)}`} style={{ alignSelf: "flex-start" }}>
+            <span
+              className={`post-tag ${getTagClass(viewAnnouncementItem.tag)}`}
+              style={{ alignSelf: "flex-start" }}
+            >
               {viewAnnouncementItem.tag}
             </span>
 
-            <h3 style={{ margin: 0, fontSize: "19px", color: "#163e32", lineHeight: "1.3" }}>
+            <h3
+              style={{
+                margin: 0,
+                fontSize: "19px",
+                color: "#163e32",
+                lineHeight: "1.3",
+              }}
+            >
               {viewAnnouncementItem.title}
             </h3>
 
-            <p style={{ margin: 0, color: "#374f45", lineHeight: "1.75", fontSize: "13.5px", whiteSpace: "pre-wrap" }}>
+            <p
+              style={{
+                margin: 0,
+                color: "#374f45",
+                lineHeight: "1.75",
+                fontSize: "13.5px",
+                whiteSpace: "pre-wrap",
+              }}
+            >
               {viewAnnouncementItem.body}
             </p>
 
             <div className="post-highlight">
               <span className="highlight-icon">
-                <Icon name={viewAnnouncementItem.tag === "Health & Wellness" || viewAnnouncementItem.tag === "Youth & Sports" ? "users" : viewAnnouncementItem.tag === "Emergency Notice" || viewAnnouncementItem.tag === "Public Safety" ? "alert" : "megaphone"} />
+                <Icon
+                  name={
+                    viewAnnouncementItem.tag === "Health & Wellness" ||
+                    viewAnnouncementItem.tag === "Youth & Sports"
+                      ? "users"
+                      : viewAnnouncementItem.tag === "Emergency Notice" ||
+                          viewAnnouncementItem.tag === "Public Safety"
+                        ? "alert"
+                        : "megaphone"
+                  }
+                />
               </span>
               <span>
                 <strong>{viewAnnouncementItem.accent}</strong>
-                <small><Icon name="clock" size={14} /> {viewAnnouncementItem.accentText}</small>
+                <small>
+                  <Icon name="clock" size={14} />{" "}
+                  {viewAnnouncementItem.accentText}
+                </small>
               </span>
             </div>
 
             {/* Modal Actions */}
-            <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", alignItems: "center", borderTop: "1px solid #edf1ef", paddingTop: "12px" }}>
+            <div
+              style={{
+                display: "flex",
+                gap: "8px",
+                flexWrap: "wrap",
+                alignItems: "center",
+                borderTop: "1px solid #edf1ef",
+                paddingTop: "12px",
+              }}
+            >
               <button
                 className={`post-action-btn ${acknowledgedPostIds.includes(viewAnnouncementItem.id as number) ? "active-react" : ""}`}
-                onClick={() => handleToggleReaction(viewAnnouncementItem.id as number)}
+                onClick={() =>
+                  handleToggleReaction(viewAnnouncementItem.id as number)
+                }
               >
-                <b>{acknowledgedPostIds.includes(viewAnnouncementItem.id as number) ? "♥" : "♡"}</b>
+                <b>
+                  {acknowledgedPostIds.includes(
+                    viewAnnouncementItem.id as number,
+                  )
+                    ? "♥"
+                    : "♡"}
+                </b>
                 <span>{viewAnnouncementItem.reactions} acknowledged</span>
               </button>
 
               <button
                 className={`post-action-btn ${savedPostIds.includes(viewAnnouncementItem.id as number) ? "active-bookmark" : ""}`}
-                onClick={() => handleToggleBookmark(viewAnnouncementItem.id as number)}
+                onClick={() =>
+                  handleToggleBookmark(viewAnnouncementItem.id as number)
+                }
               >
-                <span>{savedPostIds.includes(viewAnnouncementItem.id as number) ? "★" : "☆"}</span>
-                <span>{savedPostIds.includes(viewAnnouncementItem.id as number) ? "Saved" : "Save"}</span>
+                <span>
+                  {savedPostIds.includes(viewAnnouncementItem.id as number)
+                    ? "★"
+                    : "☆"}
+                </span>
+                <span>
+                  {savedPostIds.includes(viewAnnouncementItem.id as number)
+                    ? "Saved"
+                    : "Save"}
+                </span>
               </button>
 
               <button
@@ -5120,7 +6796,9 @@ export default function App() {
               </button>
 
               {isAdmin && (
-                <div style={{ marginLeft: "auto", display: "flex", gap: "6px" }}>
+                <div
+                  style={{ marginLeft: "auto", display: "flex", gap: "6px" }}
+                >
                   <button
                     className="btn-sm-action primary"
                     style={{ padding: "6px 12px", fontSize: "11px" }}
@@ -5137,7 +6815,8 @@ export default function App() {
                     style={{ padding: "6px 12px", fontSize: "11px" }}
                     onClick={() => togglePinAnnouncement(viewAnnouncementItem)}
                   >
-                    <Icon name="megaphone" size={12} /> {viewAnnouncementItem.pinned ? "Unpin" : "Pin"}
+                    <Icon name="megaphone" size={12} />{" "}
+                    {viewAnnouncementItem.pinned ? "Unpin" : "Pin"}
                   </button>
                   <button
                     className="btn-sm-action danger"
@@ -5157,37 +6836,63 @@ export default function App() {
             {/* Discussion & Inquiries within detail modal */}
             <div className="comments-thread" style={{ marginTop: "10px" }}>
               <strong style={{ fontSize: "12px", color: "#243831" }}>
-                Community Discussion & Resident Inquiries ({(commentsMap[viewAnnouncementItem.id as number] || []).length})
+                Community Discussion & Resident Inquiries (
+                {(commentsMap[viewAnnouncementItem.id as number] || []).length})
               </strong>
 
               <div className="comments-list" style={{ maxHeight: "200px" }}>
-                {(commentsMap[viewAnnouncementItem.id as number] || []).length === 0 ? (
-                  <p style={{ margin: "4px 0", fontSize: "11px", color: "#778b84", fontStyle: "italic" }}>
+                {(commentsMap[viewAnnouncementItem.id as number] || [])
+                  .length === 0 ? (
+                  <p
+                    style={{
+                      margin: "4px 0",
+                      fontSize: "11px",
+                      color: "#778b84",
+                      fontStyle: "italic",
+                    }}
+                  >
                     No questions yet. Ask a question or leave a comment below!
                   </p>
                 ) : (
-                  (commentsMap[viewAnnouncementItem.id as number] || []).map((c) => (
-                    <div className="comment-bubble" key={c.id}>
-                      <div className="comment-bubble-header">
-                        <Avatar initials={c.userInitials} tone={c.userRole === "admin" ? "blue" : "amber"} />
-                        <strong>{c.userName}</strong>
-                        <span className={`comment-role-pill ${c.userRole}`}>
-                          {c.userRole === "admin" ? "Brgy Staff" : "Resident"}
-                        </span>
-                        <small>{c.time}</small>
-                        {(isAdmin || c.userName === user.name) && (
-                          <button
-                            onClick={() => handleDeleteComment(viewAnnouncementItem.id as number, c.id)}
-                            style={{ border: 0, background: "transparent", color: "#dc2626", cursor: "pointer", fontSize: "11px", marginLeft: "4px" }}
-                            title="Delete comment"
-                          >
-                            ✕
-                          </button>
-                        )}
+                  (commentsMap[viewAnnouncementItem.id as number] || []).map(
+                    (c) => (
+                      <div className="comment-bubble" key={c.id}>
+                        <div className="comment-bubble-header">
+                          <Avatar
+                            initials={c.userInitials}
+                            tone={c.userRole === "admin" ? "blue" : "amber"}
+                          />
+                          <strong>{c.userName}</strong>
+                          <span className={`comment-role-pill ${c.userRole}`}>
+                            {c.userRole === "admin" ? "Brgy Staff" : "Resident"}
+                          </span>
+                          <small>{c.time}</small>
+                          {(isAdmin || c.userName === user.name) && (
+                            <button
+                              onClick={() =>
+                                handleDeleteComment(
+                                  viewAnnouncementItem.id as number,
+                                  c.id,
+                                )
+                              }
+                              style={{
+                                border: 0,
+                                background: "transparent",
+                                color: "#dc2626",
+                                cursor: "pointer",
+                                fontSize: "11px",
+                                marginLeft: "4px",
+                              }}
+                              title="Delete comment"
+                            >
+                              ✕
+                            </button>
+                          )}
+                        </div>
+                        <p>{c.text}</p>
                       </div>
-                      <p>{c.text}</p>
-                    </div>
-                  ))
+                    ),
+                  )
                 )}
               </div>
 
@@ -5201,9 +6906,17 @@ export default function App() {
                 <input
                   value={commentInput}
                   onChange={(e) => setCommentInput(e.target.value)}
-                  placeholder={isAdmin ? "Reply as Barangay Administration..." : "Ask a question about this advisory..."}
+                  placeholder={
+                    isAdmin
+                      ? "Reply as Barangay Administration..."
+                      : "Ask a question about this advisory..."
+                  }
                 />
-                <button className="comment-send-btn" type="submit" disabled={!commentInput.trim()}>
+                <button
+                  className="comment-send-btn"
+                  type="submit"
+                  disabled={!commentInput.trim()}
+                >
                   <span>Send</span> <Icon name="send" size={12} />
                 </button>
               </form>
@@ -5214,18 +6927,41 @@ export default function App() {
 
       {/* Delete Announcement Confirm Modal */}
       {deleteAnnouncementItem && (
-        <Modal title="Delete Announcement" close={() => setDeleteAnnouncementItem(null)}>
+        <Modal
+          title="Delete Announcement"
+          close={() => setDeleteAnnouncementItem(null)}
+        >
           <div className="danger-modal-box">
-            <div className="danger-modal-icon"><Icon name="trash" size={24} /></div>
+            <div className="danger-modal-icon">
+              <Icon name="trash" size={24} />
+            </div>
             <h3 className="danger-modal-title">Delete this announcement?</h3>
             <p className="danger-modal-desc">
-              You are about to permanently delete <strong>"{deleteAnnouncementItem.title}"</strong>. This will remove it from the community feed and cannot be undone.
+              You are about to permanently delete{" "}
+              <strong>"{deleteAnnouncementItem.title}"</strong>. This will
+              remove it from the community feed and cannot be undone.
             </p>
-            <div style={{ display: "flex", gap: "10px", justifyContent: "center", marginTop: "10px" }}>
-              <button className="row-action" onClick={() => setDeleteAnnouncementItem(null)}>Cancel</button>
+            <div
+              style={{
+                display: "flex",
+                gap: "10px",
+                justifyContent: "center",
+                marginTop: "10px",
+              }}
+            >
+              <button
+                className="row-action"
+                onClick={() => setDeleteAnnouncementItem(null)}
+              >
+                Cancel
+              </button>
               <button
                 className="btn-sm-action danger"
-                style={{ padding: "9px 20px", fontSize: "12px", fontWeight: 700 }}
+                style={{
+                  padding: "9px 20px",
+                  fontSize: "12px",
+                  fontWeight: 700,
+                }}
                 onClick={confirmDeleteAnnouncement}
               >
                 Confirm Delete
@@ -5236,11 +6972,22 @@ export default function App() {
       )}
 
       {requestOpen && (
-        <Modal title="Request a barangay document" close={() => setRequestOpen(false)} maxWidth={580}>
+        <Modal
+          title="Request a barangay document"
+          close={() => setRequestOpen(false)}
+          maxWidth={580}
+        >
           {(() => {
-            const services = getCachedDocumentServices().filter((d) => d.enabled);
-            const currentService = services.find((s) => s.name === selectedDocForModal) || services[0];
-            const finalPurpose = newRequestPurpose === "Other" ? newRequestCustomPurpose : (newRequestPurpose || "Employment requirement");
+            const services = getCachedDocumentServices().filter(
+              (d) => d.enabled,
+            );
+            const currentService =
+              services.find((s) => s.name === selectedDocForModal) ||
+              services[0];
+            const finalPurpose =
+              newRequestPurpose === "Other"
+                ? newRequestCustomPurpose
+                : newRequestPurpose || "Employment requirement";
             const resMeta = resolveResidentMeta(user?.email || "", user?.name);
 
             const quickPurposes = [
@@ -5268,7 +7015,11 @@ export default function App() {
                     newRequestAddress || resMeta.address,
                   );
                 }}
-                style={{ display: "flex", flexDirection: "column", gap: "14px" }}
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "14px",
+                }}
               >
                 {/* Document Service Selector */}
                 <label className="field">
@@ -5300,14 +7051,35 @@ export default function App() {
                       color: "#284a3c",
                     }}
                   >
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                      }}
+                    >
                       <strong>{currentService.name}</strong>
-                      <span className="doc-fee-badge">{currentService.fee}</span>
+                      <span className="doc-fee-badge">
+                        {currentService.fee}
+                      </span>
                     </div>
-                    <p style={{ margin: "2px 0 6px 0", color: "#547366", fontSize: "11px" }}>
+                    <p
+                      style={{
+                        margin: "2px 0 6px 0",
+                        color: "#547366",
+                        fontSize: "11px",
+                      }}
+                    >
                       {currentService.description}
                     </p>
-                    <div style={{ fontSize: "11px", color: "#37594a", display: "flex", gap: "6px" }}>
+                    <div
+                      style={{
+                        fontSize: "11px",
+                        color: "#37594a",
+                        display: "flex",
+                        gap: "6px",
+                      }}
+                    >
                       <strong>📋 Requirements to bring:</strong>
                       <span>{currentService.requirements}</span>
                     </div>
@@ -5316,12 +7088,28 @@ export default function App() {
 
                 {/* Purpose Selection */}
                 <div className="field">
-                  <label style={{ display: "block", marginBottom: "6px", fontWeight: 600, fontSize: "12px" }}>
+                  <label
+                    style={{
+                      display: "block",
+                      marginBottom: "6px",
+                      fontWeight: 600,
+                      fontSize: "12px",
+                    }}
+                  >
                     Purpose of request
                   </label>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginBottom: "8px" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: "6px",
+                      marginBottom: "8px",
+                    }}
+                  >
                     {quickPurposes.map((p) => {
-                      const isSelected = newRequestPurpose === p || (!newRequestPurpose && p === "Employment requirement");
+                      const isSelected =
+                        newRequestPurpose === p ||
+                        (!newRequestPurpose && p === "Employment requirement");
                       return (
                         <button
                           type="button"
@@ -5339,7 +7127,9 @@ export default function App() {
                     <input
                       placeholder="Specify your purpose (e.g. Court clearance, travel)..."
                       value={newRequestCustomPurpose}
-                      onChange={(e) => setNewRequestCustomPurpose(e.target.value)}
+                      onChange={(e) =>
+                        setNewRequestCustomPurpose(e.target.value)
+                      }
                       required
                       autoFocus
                     />
@@ -5347,7 +7137,13 @@ export default function App() {
                 </div>
 
                 {/* Resident info verification */}
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    gap: "10px",
+                  }}
+                >
                   <label className="field">
                     Contact Mobile No.
                     <input
@@ -5409,7 +7205,9 @@ export default function App() {
           }}
           onOpenChat={(req: DocumentRequest) => {
             setViewingRequest(null);
-            setPresetMessageDraft(`Good day po! Follow-up inquiry regarding my ${req.docType} (Tracking No. ${req.trackingNo}).`);
+            setPresetMessageDraft(
+              `Good day po! Follow-up inquiry regarding my ${req.docType} (Tracking No. ${req.trackingNo}).`,
+            );
             setActive("messages");
           }}
         />
@@ -5444,7 +7242,13 @@ function LoadingView({ label }: { label: string }) {
   );
 }
 
-function ReactionButton({ count, postId: _postId }: { count: number; postId?: number }) {
+function ReactionButton({
+  count,
+  postId: _postId,
+}: {
+  count: number;
+  postId?: number;
+}) {
   const [reacted, setReacted] = useState(false);
   return (
     <button
@@ -5494,7 +7298,6 @@ function LoginView({
   const [regError, setRegError] = useState("");
   const [regSubmitting, setRegSubmitting] = useState(false);
 
-
   // Validation helpers to prevent random strings & garbage input
   function isValidEmail(val: string): boolean {
     return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(val.trim());
@@ -5520,59 +7323,138 @@ function LoginView({
     e.preventDefault();
     setError("");
     setSubmitting(true);
+    const cleanEmail = email.trim().toLowerCase();
+
     try {
+      // 1. Check if user has an active reset issued by administrator
+      let activeTempPassword: string | null = null;
+
+      // Check local temp passwords
+      try {
+        const tempMap = JSON.parse(
+          localStorage.getItem("brgy_temp_passwords") || "{}",
+        );
+        if (tempMap[cleanEmail]?.tempPassword) {
+          activeTempPassword = tempMap[cleanEmail].tempPassword;
+        }
+      } catch {}
+
+      // Check Supabase password_reset_requests table
+      try {
+        const { data: dbResets } = await supabase
+          .from("password_reset_requests")
+          .select("temp_password, status")
+          .eq("email", cleanEmail)
+          .order("updated_at", { ascending: false })
+          .limit(1);
+
+        if (
+          dbResets &&
+          dbResets[0] &&
+          dbResets[0].status === "completed" &&
+          dbResets[0].temp_password
+        ) {
+          activeTempPassword = dbResets[0].temp_password;
+        }
+      } catch {}
+
+      // Check active resets synced from barangay description metadata
+      if (!activeTempPassword) {
+        const settingsResets = parseActiveResetsFromDesc(barangay.description);
+        if (settingsResets[cleanEmail]?.tempPassword) {
+          activeTempPassword = settingsResets[cleanEmail].tempPassword;
+        }
+      }
+
+      if (activeTempPassword) {
+        // Admin has reset this resident's password!
+        if (password === activeTempPassword) {
+          // Resident entered the new password!
+          const { data: profile } = await supabase
+            .from("accounts")
+            .select("*")
+            .eq("email", cleanEmail)
+            .maybeSingle();
+
+          if (profile) {
+            if (profile.status === "pending") {
+              setSubmitting(false);
+              setPendingLoginOpen(true);
+              return;
+            }
+            if (profile.status === "rejected") {
+              setError(
+                "Your account registration was not approved. Please visit the Barangay Hall for verification.",
+              );
+              setSubmitting(false);
+              return;
+            }
+            if (profile.status === "suspended" || profile.status === "banned") {
+              setError(
+                "Your account has been temporarily suspended. Contact the barangay office.",
+              );
+              setSubmitting(false);
+              return;
+            }
+            if (profile.status === "deleted") {
+              setError(
+                "This account has been deleted by the barangay administration. Please contact the Barangay Office.",
+              );
+              setSubmitting(false);
+              return;
+            }
+
+            const name = profile.full_name || email;
+            const accountObj: Account = {
+              id: profile.id,
+              email: profile.email,
+              role: (profile.role as "admin" | "resident") || "resident",
+              name,
+              initials: getInitials(name),
+            };
+            try {
+              localStorage.setItem(
+                "brgy_auth_session",
+                JSON.stringify({ user: accountObj, timestamp: Date.now() }),
+              );
+            } catch {}
+            onLoginSuccess(accountObj);
+            return;
+          } else {
+            const accountObj: Account = {
+              id: `user-${cleanEmail}`,
+              email: cleanEmail,
+              role: "resident",
+              name: cleanEmail,
+              initials: getInitials(cleanEmail),
+            };
+            try {
+              localStorage.setItem(
+                "brgy_auth_session",
+                JSON.stringify({ user: accountObj, timestamp: Date.now() }),
+              );
+            } catch {}
+            onLoginSuccess(accountObj);
+            return;
+          }
+        } else {
+          // Resident did NOT enter the new password (e.g. they typed the old password)
+          setError(
+            "Your password has been reset by the Barangay Administration. Your old password is no longer valid. Please sign in with the new temporary password provided to you via SMS.",
+          );
+          setSubmitting(false);
+          return;
+        }
+      }
+
       const { data, error: authErr } = await supabase.auth.signInWithPassword({
-        email: email.trim().toLowerCase(),
+        email: cleanEmail,
         password,
       });
       if (authErr || !data.user) {
-        // Check if user has an active temporary password issued by administrator
-        try {
-          const tempMap = JSON.parse(localStorage.getItem("brgy_temp_passwords") || "{}");
-          const tempEntry = tempMap[email.trim().toLowerCase()];
-          if (tempEntry && tempEntry.tempPassword === password) {
-            const { data: profile } = await supabase
-              .from("accounts")
-              .select("*")
-              .eq("email", email.trim().toLowerCase())
-              .maybeSingle();
-
-            if (profile) {
-              if (profile.status === "pending") {
-                setSubmitting(false);
-                setPendingLoginOpen(true);
-                return;
-              }
-              if (profile.status === "rejected") {
-                setError("Your account registration was not approved. Please visit the Barangay Hall for verification.");
-                setSubmitting(false);
-                return;
-              }
-              if (profile.status === "suspended" || profile.status === "banned") {
-                setError("Your account has been temporarily suspended. Contact the barangay office.");
-                setSubmitting(false);
-                return;
-              }
-              if (profile.status === "deleted") {
-                setError("This account has been deleted by the barangay administration. Please contact the Barangay Office.");
-                setSubmitting(false);
-                return;
-              }
-
-              const name = profile.full_name || email;
-              onLoginSuccess({
-                id: profile.id,
-                email: profile.email,
-                role: (profile.role as "admin" | "resident") || "resident",
-                name,
-                initials: getInitials(name),
-              });
-              return;
-            }
-          }
-        } catch {}
-
-        setError(authErr?.message ?? "Invalid email or password. Please try again.");
+        setError(
+          authErr?.message ?? "Invalid email or password. Please try again.",
+        );
         setSubmitting(false);
         return;
       }
@@ -5595,37 +7477,52 @@ function LoginView({
         return;
       }
       if (profile.status === "rejected") {
-        setError("Your account registration was not approved. Please visit the Barangay Hall for verification.");
+        setError(
+          "Your account registration was not approved. Please visit the Barangay Hall for verification.",
+        );
         await supabase.auth.signOut();
         setSubmitting(false);
         return;
       }
       if (profile.status === "suspended") {
-        setError("Your account has been temporarily suspended. Contact the barangay office.");
+        setError(
+          "Your account has been temporarily suspended. Contact the barangay office.",
+        );
         await supabase.auth.signOut();
         setSubmitting(false);
         return;
       }
       if (profile.status === "banned") {
-        setError("This account has been permanently banned from the Barangay Connect portal.");
+        setError(
+          "This account has been permanently banned from the Barangay Connect portal.",
+        );
         await supabase.auth.signOut();
         setSubmitting(false);
         return;
       }
       if (profile.status === "deleted") {
-        setError("This account has been deleted by the barangay administration. Please contact the Barangay Office.");
+        setError(
+          "This account has been deleted by the barangay administration. Please contact the Barangay Office.",
+        );
         await supabase.auth.signOut();
         setSubmitting(false);
         return;
       }
       const name = profile.full_name || data.user.email || "User";
-      onLoginSuccess({
+      const accountObj: Account = {
         id: data.user.id,
         email: data.user.email ?? "",
         role: profile.role as "admin" | "resident",
         name,
         initials: getInitials(name),
-      });
+      };
+      try {
+        localStorage.setItem(
+          "brgy_auth_session",
+          JSON.stringify({ user: accountObj, timestamp: Date.now() }),
+        );
+      } catch {}
+      onLoginSuccess(accountObj);
     } catch (err: any) {
       setError(err?.message ?? "An unexpected error occurred.");
       setSubmitting(false);
@@ -5641,7 +7538,9 @@ function LoginView({
       return;
     }
     if (!isValidName(regFirstName) || !isValidName(regLastName)) {
-      setRegError("Names should only contain valid letters (no numbers or random symbols).");
+      setRegError(
+        "Names should only contain valid letters (no numbers or random symbols).",
+      );
       return;
     }
 
@@ -5651,7 +7550,9 @@ function LoginView({
       return;
     }
     if (!isValidEmail(regEmail)) {
-      setRegError("Please enter a valid email address (e.g., resident@gmail.com).");
+      setRegError(
+        "Please enter a valid email address (e.g., resident@gmail.com).",
+      );
       return;
     }
 
@@ -5662,13 +7563,17 @@ function LoginView({
     }
     const validatedPhone = normalizePhilippinePhone(regPhone);
     if (!validatedPhone) {
-      setRegError("Please enter a valid 11-digit Philippine mobile number starting with 09 (e.g., 0917-123-4567).");
+      setRegError(
+        "Please enter a valid 11-digit Philippine mobile number starting with 09 (e.g., 0917-123-4567).",
+      );
       return;
     }
 
     // 4. Address validation
     if (!regAddress.trim() || regAddress.trim().length < 6) {
-      setRegError("Please enter your home address within the barangay (at least 6 characters).");
+      setRegError(
+        "Please enter your home address within the barangay (at least 6 characters).",
+      );
       return;
     }
 
@@ -5691,7 +7596,9 @@ function LoginView({
         .eq("phone", validatedPhone)
         .maybeSingle();
       if (existingPhone) {
-        setRegError("This phone number is already linked to an existing account.");
+        setRegError(
+          "This phone number is already linked to an existing account.",
+        );
         setRegSubmitting(false);
         return;
       }
@@ -5703,19 +7610,25 @@ function LoginView({
         .eq("email", regEmail.trim().toLowerCase())
         .maybeSingle();
       if (existingEmail) {
-        setRegError("An account with this email address already exists. Please sign in instead.");
+        setRegError(
+          "An account with this email address already exists. Please sign in instead.",
+        );
         setRegSubmitting(false);
         return;
       }
 
       // Create the auth account — status will be "pending" until admin approves
-      const { data: signUpData, error: signUpErr } = await supabase.auth.signUp({
-        email: regEmail.trim().toLowerCase(),
-        password: regPassword,
-      });
+      const { data: signUpData, error: signUpErr } = await supabase.auth.signUp(
+        {
+          email: regEmail.trim().toLowerCase(),
+          password: regPassword,
+        },
+      );
 
       if (signUpErr || !signUpData.user) {
-        setRegError(signUpErr?.message || "Registration failed. Please try again.");
+        setRegError(
+          signUpErr?.message || "Registration failed. Please try again.",
+        );
         setRegSubmitting(false);
         return;
       }
@@ -5751,7 +7664,9 @@ function LoginView({
       setRegPassword("");
       setRegConfirm("");
     } catch (err: any) {
-      setRegError(err?.message || "An unexpected error occurred. Please try again.");
+      setRegError(
+        err?.message || "An unexpected error occurred. Please try again.",
+      );
     } finally {
       setRegSubmitting(false);
     }
@@ -5863,15 +7778,33 @@ function LoginView({
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? (
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
-                    <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
-                    <line x1="1" y1="1" x2="23" y2="23"/>
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+                    <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+                    <line x1="1" y1="1" x2="23" y2="23" />
                   </svg>
                 ) : (
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                    <circle cx="12" cy="12" r="3"/>
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                    <circle cx="12" cy="12" r="3" />
                   </svg>
                 )}
               </button>
@@ -5881,10 +7814,32 @@ function LoginView({
             <label>
               <input type="checkbox" defaultChecked /> Remember me
             </label>
-            <button type="button" onClick={() => { setForgotOpen(true); setForgotSuccess(false); setForgotError(""); setForgotName(""); setForgotEmail(""); setForgotPhone(""); }}>Forgot password?</button>
+            <button
+              type="button"
+              onClick={() => {
+                setForgotOpen(true);
+                setForgotSuccess(false);
+                setForgotError("");
+                setForgotName("");
+                setForgotEmail("");
+                setForgotPhone("");
+              }}
+            >
+              Forgot password?
+            </button>
           </div>
-          <button className="primary-button full" type="submit" disabled={submitting}>
-            {submitting ? "Signing in…" : <><span>Sign in securely</span> <Icon name="chevron" size={16} /></>}
+          <button
+            className="primary-button full"
+            type="submit"
+            disabled={submitting}
+          >
+            {submitting ? (
+              "Signing in…"
+            ) : (
+              <>
+                <span>Sign in securely</span> <Icon name="chevron" size={16} />
+              </>
+            )}
           </button>
 
           <p className="register-copy">
@@ -5908,7 +7863,8 @@ function LoginView({
         >
           <>
             <p className="modal-intro">
-              Create your resident profile. The barangay will verify your information before activating your account.
+              Create your resident profile. The barangay will verify your
+              information before activating your account.
             </p>
             {regError && (
               <div className="login-error" style={{ marginBottom: "0.75rem" }}>
@@ -5954,7 +7910,9 @@ function LoginView({
                 value={regPhone}
                 onChange={(e) => setRegPhone(e.target.value)}
               />
-              <small style={{ fontSize: "11px", color: "#6b7280", marginTop: "3px" }}>
+              <small
+                style={{ fontSize: "11px", color: "#6b7280", marginTop: "3px" }}
+              >
                 Must be an active 11-digit Philippine number starting with 09
               </small>
             </label>
@@ -6003,33 +7961,90 @@ function LoginView({
 
       {/* ── Forgot Password Modal ─────────────────────────────────────── */}
       {forgotOpen && (
-        <Modal title="Password Reset Request" close={() => setForgotOpen(false)}>
+        <Modal
+          title="Password Reset Request"
+          close={() => setForgotOpen(false)}
+        >
           {forgotSuccess ? (
             <div style={{ textAlign: "center", padding: "16px 0" }}>
-              <div style={{ width: 56, height: 56, borderRadius: "50%", background: "#ecfdf5", border: "2px solid #a7f3d0", display: "inline-flex", alignItems: "center", justifyContent: "center", color: "#059669", marginBottom: "14px" }}>
+              <div
+                style={{
+                  width: 56,
+                  height: 56,
+                  borderRadius: "50%",
+                  background: "#ecfdf5",
+                  border: "2px solid #a7f3d0",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "#059669",
+                  marginBottom: "14px",
+                }}
+              >
                 <Icon name="shield" size={28} />
               </div>
-              <h3 style={{ margin: "0 0 8px", color: "#065f46", fontWeight: 700 }}>Request Submitted!</h3>
-              <p style={{ fontSize: "13px", color: "#4b5563", lineHeight: 1.6, margin: "0 0 12px" }}>
-                Your password reset request has been sent to the <strong>Barangay Administrator</strong>. They will verify your identity and contact you via your registered mobile number with your new credentials.
+              <h3
+                style={{ margin: "0 0 8px", color: "#065f46", fontWeight: 700 }}
+              >
+                Request Submitted!
+              </h3>
+              <p
+                style={{
+                  fontSize: "13px",
+                  color: "#4b5563",
+                  lineHeight: 1.6,
+                  margin: "0 0 12px",
+                }}
+              >
+                Your password reset request has been sent to the{" "}
+                <strong>Barangay Administrator</strong>. They will verify your
+                identity and contact you via your registered mobile number with
+                your new credentials.
               </p>
-              <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: "8px", padding: "10px 14px", fontSize: "12.5px", color: "#166534", textAlign: "left", marginBottom: "16px" }}>
+              <div
+                style={{
+                  background: "#f0fdf4",
+                  border: "1px solid #bbf7d0",
+                  borderRadius: "8px",
+                  padding: "10px 14px",
+                  fontSize: "12.5px",
+                  color: "#166534",
+                  textAlign: "left",
+                  marginBottom: "16px",
+                }}
+              >
                 <strong>What happens next:</strong>
-                <ul style={{ margin: "4px 0 0", paddingLeft: "16px", lineHeight: 1.8 }}>
+                <ul
+                  style={{
+                    margin: "4px 0 0",
+                    paddingLeft: "16px",
+                    lineHeight: 1.8,
+                  }}
+                >
                   <li>Admin verifies your identity against barangay records</li>
                   <li>Admin resets your password securely</li>
                   <li>New credentials sent to your phone via SMS</li>
                 </ul>
               </div>
-              <button className="primary-button full" onClick={() => setForgotOpen(false)}>Got it, I&apos;ll wait</button>
+              <button
+                className="primary-button full"
+                onClick={() => setForgotOpen(false)}
+              >
+                Got it, I&apos;ll wait
+              </button>
             </div>
           ) : (
             <>
               <p className="modal-intro">
-                Provide your registered details for identity verification. The admin will manually reset your password after confirming your identity.
+                Provide your registered details for identity verification. The
+                admin will manually reset your password after confirming your
+                identity.
               </p>
               {forgotError && (
-                <div className="login-error" style={{ marginBottom: "0.75rem" }}>
+                <div
+                  className="login-error"
+                  style={{ marginBottom: "0.75rem" }}
+                >
                   <Icon name="x" size={15} /> {forgotError}
                 </div>
               )}
@@ -6058,7 +8073,15 @@ function LoginView({
                   value={forgotPhone}
                   onChange={(e) => setForgotPhone(e.target.value)}
                 />
-                <small style={{ fontSize: "11px", color: "#6b7280", marginTop: "3px" }}>Must match your registered number</small>
+                <small
+                  style={{
+                    fontSize: "11px",
+                    color: "#6b7280",
+                    marginTop: "3px",
+                  }}
+                >
+                  Must match your registered number
+                </small>
               </label>
               <button
                 className="primary-button full"
@@ -6067,40 +8090,154 @@ function LoginView({
                 style={{ marginTop: "6px" }}
                 onClick={async () => {
                   setForgotError("");
-                  if (!forgotName.trim() || !forgotEmail.trim() || !forgotPhone.trim()) {
+                  if (
+                    !forgotName.trim() ||
+                    !forgotEmail.trim() ||
+                    !forgotPhone.trim()
+                  ) {
                     setForgotError("Please fill in all fields.");
                     return;
                   }
+                  const cleanEmail = forgotEmail.trim().toLowerCase();
                   const cleanPhone = forgotPhone.replace(/[\s\-()]/g, "");
                   if (!/^(09)\d{9}$/.test(cleanPhone)) {
-                    setForgotError("Please enter a valid 11-digit Philippine mobile number starting with 09.");
+                    setForgotError(
+                      "Please enter a valid 11-digit Philippine mobile number starting with 09.",
+                    );
                     return;
                   }
                   setForgotSubmitting(true);
                   try {
-                    const existing = JSON.parse(localStorage.getItem("brgy_pw_reset_requests") || "[]");
+                    // 1. Gather all existing requests for this email (from Supabase + localStorage)
+                    let dbReqs: any[] = [];
+                    try {
+                      const { data } = await supabase
+                        .from("password_reset_requests")
+                        .select("*")
+                        .eq("email", cleanEmail)
+                        .order("created_at", { ascending: false });
+                      if (data) dbReqs = data;
+                    } catch {}
+
+                    const localRequests: any[] = JSON.parse(
+                      localStorage.getItem("brgy_pw_reset_requests") || "[]",
+                    );
+                    const localForEmail = localRequests.filter(
+                      (r) => r.email?.toLowerCase() === cleanEmail,
+                    );
+
+                    // Check if resident already has an active pending request
+                    const hasPending =
+                      dbReqs.some(
+                        (r) => (r.status || "pending") === "pending",
+                      ) ||
+                      localForEmail.some(
+                        (r) => (r.status || "pending") === "pending",
+                      );
+
+                    if (hasPending) {
+                      setForgotError(
+                        "You already have an active pending password reset request. Please wait for the Barangay Administration to review and process your request.",
+                      );
+                      setForgotSubmitting(false);
+                      return;
+                    }
+
+                    // Check if previous request was completed or dismissed within 12 hours
+                    const pastRequests = [
+                      ...dbReqs.filter(
+                        (r) =>
+                          r.status === "completed" || r.status === "dismissed",
+                      ),
+                      ...localForEmail.filter(
+                        (r) =>
+                          r.status === "completed" || r.status === "dismissed",
+                      ),
+                    ];
+
+                    if (pastRequests.length > 0) {
+                      pastRequests.sort((a, b) => {
+                        const tA = new Date(
+                          a.updated_at ||
+                            a.dismissedAt ||
+                            a.resetAt ||
+                            a.created_at ||
+                            a.requestedAt ||
+                            0,
+                        ).getTime();
+                        const tB = new Date(
+                          b.updated_at ||
+                            b.dismissedAt ||
+                            b.resetAt ||
+                            b.created_at ||
+                            b.requestedAt ||
+                            0,
+                        ).getTime();
+                        return tB - tA;
+                      });
+                      const latestPast = pastRequests[0];
+                      const pastTime = new Date(
+                        latestPast.updated_at ||
+                          latestPast.dismissedAt ||
+                          latestPast.resetAt ||
+                          latestPast.created_at ||
+                          latestPast.requestedAt,
+                      ).getTime();
+                      const now = Date.now();
+                      const diffMs = now - pastTime;
+                      const TWELVE_HOURS_MS = 12 * 60 * 60 * 1000;
+
+                      if (diffMs < TWELVE_HOURS_MS) {
+                        const remainingMs = TWELVE_HOURS_MS - diffMs;
+                        const remainingHours = Math.floor(
+                          remainingMs / (1000 * 60 * 60),
+                        );
+                        const remainingMins = Math.ceil(
+                          (remainingMs % (1000 * 60 * 60)) / (1000 * 60),
+                        );
+                        const pastStatus =
+                          latestPast.status === "completed"
+                            ? "processed"
+                            : "dismissed";
+                        setForgotError(
+                          `Your previous password reset request was recently ${pastStatus}. A 12-hour interval is required before requesting another password reset. Please try again in ${remainingHours}h ${remainingMins}m.`,
+                        );
+                        setForgotSubmitting(false);
+                        return;
+                      }
+                    }
+
                     const newReq = {
                       id: `pwreset-${Date.now()}`,
                       name: forgotName.trim(),
-                      email: forgotEmail.trim().toLowerCase(),
+                      email: cleanEmail,
                       phone: cleanPhone,
                       requestedAt: new Date().toISOString(),
                       status: "pending",
                     };
-                    localStorage.setItem("brgy_pw_reset_requests", JSON.stringify([newReq, ...existing]));
+                    localStorage.setItem(
+                      "brgy_pw_reset_requests",
+                      JSON.stringify([newReq, ...localRequests]),
+                    );
+
                     try {
-                      await supabase.from("password_reset_requests").insert([{
-                        full_name: newReq.name,
-                        email: newReq.email,
-                        phone: newReq.phone,
-                        status: "pending",
-                      }]);
+                      await supabase.from("password_reset_requests").insert([
+                        {
+                          full_name: newReq.name,
+                          email: newReq.email,
+                          phone: newReq.phone,
+                          status: "pending",
+                        },
+                      ]);
                     } catch {
                       // Table may not exist yet — local queue still works
                     }
                     setForgotSuccess(true);
                   } catch (err: any) {
-                    setForgotError(err?.message || "Failed to submit request. Please try again.");
+                    setForgotError(
+                      err?.message ||
+                        "Failed to submit request. Please try again.",
+                    );
                   } finally {
                     setForgotSubmitting(false);
                   }
@@ -6115,16 +8252,32 @@ function LoginView({
 
       {/* ── Registration Success Modal ─────────────────────────────── */}
       {regSuccessOpen && (
-        <div className="modal-backdrop" onMouseDown={() => setRegSuccessOpen(false)}>
-          <section className="modal reg-success-modal" onMouseDown={(e) => e.stopPropagation()}>
+        <div
+          className="modal-backdrop"
+          onMouseDown={() => setRegSuccessOpen(false)}
+        >
+          <section
+            className="modal reg-success-modal"
+            onMouseDown={(e) => e.stopPropagation()}
+          >
             <div className="reg-success-icon">
-              <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <svg
+                width="38"
+                height="38"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
                 <path d="m20 6-11 11-5-5" />
               </svg>
             </div>
             <h2 className="reg-success-title">Registration Submitted!</h2>
             <p className="reg-success-subtitle">
-              Welcome, <strong>{regSubmittedName}</strong>! Your resident account has been successfully submitted.
+              Welcome, <strong>{regSubmittedName}</strong>! Your resident
+              account has been successfully submitted.
             </p>
             <div className="reg-success-steps">
               <div className="reg-step">
@@ -6138,19 +8291,24 @@ function LoginView({
                 <span className="reg-step-num pending">2</span>
                 <div>
                   <strong>Awaiting admin verification</strong>
-                  <small>The barangay admin will review and approve your account</small>
+                  <small>
+                    The barangay admin will review and approve your account
+                  </small>
                 </div>
               </div>
               <div className="reg-step">
                 <span className="reg-step-num pending">3</span>
                 <div>
                   <strong>Access granted</strong>
-                  <small>Once approved, you can sign in and access all services</small>
+                  <small>
+                    Once approved, you can sign in and access all services
+                  </small>
                 </div>
               </div>
             </div>
             <p className="reg-success-note">
-              📋 Please visit the <strong>Barangay Hall</strong> or wait for a notification once your account has been approved.
+              📋 Please visit the <strong>Barangay Hall</strong> or wait for a
+              notification once your account has been approved.
             </p>
             <button
               className="primary-button full"
@@ -6164,18 +8322,40 @@ function LoginView({
 
       {/* ── Pending Account Login Modal ───────────────────────────────── */}
       {pendingLoginOpen && (
-        <div className="modal-backdrop" onMouseDown={() => setPendingLoginOpen(false)}>
-          <section className="modal reg-success-modal" onMouseDown={(e) => e.stopPropagation()}>
-            <div className="reg-success-icon" style={{ background: "#fffbeb", border: "2px solid #fde68a" }}>
-              <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+        <div
+          className="modal-backdrop"
+          onMouseDown={() => setPendingLoginOpen(false)}
+        >
+          <section
+            className="modal reg-success-modal"
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            <div
+              className="reg-success-icon"
+              style={{ background: "#fffbeb", border: "2px solid #fde68a" }}
+            >
+              <svg
+                width="38"
+                height="38"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#d97706"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
                 <circle cx="12" cy="12" r="10" />
                 <line x1="12" y1="8" x2="12" y2="12" />
                 <line x1="12" y1="16" x2="12.01" y2="16" />
               </svg>
             </div>
-            <h2 className="reg-success-title" style={{ color: "#92400e" }}>Account Pending Approval</h2>
+            <h2 className="reg-success-title" style={{ color: "#92400e" }}>
+              Account Pending Approval
+            </h2>
             <p className="reg-success-subtitle">
-              Your account has been registered but is still <strong>waiting for verification</strong> by the barangay administration.
+              Your account has been registered but is still{" "}
+              <strong>waiting for verification</strong> by the barangay
+              administration.
             </p>
             <div className="reg-success-steps">
               <div className="reg-step">
@@ -6189,24 +8369,38 @@ function LoginView({
                 <span className="reg-step-num pending">⏳</span>
                 <div>
                   <strong>Awaiting admin verification</strong>
-                  <small>A barangay admin will review your submitted information</small>
+                  <small>
+                    A barangay admin will review your submitted information
+                  </small>
                 </div>
               </div>
               <div className="reg-step">
                 <span className="reg-step-num pending">3</span>
                 <div>
                   <strong>Access will be granted</strong>
-                  <small>You can sign in once the admin activates your account</small>
+                  <small>
+                    You can sign in once the admin activates your account
+                  </small>
                 </div>
               </div>
             </div>
-            <p className="reg-success-note" style={{ background: "#fffbeb", border: "1px solid #fde68a", color: "#92400e" }}>
-              🏛️ Visit the <strong>Barangay Hall</strong> in person to speed up verification, or wait for a notification.
+            <p
+              className="reg-success-note"
+              style={{
+                background: "#fffbeb",
+                border: "1px solid #fde68a",
+                color: "#92400e",
+              }}
+            >
+              🏛️ Visit the <strong>Barangay Hall</strong> in person to speed up
+              verification, or wait for a notification.
             </p>
             <button
               className="primary-button full"
               onClick={() => setPendingLoginOpen(false)}
-              style={{ background: "linear-gradient(135deg, #d97706, #b45309)" }}
+              style={{
+                background: "linear-gradient(135deg, #d97706, #b45309)",
+              }}
             >
               Understood, I'll wait
             </button>
@@ -6216,7 +8410,6 @@ function LoginView({
     </div>
   );
 }
-
 
 // ─── Modal ───────────────────────────────────────────────────────────────────
 
@@ -6283,7 +8476,9 @@ function CalendarView({
   viewingEvent,
   setViewingEvent,
 }: CalendarViewProps) {
-  const [currentDate, setCurrentDate] = useState<Date>(() => new Date(2026, 9, 1));
+  const [currentDate, setCurrentDate] = useState<Date>(
+    () => new Date(2026, 9, 1),
+  );
   const [viewMode, setViewMode] = useState<"month" | "agenda">("month");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -6309,10 +8504,14 @@ function CalendarView({
   const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
 
   function handlePrevMonth() {
-    setCurrentDate((prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
+    setCurrentDate(
+      (prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1),
+    );
   }
   function handleNextMonth() {
-    setCurrentDate((prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
+    setCurrentDate(
+      (prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1),
+    );
   }
   function handleToday() {
     setCurrentDate(new Date(2026, 9, 1));
@@ -6385,7 +8584,11 @@ function CalendarView({
   }
 
   function handleConfirmDelete(id: number) {
-    if (window.confirm("Are you sure you want to remove this event from the calendar?")) {
+    if (
+      window.confirm(
+        "Are you sure you want to remove this event from the calendar?",
+      )
+    ) {
       onDeleteEvent(id);
       if (viewingEvent?.id === id) setViewingEvent(null);
       if (formOpen) setFormOpen(false);
@@ -6395,7 +8598,7 @@ function CalendarView({
   function getGoogleCalendarUrl(ev: CommunityEvent) {
     const title = encodeURIComponent(ev.title);
     const details = encodeURIComponent(
-      `${ev.description || ""}\n\nOrganizer: ${ev.organizer || "Barangay San Isidro"}\nLocation: ${ev.location || "Barangay Hall"}`
+      `${ev.description || ""}\n\nOrganizer: ${ev.organizer || "Barangay San Isidro"}\nLocation: ${ev.location || "Barangay Hall"}`,
     );
     const loc = encodeURIComponent(ev.location || "Barangay Hall");
     let startIso = "";
@@ -6431,11 +8634,16 @@ function CalendarView({
       "END:VCALENDAR",
     ].join("\r\n");
 
-    const blob = new Blob([icsContent], { type: "text/calendar;charset=utf-8" });
+    const blob = new Blob([icsContent], {
+      type: "text/calendar;charset=utf-8",
+    });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.setAttribute("download", `${ev.title.toLowerCase().replace(/[^a-z0-9]/g, "_")}.ics`);
+    link.setAttribute(
+      "download",
+      `${ev.title.toLowerCase().replace(/[^a-z0-9]/g, "_")}.ics`,
+    );
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -6455,7 +8663,10 @@ function CalendarView({
 
   // Filter events
   const filteredEvents = events.filter((ev) => {
-    if (categoryFilter !== "all" && (ev.type || "community") !== categoryFilter) {
+    if (
+      categoryFilter !== "all" &&
+      (ev.type || "community") !== categoryFilter
+    ) {
       return false;
     }
     if (searchQuery.trim()) {
@@ -6471,8 +8682,16 @@ function CalendarView({
 
   // Calendar cells computation
   const firstDayOfWeek = new Date(currentYear, currentMonthIdx, 1).getDay();
-  const totalDaysInMonth = new Date(currentYear, currentMonthIdx + 1, 0).getDate();
-  const totalDaysInPrevMonth = new Date(currentYear, currentMonthIdx, 0).getDate();
+  const totalDaysInMonth = new Date(
+    currentYear,
+    currentMonthIdx + 1,
+    0,
+  ).getDate();
+  const totalDaysInPrevMonth = new Date(
+    currentYear,
+    currentMonthIdx,
+    0,
+  ).getDate();
 
   type CalendarCell = {
     dayNumber: number;
@@ -6486,17 +8705,33 @@ function CalendarView({
     const day = totalDaysInPrevMonth - i;
     const prevMonthDate = new Date(currentYear, currentMonthIdx - 1, day);
     const dStr = `${prevMonthDate.getFullYear()}-${String(prevMonthDate.getMonth() + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-    cells.push({ dayNumber: day, dateStr: dStr, isCurrentMonth: false, isToday: dStr === todayStr });
+    cells.push({
+      dayNumber: day,
+      dateStr: dStr,
+      isCurrentMonth: false,
+      isToday: dStr === todayStr,
+    });
   }
   for (let day = 1; day <= totalDaysInMonth; day++) {
     const dStr = `${currentYear}-${String(currentMonthIdx + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-    cells.push({ dayNumber: day, dateStr: dStr, isCurrentMonth: true, isToday: dStr === todayStr });
+    cells.push({
+      dayNumber: day,
+      dateStr: dStr,
+      isCurrentMonth: true,
+      isToday: dStr === todayStr,
+    });
   }
-  const remainingCells = cells.length <= 35 ? 35 - cells.length : 42 - cells.length;
+  const remainingCells =
+    cells.length <= 35 ? 35 - cells.length : 42 - cells.length;
   for (let day = 1; day <= remainingCells; day++) {
     const nextMonthDate = new Date(currentYear, currentMonthIdx + 1, day);
     const dStr = `${nextMonthDate.getFullYear()}-${String(nextMonthDate.getMonth() + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-    cells.push({ dayNumber: day, dateStr: dStr, isCurrentMonth: false, isToday: dStr === todayStr });
+    cells.push({
+      dayNumber: day,
+      dateStr: dStr,
+      isCurrentMonth: false,
+      isToday: dStr === todayStr,
+    });
   }
 
   function getEventsForCell(cell: CalendarCell) {
@@ -6512,8 +8747,10 @@ function CalendarView({
   }
 
   const agendaEvents = [...filteredEvents].sort((a, b) => {
-    const dateA = a.date || `${currentYear}-10-${String(a.day).padStart(2, "0")}`;
-    const dateB = b.date || `${currentYear}-10-${String(b.day).padStart(2, "0")}`;
+    const dateA =
+      a.date || `${currentYear}-10-${String(a.day).padStart(2, "0")}`;
+    const dateB =
+      b.date || `${currentYear}-10-${String(b.day).padStart(2, "0")}`;
     return dateA.localeCompare(dateB);
   });
 
@@ -6532,7 +8769,10 @@ function CalendarView({
         <div>
           <p className="eyebrow">COMMUNITY SCHEDULE</p>
           <h1>Events calendar</h1>
-          <p>Plan ahead, attend activities, and stay involved in Barangay San Isidro.</p>
+          <p>
+            Plan ahead, attend activities, and stay involved in Barangay San
+            Isidro.
+          </p>
         </div>
         <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
           {isAdmin && (
@@ -6558,7 +8798,14 @@ function CalendarView({
           marginBottom: "16px",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            flexWrap: "wrap",
+          }}
+        >
           <div className="view-switch-group">
             <button
               className={`view-switch-btn ${viewMode === "month" ? "active" : ""}`}
@@ -6574,7 +8821,8 @@ function CalendarView({
               title="Agenda List View"
               id="view-agenda-btn"
             >
-              <Icon name="document" size={16} /> Agenda ({filteredEvents.length})
+              <Icon name="document" size={16} /> Agenda ({filteredEvents.length}
+              )
             </button>
           </div>
 
@@ -6621,12 +8869,20 @@ function CalendarView({
           </div>
         </div>
 
-        <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", alignItems: "center" }}>
+        <div
+          style={{
+            display: "flex",
+            gap: "6px",
+            flexWrap: "wrap",
+            alignItems: "center",
+          }}
+        >
           {categories.map((cat) => {
             const count =
               cat.id === "all"
                 ? events.length
-                : events.filter((e) => (e.type || "community") === cat.id).length;
+                : events.filter((e) => (e.type || "community") === cat.id)
+                    .length;
             return (
               <button
                 key={cat.id}
@@ -6677,7 +8933,14 @@ function CalendarView({
               >
                 ›
               </button>
-              <h2 style={{ margin: 0, fontSize: "1.2rem", fontWeight: "700", color: "#1e293b" }}>
+              <h2
+                style={{
+                  margin: 0,
+                  fontSize: "1.2rem",
+                  fontWeight: "700",
+                  color: "#1e293b",
+                }}
+              >
                 {monthYearTitle}
               </h2>
             </div>
@@ -6711,7 +8974,8 @@ function CalendarView({
                     }
                   }}
                   style={{
-                    cursor: isAdmin && cell.isCurrentMonth ? "pointer" : "default",
+                    cursor:
+                      isAdmin && cell.isCurrentMonth ? "pointer" : "default",
                     position: "relative",
                   }}
                   title={
@@ -6752,7 +9016,14 @@ function CalendarView({
                     )}
                   </div>
 
-                  <div style={{ display: "flex", flexDirection: "column", gap: "3px", marginTop: "2px" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "3px",
+                      marginTop: "2px",
+                    }}
+                  >
                     {cellEvents.map((ev) => {
                       const isRsvp = userRsvps.includes(ev.id);
                       return (
@@ -6821,7 +9092,9 @@ function CalendarView({
         </section>
       ) : (
         /* Agenda List View */
-        <section style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+        <section
+          style={{ display: "flex", flexDirection: "column", gap: "12px" }}
+        >
           {agendaEvents.length === 0 ? (
             <div
               style={{
@@ -6848,7 +9121,13 @@ function CalendarView({
               >
                 <Icon name="calendar" size={26} />
               </div>
-              <h3 style={{ margin: "0 0 6px", color: "#334155", fontSize: "16px" }}>
+              <h3
+                style={{
+                  margin: "0 0 6px",
+                  color: "#334155",
+                  fontSize: "16px",
+                }}
+              >
                 No events found
               </h3>
               <p style={{ margin: 0, fontSize: "13px" }}>
@@ -6871,11 +9150,15 @@ function CalendarView({
               const isRsvp = userRsvps.includes(ev.id);
               const evDate = ev.date ? new Date(ev.date + "T00:00:00") : null;
               const monthLabel = evDate
-                ? evDate.toLocaleString("en-US", { month: "short" }).toUpperCase()
+                ? evDate
+                    .toLocaleString("en-US", { month: "short" })
+                    .toUpperCase()
                 : "OCT";
               const dayLabel = ev.day || (evDate ? evDate.getDate() : 1);
               const weekday = evDate
-                ? evDate.toLocaleString("en-US", { weekday: "short" }).toUpperCase()
+                ? evDate
+                    .toLocaleString("en-US", { weekday: "short" })
+                    .toUpperCase()
                 : "EVENT";
 
               return (
@@ -6887,7 +9170,18 @@ function CalendarView({
                   </div>
                   <div className="agenda-content">
                     <div className="agenda-meta">
-                      <span className={`date-box event-${ev.type || "community"}`} style={{ padding: "2px 8px", width: "auto", height: "auto", borderRadius: "12px", fontSize: "10.5px", fontWeight: 700, textTransform: "capitalize" }}>
+                      <span
+                        className={`date-box event-${ev.type || "community"}`}
+                        style={{
+                          padding: "2px 8px",
+                          width: "auto",
+                          height: "auto",
+                          borderRadius: "12px",
+                          fontSize: "10.5px",
+                          fontWeight: 700,
+                          textTransform: "capitalize",
+                        }}
+                      >
                         {ev.type || "community"}
                       </span>
                       {ev.organizer && (
@@ -6903,7 +9197,8 @@ function CalendarView({
                         <Icon name="clock" size={13} /> {ev.time || "Time TBD"}
                       </span>
                       <span>
-                        <Icon name="home" size={13} /> {ev.location || "Barangay Hall"}
+                        <Icon name="home" size={13} />{" "}
+                        {ev.location || "Barangay Hall"}
                       </span>
                       {isRsvp && (
                         <span style={{ color: "#166534", fontWeight: 600 }}>
@@ -6934,7 +9229,13 @@ function CalendarView({
                       {isRsvp ? "✓ Attending" : "RSVP"}
                     </button>
                     {isAdmin && (
-                      <div style={{ display: "flex", gap: "6px", marginTop: "4px" }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: "6px",
+                          marginTop: "4px",
+                        }}
+                      >
                         <button
                           className="icon-button"
                           onClick={() => handleOpenEdit(ev)}
@@ -6968,7 +9269,9 @@ function CalendarView({
           close={() => setViewingEvent(null)}
           maxWidth={580}
         >
-          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "16px" }}
+          >
             <div>
               <div
                 style={{
@@ -7022,7 +9325,13 @@ function CalendarView({
                 border: "1px solid #e2e8f0",
               }}
             >
-              <div style={{ display: "flex", alignItems: "flex-start", gap: "10px" }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: "10px",
+                }}
+              >
                 <span
                   style={{
                     background: "#e0f2fe",
@@ -7035,19 +9344,31 @@ function CalendarView({
                   <Icon name="calendar" size={18} />
                 </span>
                 <div>
-                  <small style={{ color: "#64748b", display: "block" }}>Date</small>
+                  <small style={{ color: "#64748b", display: "block" }}>
+                    Date
+                  </small>
                   <strong style={{ fontSize: "13px", color: "#1e293b" }}>
                     {viewingEvent.date
-                      ? new Date(viewingEvent.date + "T00:00:00").toLocaleDateString(
-                          "en-US",
-                          { weekday: "long", month: "long", day: "numeric", year: "numeric" },
-                        )
+                      ? new Date(
+                          viewingEvent.date + "T00:00:00",
+                        ).toLocaleDateString("en-US", {
+                          weekday: "long",
+                          month: "long",
+                          day: "numeric",
+                          year: "numeric",
+                        })
                       : `Day ${viewingEvent.day}`}
                   </strong>
                 </div>
               </div>
 
-              <div style={{ display: "flex", alignItems: "flex-start", gap: "10px" }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: "10px",
+                }}
+              >
                 <span
                   style={{
                     background: "#fef3c7",
@@ -7060,14 +9381,22 @@ function CalendarView({
                   <Icon name="clock" size={18} />
                 </span>
                 <div>
-                  <small style={{ color: "#64748b", display: "block" }}>Time</small>
+                  <small style={{ color: "#64748b", display: "block" }}>
+                    Time
+                  </small>
                   <strong style={{ fontSize: "13px", color: "#1e293b" }}>
                     {viewingEvent.time || "Scheduled Activity"}
                   </strong>
                 </div>
               </div>
 
-              <div style={{ display: "flex", alignItems: "flex-start", gap: "10px" }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: "10px",
+                }}
+              >
                 <span
                   style={{
                     background: "#dcfce7",
@@ -7080,7 +9409,9 @@ function CalendarView({
                   <Icon name="home" size={18} />
                 </span>
                 <div>
-                  <small style={{ color: "#64748b", display: "block" }}>Venue / Location</small>
+                  <small style={{ color: "#64748b", display: "block" }}>
+                    Venue / Location
+                  </small>
                   <strong style={{ fontSize: "13px", color: "#1e293b" }}>
                     {viewingEvent.location || "Barangay Hall"}
                   </strong>
@@ -7090,7 +9421,13 @@ function CalendarView({
 
             {/* Description */}
             <div>
-              <h4 style={{ margin: "0 0 6px", fontSize: "13px", color: "#475569" }}>
+              <h4
+                style={{
+                  margin: "0 0 6px",
+                  fontSize: "13px",
+                  color: "#475569",
+                }}
+              >
                 About this activity
               </h4>
               <p
@@ -7105,12 +9442,20 @@ function CalendarView({
                   border: "1px solid #e2e8f0",
                 }}
               >
-                {viewingEvent.description || "No additional description provided for this event."}
+                {viewingEvent.description ||
+                  "No additional description provided for this event."}
               </p>
             </div>
 
             {/* Calendar Export & Share Actions */}
-            <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", paddingTop: "4px" }}>
+            <div
+              style={{
+                display: "flex",
+                gap: "8px",
+                flexWrap: "wrap",
+                paddingTop: "4px",
+              }}
+            >
               <a
                 href={getGoogleCalendarUrl(viewingEvent)}
                 target="_blank"
@@ -7202,11 +9547,15 @@ function CalendarView({
       {/* Admin Add / Edit Modal */}
       {formOpen && (
         <Modal
-          title={editingEvent ? "Edit Community Event" : "Add Event to Calendar"}
+          title={
+            editingEvent ? "Edit Community Event" : "Add Event to Calendar"
+          }
           close={() => setFormOpen(false)}
           maxWidth={540}
         >
-          <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "14px" }}
+          >
             <label className="field">
               Event title *
               <input
@@ -7238,14 +9587,39 @@ function CalendarView({
             </div>
 
             {/* Quick time presets */}
-            <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginTop: "-6px" }}>
-              <span style={{ fontSize: "11px", color: "#64748b", alignSelf: "center" }}>Quick time:</span>
-              {["8:00 AM – 11:00 AM", "9:00 AM – 12:00 PM", "1:00 PM – 4:00 PM", "6:00 AM", "Whole Day"].map((t) => (
+            <div
+              style={{
+                display: "flex",
+                gap: "6px",
+                flexWrap: "wrap",
+                marginTop: "-6px",
+              }}
+            >
+              <span
+                style={{
+                  fontSize: "11px",
+                  color: "#64748b",
+                  alignSelf: "center",
+                }}
+              >
+                Quick time:
+              </span>
+              {[
+                "8:00 AM – 11:00 AM",
+                "9:00 AM – 12:00 PM",
+                "1:00 PM – 4:00 PM",
+                "6:00 AM",
+                "Whole Day",
+              ].map((t) => (
                 <button
                   key={t}
                   type="button"
                   className="ghost-button"
-                  style={{ fontSize: "10.5px", padding: "2px 8px", height: "auto" }}
+                  style={{
+                    fontSize: "10.5px",
+                    padding: "2px 8px",
+                    height: "auto",
+                  }}
                   onClick={() => setForm({ ...form, time: t })}
                 >
                   {t}
@@ -7281,7 +9655,9 @@ function CalendarView({
                 Organizer
                 <input
                   value={form.organizer}
-                  onChange={(e) => setForm({ ...form, organizer: e.target.value })}
+                  onChange={(e) =>
+                    setForm({ ...form, organizer: e.target.value })
+                  }
                   placeholder="e.g. Barangay Health Committee"
                 />
               </label>
@@ -7293,7 +9669,9 @@ function CalendarView({
                 className="small-textarea"
                 rows={4}
                 value={form.description}
-                onChange={(e) => setForm({ ...form, description: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, description: e.target.value })
+                }
                 placeholder="Details, what to bring, eligible participants, and contacts..."
               />
             </label>
@@ -7367,12 +9745,12 @@ function DocumentDetailsModal({
   const progressPercent = isDeclined
     ? "25%"
     : request.status === "Pending"
-    ? "25%"
-    : request.status === "Approved"
-    ? "50%"
-    : request.status === "Ready for Pickup"
-    ? "75%"
-    : "100%";
+      ? "25%"
+      : request.status === "Approved"
+        ? "50%"
+        : request.status === "Ready for Pickup"
+          ? "75%"
+          : "100%";
 
   const steps = [
     { num: 1, label: "Filed" },
@@ -7413,7 +9791,14 @@ function DocumentDetailsModal({
           }}
         >
           <div>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                marginBottom: "4px",
+              }}
+            >
               <span className="doc-tracking-chip">
                 {request.trackingNo}
                 <button
@@ -7425,12 +9810,25 @@ function DocumentDetailsModal({
                 </button>
               </span>
               {copied && (
-                <span style={{ fontSize: "11px", color: "#166534", fontWeight: 700 }}>
+                <span
+                  style={{
+                    fontSize: "11px",
+                    color: "#166534",
+                    fontWeight: 700,
+                  }}
+                >
                   Copied!
                 </span>
               )}
             </div>
-            <h2 style={{ margin: "4px 0 2px 0", fontSize: "18px", fontWeight: 800, color: "#143327" }}>
+            <h2
+              style={{
+                margin: "4px 0 2px 0",
+                fontSize: "18px",
+                fontWeight: 800,
+                color: "#143327",
+              }}
+            >
               {request.docType}
             </h2>
             <div style={{ fontSize: "12px", color: "#607b71" }}>
@@ -7438,10 +9836,22 @@ function DocumentDetailsModal({
             </div>
           </div>
 
-          <div style={{ textAlign: "right", display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "6px" }}>
+          <div
+            style={{
+              textAlign: "right",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "flex-end",
+              gap: "6px",
+            }}
+          >
             <span
               className={`status ${statusCssMap[request.status] || request.status.toLowerCase()}`}
-              style={{ fontSize: "13px", padding: "4px 12px", borderRadius: "16px" }}
+              style={{
+                fontSize: "13px",
+                padding: "4px 12px",
+                borderRadius: "16px",
+              }}
             >
               {request.status}
             </span>
@@ -7452,8 +9862,8 @@ function DocumentDetailsModal({
                   request.paymentStatus === "Paid at Counter"
                     ? "paid"
                     : request.paymentStatus === "Waived"
-                    ? "waived"
-                    : "unpaid"
+                      ? "waived"
+                      : "unpaid"
                 }`}
               >
                 {request.paymentStatus}
@@ -7465,12 +9875,21 @@ function DocumentDetailsModal({
         {/* Visual Progress Stepper */}
         <div style={{ padding: "8px 4px" }}>
           <div className="doc-stepper">
-            <div className="doc-stepper-progress" style={{ width: progressPercent }} />
+            <div
+              className="doc-stepper-progress"
+              style={{ width: progressPercent }}
+            />
             {steps.map((st) => {
               const isPast = currentStep > st.num;
               const isCurr = currentStep === st.num;
               const isDeclinedStep = isDeclined && st.num === 2;
-              const stepClass = isDeclinedStep ? "declined" : isPast ? "done" : isCurr ? "active" : "";
+              const stepClass = isDeclinedStep
+                ? "declined"
+                : isPast
+                  ? "done"
+                  : isCurr
+                    ? "active"
+                    : "";
 
               return (
                 <div key={st.num} className={`doc-step ${stepClass}`}>
@@ -7486,12 +9905,18 @@ function DocumentDetailsModal({
 
         {/* Ready for pickup notification banner */}
         {request.status === "Ready for Pickup" && (
-          <div className="doc-admin-note ready-note" style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+          <div
+            className="doc-admin-note ready-note"
+            style={{ display: "flex", gap: "10px", alignItems: "center" }}
+          >
             <Icon name="check" size={20} />
             <div>
-              <strong>Ready for pickup at {request.pickupWindow || "Window 1"}!</strong>
+              <strong>
+                Ready for pickup at {request.pickupWindow || "Window 1"}!
+              </strong>
               <div style={{ fontSize: "11px", marginTop: "2px" }}>
-                Please present a valid government-issued ID and pay any applicable fees at the cashier upon claiming.
+                Please present a valid government-issued ID and pay any
+                applicable fees at the cashier upon claiming.
               </div>
             </div>
           </div>
@@ -7499,11 +9924,15 @@ function DocumentDetailsModal({
 
         {/* Admin Feedback note (if any) */}
         {request.adminFeedback && (
-          <div className={`doc-admin-note ${isDeclined ? "declined-note" : ""}`}>
+          <div
+            className={`doc-admin-note ${isDeclined ? "declined-note" : ""}`}
+          >
             <Icon name={isDeclined ? "alert" : "document"} size={18} />
             <div>
               <strong>Barangay Office Remarks:</strong>
-              <div style={{ marginTop: "4px", lineHeight: 1.5 }}>{request.adminFeedback}</div>
+              <div style={{ marginTop: "4px", lineHeight: 1.5 }}>
+                {request.adminFeedback}
+              </div>
             </div>
           </div>
         )}
@@ -7528,43 +9957,76 @@ function DocumentDetailsModal({
           >
             Request Information
           </h4>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", fontSize: "12px" }}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: "12px",
+              fontSize: "12px",
+            }}
+          >
             <div>
-              <span style={{ color: "#798f86", display: "block" }}>Resident Name</span>
-              <strong style={{ color: "#163327" }}>{request.residentName}</strong>
+              <span style={{ color: "#798f86", display: "block" }}>
+                Resident Name
+              </span>
+              <strong style={{ color: "#163327" }}>
+                {request.residentName}
+              </strong>
             </div>
             <div>
-              <span style={{ color: "#798f86", display: "block" }}>Email Address</span>
+              <span style={{ color: "#798f86", display: "block" }}>
+                Email Address
+              </span>
               <span style={{ color: "#163327" }}>{request.residentEmail}</span>
             </div>
             <div>
-              <span style={{ color: "#798f86", display: "block" }}>Contact Number</span>
-              <span style={{ color: "#163327" }}>{request.residentMobile || "—"}</span>
+              <span style={{ color: "#798f86", display: "block" }}>
+                Contact Number
+              </span>
+              <span style={{ color: "#163327" }}>
+                {request.residentMobile || "—"}
+              </span>
             </div>
             <div>
-              <span style={{ color: "#798f86", display: "block" }}>Registered Address</span>
+              <span style={{ color: "#798f86", display: "block" }}>
+                Registered Address
+              </span>
               <span style={{ color: "#163327" }}>
                 {request.residentAddress} ({request.purok})
               </span>
             </div>
             <div>
-              <span style={{ color: "#798f86", display: "block" }}>Date Filed</span>
+              <span style={{ color: "#798f86", display: "block" }}>
+                Date Filed
+              </span>
               <span style={{ color: "#163327" }}>
                 {request.dateFiled} at {request.timeFiled}
               </span>
             </div>
             <div>
-              <span style={{ color: "#798f86", display: "block" }}>Claiming Window</span>
-              <span style={{ color: "#163327" }}>{request.pickupWindow || "Window 1 (Main Office)"}</span>
+              <span style={{ color: "#798f86", display: "block" }}>
+                Claiming Window
+              </span>
+              <span style={{ color: "#163327" }}>
+                {request.pickupWindow || "Window 1 (Main Office)"}
+              </span>
             </div>
             <div style={{ gridColumn: "1 / -1" }}>
-              <span style={{ color: "#798f86", display: "block" }}>Purpose</span>
-              <span style={{ color: "#163327", fontWeight: 600 }}>{request.purpose}</span>
+              <span style={{ color: "#798f86", display: "block" }}>
+                Purpose
+              </span>
+              <span style={{ color: "#163327", fontWeight: 600 }}>
+                {request.purpose}
+              </span>
             </div>
             {request.notes && (
               <div style={{ gridColumn: "1 / -1" }}>
-                <span style={{ color: "#798f86", display: "block" }}>Additional Notes / Remarks</span>
-                <span style={{ color: "#375247", fontStyle: "italic" }}>{request.notes}</span>
+                <span style={{ color: "#798f86", display: "block" }}>
+                  Additional Notes / Remarks
+                </span>
+                <span style={{ color: "#375247", fontStyle: "italic" }}>
+                  {request.notes}
+                </span>
               </div>
             )}
           </div>
@@ -7635,13 +10097,23 @@ function CertificateModal({
   let bodyContent = (
     <>
       <p className="cert-body">
-        This is to certify that <strong>{request.residentName.toUpperCase()}</strong>, of legal age, Filipino citizen, and a bona fide resident of <strong>{request.residentAddress}</strong>, {request.purok}, Barangay San Isidro, City of Pasig, is known to be a person of good moral character and a law-abiding member of the community.
+        This is to certify that{" "}
+        <strong>{request.residentName.toUpperCase()}</strong>, of legal age,
+        Filipino citizen, and a bona fide resident of{" "}
+        <strong>{request.residentAddress}</strong>, {request.purok}, Barangay
+        San Isidro, City of Pasig, is known to be a person of good moral
+        character and a law-abiding member of the community.
       </p>
       <p className="cert-body">
-        This further certifies that according to the records on file in this office, the subject individual has <strong>NO DEROGATORY RECORD</strong> nor any pending administrative or criminal complaint filed against them as of this date.
+        This further certifies that according to the records on file in this
+        office, the subject individual has <strong>NO DEROGATORY RECORD</strong>{" "}
+        nor any pending administrative or criminal complaint filed against them
+        as of this date.
       </p>
       <p className="cert-body">
-        This clearance is being issued upon the request of the interested party for the purpose of: <strong>{request.purpose.toUpperCase()}</strong>, and for whatever legal purpose it may serve.
+        This clearance is being issued upon the request of the interested party
+        for the purpose of: <strong>{request.purpose.toUpperCase()}</strong>,
+        and for whatever legal purpose it may serve.
       </p>
     </>
   );
@@ -7652,10 +10124,18 @@ function CertificateModal({
     bodyContent = (
       <>
         <p className="cert-body">
-          This is to certify that <strong>{request.residentName.toUpperCase()}</strong>, of legal age, Filipino, and residing at <strong>{request.residentAddress}</strong>, {request.purok}, Barangay San Isidro, belongs to the <strong>indigent / low-income families</strong> of this barangay.
+          This is to certify that{" "}
+          <strong>{request.residentName.toUpperCase()}</strong>, of legal age,
+          Filipino, and residing at <strong>{request.residentAddress}</strong>,{" "}
+          {request.purok}, Barangay San Isidro, belongs to the{" "}
+          <strong>indigent / low-income families</strong> of this barangay.
         </p>
         <p className="cert-body">
-          This certification is issued upon the request of the above-named person for the purpose of availing: <strong>{request.purpose.toUpperCase()}</strong> (e.g., Financial, Medical, Educational, or Legal Assistance from government or private entities).
+          This certification is issued upon the request of the above-named
+          person for the purpose of availing:{" "}
+          <strong>{request.purpose.toUpperCase()}</strong> (e.g., Financial,
+          Medical, Educational, or Legal Assistance from government or private
+          entities).
         </p>
       </>
     );
@@ -7664,13 +10144,20 @@ function CertificateModal({
     bodyContent = (
       <>
         <p className="cert-body">
-          This is to certify that <strong>{request.residentName.toUpperCase()}</strong>, of legal age, Filipino, is an established and bona fide resident of <strong>{request.residentAddress}</strong>, {request.purok}, Barangay San Isidro, City of Pasig.
+          This is to certify that{" "}
+          <strong>{request.residentName.toUpperCase()}</strong>, of legal age,
+          Filipino, is an established and bona fide resident of{" "}
+          <strong>{request.residentAddress}</strong>, {request.purok}, Barangay
+          San Isidro, City of Pasig.
         </p>
         <p className="cert-body">
-          Records in this office confirm that the subject individual has maintained domicile and residence within the territorial jurisdiction of this barangay in good standing.
+          Records in this office confirm that the subject individual has
+          maintained domicile and residence within the territorial jurisdiction
+          of this barangay in good standing.
         </p>
         <p className="cert-body">
-          This certification is issued upon request of the interested party for the purpose of: <strong>{request.purpose.toUpperCase()}</strong>.
+          This certification is issued upon request of the interested party for
+          the purpose of: <strong>{request.purpose.toUpperCase()}</strong>.
         </p>
       </>
     );
@@ -7679,10 +10166,17 @@ function CertificateModal({
     bodyContent = (
       <>
         <p className="cert-body">
-          This is to certify that the business enterprise registered under the ownership / management of <strong>{request.residentName.toUpperCase()}</strong>, located at <strong>{request.residentAddress}</strong>, {request.purok}, Barangay San Isidro, has complied with the requirements and ordinances of this Barangay.
+          This is to certify that the business enterprise registered under the
+          ownership / management of{" "}
+          <strong>{request.residentName.toUpperCase()}</strong>, located at{" "}
+          <strong>{request.residentAddress}</strong>, {request.purok}, Barangay
+          San Isidro, has complied with the requirements and ordinances of this
+          Barangay.
         </p>
         <p className="cert-body">
-          This Business Clearance is granted for the purpose of: <strong>{request.purpose.toUpperCase()}</strong>, subject to renewal in accordance with applicable municipal laws.
+          This Business Clearance is granted for the purpose of:{" "}
+          <strong>{request.purpose.toUpperCase()}</strong>, subject to renewal
+          in accordance with applicable municipal laws.
         </p>
       </>
     );
@@ -7691,17 +10185,26 @@ function CertificateModal({
     bodyContent = (
       <>
         <p className="cert-body">
-          This is to certify that <strong>{request.residentName.toUpperCase()}</strong>, residing at <strong>{request.residentAddress}</strong>, {request.purok}, Barangay San Isidro, is known to this office to be a person of good moral character, exemplary conduct, and peace-loving citizen.
+          This is to certify that{" "}
+          <strong>{request.residentName.toUpperCase()}</strong>, residing at{" "}
+          <strong>{request.residentAddress}</strong>, {request.purok}, Barangay
+          San Isidro, is known to this office to be a person of good moral
+          character, exemplary conduct, and peace-loving citizen.
         </p>
         <p className="cert-body">
-          This certification is issued upon their request for the purpose of: <strong>{request.purpose.toUpperCase()}</strong>.
+          This certification is issued upon their request for the purpose of:{" "}
+          <strong>{request.purpose.toUpperCase()}</strong>.
         </p>
       </>
     );
   }
 
   return (
-    <Modal title={`Official Certificate Preview — ${request.trackingNo}`} close={close} maxWidth={760}>
+    <Modal
+      title={`Official Certificate Preview — ${request.trackingNo}`}
+      close={close}
+      maxWidth={760}
+    >
       <div
         style={{
           display: "flex",
@@ -7715,11 +10218,18 @@ function CertificateModal({
         <div>
           <span
             className="status approved"
-            style={{ fontWeight: 700, fontSize: "12px", padding: "4px 10px", borderRadius: "12px" }}
+            style={{
+              fontWeight: 700,
+              fontSize: "12px",
+              padding: "4px 10px",
+              borderRadius: "12px",
+            }}
           >
             Official Electronic Copy
           </span>
-          <span style={{ fontSize: "12px", color: "#64748b", marginLeft: "10px" }}>
+          <span
+            style={{ fontSize: "12px", color: "#64748b", marginLeft: "10px" }}
+          >
             Control No: <strong>{request.controlNo}</strong>
           </span>
         </div>
@@ -7727,7 +10237,12 @@ function CertificateModal({
           <button
             className="primary-button"
             onClick={handlePrint}
-            style={{ display: "flex", alignItems: "center", gap: "6px", padding: "8px 16px" }}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              padding: "8px 16px",
+            }}
           >
             <Icon name="check" size={16} /> Print / Save PDF
           </button>
@@ -7762,7 +10277,11 @@ function CertificateModal({
           {bodyContent}
 
           <p className="cert-closing">
-            ISSUED this <strong>{dayStr}</strong> day of <strong>{monthStr} {yearStr}</strong> at Barangay San Isidro Hall, Pasig City, Metro Manila, Philippines.
+            ISSUED this <strong>{dayStr}</strong> day of{" "}
+            <strong>
+              {monthStr} {yearStr}
+            </strong>{" "}
+            at Barangay San Isidro Hall, Pasig City, Metro Manila, Philippines.
           </p>
 
           {/* Official Signatures */}
@@ -7783,16 +10302,22 @@ function CertificateModal({
           <div className="cert-footer-meta">
             <div>
               <div>
-                OR No.: <strong>OR-{request.trackingNo.replace("BRGY-", "")}</strong>
+                OR No.:{" "}
+                <strong>OR-{request.trackingNo.replace("BRGY-", "")}</strong>
               </div>
               <div>
                 Fee: <strong>{request.fee}</strong> ({request.paymentStatus})
               </div>
               <div>
-                Issued: <strong>{monthStr} {dayStr}, {yearStr}</strong>
+                Issued:{" "}
+                <strong>
+                  {monthStr} {dayStr}, {yearStr}
+                </strong>
               </div>
             </div>
-            <div className="cert-official-seal-stamp">★ OFFICIAL BARANGAY SEAL ★</div>
+            <div className="cert-official-seal-stamp">
+              ★ OFFICIAL BARANGAY SEAL ★
+            </div>
           </div>
         </div>
       </div>
@@ -7807,6 +10332,7 @@ function ResidentDocumentsPage({
   onOpenChat,
   onPrintCertificate,
   onViewDetails,
+  onDeleteRequest,
 }: {
   user: { id: string; name: string; email: string };
   requests: DocumentRequest[];
@@ -7814,13 +10340,19 @@ function ResidentDocumentsPage({
   onOpenChat: (doc: DocumentRequest) => void;
   onPrintCertificate: (req: DocumentRequest) => void;
   onViewDetails: (req: DocumentRequest) => void;
+  onDeleteRequest?: (id: string) => void;
+  onToast?: (msg: string) => void;
 }) {
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
 
   const filtered = requests.filter((r) => {
     const q = search.toLowerCase();
-    const matchSearch = !q || r.docType.toLowerCase().includes(q) || r.purpose.toLowerCase().includes(q) || r.trackingNo.toLowerCase().includes(q);
+    const matchSearch =
+      !q ||
+      r.docType.toLowerCase().includes(q) ||
+      r.purpose.toLowerCase().includes(q) ||
+      r.trackingNo.toLowerCase().includes(q);
     const matchStatus = filterStatus === "all" || r.status === filterStatus;
     return matchSearch && matchStatus;
   });
@@ -7839,7 +10371,9 @@ function ResidentDocumentsPage({
         <div>
           <p className="eyebrow">BARANGAY SERVICES</p>
           <h1>My Document Requests</h1>
-          <p>Apply for barangay documents and track the status of your requests.</p>
+          <p>
+            Apply for barangay documents and track the status of your requests.
+          </p>
         </div>
         <button className="primary-button" onClick={onRequest}>
           <Icon name="plus" /> New request
@@ -7848,7 +10382,14 @@ function ResidentDocumentsPage({
 
       {/* Summary KPI cards */}
       <div className="doc-kpi-row">
-        {(["Pending", "Approved", "Ready for Pickup", "Released"] as RequestStatus[]).map((s) => (
+        {(
+          [
+            "Pending",
+            "Approved",
+            "Ready for Pickup",
+            "Released",
+          ] as RequestStatus[]
+        ).map((s) => (
           <button
             key={s}
             className={`doc-kpi-card${filterStatus === s ? " active" : ""}`}
@@ -7856,7 +10397,9 @@ function ResidentDocumentsPage({
           >
             <span className={`doc-kpi-dot ${statusCssMap[s]}`} />
             <span className="doc-kpi-label">{s}</span>
-            <span className="doc-kpi-count">{requests.filter((r) => r.status === s).length}</span>
+            <span className="doc-kpi-count">
+              {requests.filter((r) => r.status === s).length}
+            </span>
           </button>
         ))}
       </div>
@@ -7872,13 +10415,19 @@ function ResidentDocumentsPage({
             />
           </label>
           {filterStatus !== "all" && (
-            <button className="today-button" onClick={() => setFilterStatus("all")}>
+            <button
+              className="today-button"
+              onClick={() => setFilterStatus("all")}
+            >
               Clear filter
             </button>
           )}
         </div>
 
-        <div className="table-head" style={{ gridTemplateColumns: "2fr 2fr 1.2fr 1.2fr 1.2fr" }}>
+        <div
+          className="table-head"
+          style={{ gridTemplateColumns: "2fr 2fr 1.2fr 1.2fr 1.2fr" }}
+        >
           <span>Document</span>
           <span>Purpose</span>
           <span>Status</span>
@@ -7889,26 +10438,71 @@ function ResidentDocumentsPage({
         {filtered.length === 0 ? (
           <div className="empty-table-state">
             <Icon name="document" size={32} />
-            <p>{requests.length === 0 ? "No document requests yet. Click \"New request\" to get started." : "No requests match your filter."}</p>
+            <p>
+              {requests.length === 0
+                ? 'No document requests yet. Click "New request" to get started.'
+                : "No requests match your filter."}
+            </p>
           </div>
         ) : (
           filtered.map((r) => (
-            <div className="table-row" key={r.id} style={{ gridTemplateColumns: "2fr 2fr 1.2fr 1.2fr 1.2fr" }}>
+            <div
+              className="table-row"
+              key={r.id}
+              style={{ gridTemplateColumns: "2fr 2fr 1.2fr 1.2fr 1.2fr" }}
+            >
               <span>
                 <strong style={{ display: "block" }}>{r.docType}</strong>
-                <small style={{ color: "#798b84", fontSize: "11px" }}>{r.trackingNo}</small>
+                <small style={{ color: "#798b84", fontSize: "11px" }}>
+                  {r.trackingNo}
+                </small>
               </span>
-              <span style={{ color: "#798b84", fontSize: "13px" }}>{r.purpose}</span>
+              <span style={{ color: "#798b84", fontSize: "13px" }}>
+                {r.purpose}
+              </span>
               <span>
-                <b className={`status ${statusCssMap[r.status] || r.status.toLowerCase()}`}>{r.status}</b>
+                <b
+                  className={`status ${statusCssMap[r.status] || r.status.toLowerCase()}`}
+                >
+                  {r.status}
+                </b>
               </span>
               <span style={{ fontSize: "13px" }}>{r.dateFiled}</span>
               <span style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
-                <button className="row-action" onClick={() => onViewDetails(r)}>Details</button>
-                {(r.status === "Approved" || r.status === "Ready for Pickup" || r.status === "Released") && (
-                  <button className="row-action" onClick={() => onPrintCertificate(r)}>Print</button>
+                <button className="row-action" onClick={() => onViewDetails(r)}>
+                  Details
+                </button>
+                {(r.status === "Approved" ||
+                  r.status === "Ready for Pickup" ||
+                  r.status === "Released") && (
+                  <button
+                    className="row-action"
+                    onClick={() => onPrintCertificate(r)}
+                  >
+                    Print
+                  </button>
                 )}
-                <button className="row-action" onClick={() => onOpenChat(r)}>Message</button>
+                <button className="row-action" onClick={() => onOpenChat(r)}>
+                  Message
+                </button>
+                {onDeleteRequest && (
+                  <button
+                    className="row-action"
+                    style={{ color: "#ef4444", borderColor: "#fecaca" }}
+                    onClick={() => {
+                      if (
+                        window.confirm(
+                          `Are you sure you want to remove your document request for ${r.docType} (${r.trackingNo})?`,
+                        )
+                      ) {
+                        onDeleteRequest(r.id);
+                      }
+                    }}
+                    title="Remove this request"
+                  >
+                    Remove
+                  </button>
+                )}
               </span>
             </div>
           ))
@@ -7925,6 +10519,7 @@ function AdminDocumentsPage({
   onOpenChat,
   onPrintCertificate,
   onViewDetails,
+  onDeleteRequest,
 }: {
   requests: DocumentRequest[];
   onUpdateRequest: (id: string, updates: Partial<DocumentRequest>) => void;
@@ -7932,6 +10527,7 @@ function AdminDocumentsPage({
   onOpenChat: (email: string) => void;
   onPrintCertificate: (req: DocumentRequest) => void;
   onViewDetails: (req: DocumentRequest) => void;
+  onDeleteRequest?: (id: string) => void;
 }) {
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
@@ -7949,7 +10545,8 @@ function AdminDocumentsPage({
 
   const filtered = requests.filter((r) => {
     const q = search.toLowerCase();
-    const matchSearch = !q ||
+    const matchSearch =
+      !q ||
       r.residentName.toLowerCase().includes(q) ||
       r.docType.toLowerCase().includes(q) ||
       r.purpose.toLowerCase().includes(q) ||
@@ -7968,15 +10565,27 @@ function AdminDocumentsPage({
       updatedAt: new Date().toISOString(),
     };
     if (newStatus === "Ready for Pickup") updates.pickupWindow = pickupWindow;
-    if (newStatus === "Released") updates.releasedDate = new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    if (newStatus === "Released")
+      updates.releasedDate = new Date().toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
     onUpdateRequest(selected.id, updates);
-    onToast(`Request ${newStatus === "Declined" ? "declined" : "updated to \"" + newStatus + "\""}. Resident notified.`);
+    onToast(
+      `Request ${newStatus === "Declined" ? "declined" : 'updated to "' + newStatus + '"'}. Resident notified.`,
+    );
     setSelected(null);
     setFeedback("");
     setPickupWindow("Window 1");
   }
 
-  const initials = (name: string) => name.split(" ").map((x) => x[0]).slice(0, 2).join("");
+  const initials = (name: string) =>
+    name
+      .split(" ")
+      .map((x) => x[0])
+      .slice(0, 2)
+      .join("");
 
   return (
     <div className="page inner-page">
@@ -7987,7 +10596,10 @@ function AdminDocumentsPage({
           <p>Review, approve, and release resident document requests.</p>
         </div>
         {pendingCount > 0 && (
-          <span className="status pending" style={{ padding: "6px 16px", borderRadius: 20, fontSize: 13 }}>
+          <span
+            className="status pending"
+            style={{ padding: "6px 16px", borderRadius: 20, fontSize: 13 }}
+          >
             {pendingCount} pending review
           </span>
         )}
@@ -7995,7 +10607,15 @@ function AdminDocumentsPage({
 
       {/* KPI row */}
       <div className="doc-kpi-row">
-        {(["Pending", "Approved", "Ready for Pickup", "Released", "Declined"] as RequestStatus[]).map((s) => (
+        {(
+          [
+            "Pending",
+            "Approved",
+            "Ready for Pickup",
+            "Released",
+            "Declined",
+          ] as RequestStatus[]
+        ).map((s) => (
           <button
             key={s}
             className={`doc-kpi-card${filterStatus === s ? " active" : ""}`}
@@ -8003,7 +10623,9 @@ function AdminDocumentsPage({
           >
             <span className={`doc-kpi-dot ${statusCssMap[s]}`} />
             <span className="doc-kpi-label">{s}</span>
-            <span className="doc-kpi-count">{requests.filter((r) => r.status === s).length}</span>
+            <span className="doc-kpi-count">
+              {requests.filter((r) => r.status === s).length}
+            </span>
           </button>
         ))}
       </div>
@@ -8019,11 +10641,19 @@ function AdminDocumentsPage({
             />
           </label>
           {filterStatus !== "all" && (
-            <button className="today-button" onClick={() => setFilterStatus("all")}>Clear filter</button>
+            <button
+              className="today-button"
+              onClick={() => setFilterStatus("all")}
+            >
+              Clear filter
+            </button>
           )}
         </div>
 
-        <div className="table-head" style={{ gridTemplateColumns: "2fr 1.5fr 1.5fr 1.2fr 1fr 1.2fr" }}>
+        <div
+          className="table-head"
+          style={{ gridTemplateColumns: "2fr 1.5fr 1.5fr 1.2fr 1fr 1.2fr" }}
+        >
           <span>Resident</span>
           <span>Document</span>
           <span>Purpose</span>
@@ -8035,37 +10665,89 @@ function AdminDocumentsPage({
         {filtered.length === 0 ? (
           <div className="empty-table-state">
             <Icon name="document" size={32} />
-            <p>{requests.length === 0 ? "No requests submitted yet." : "No requests match your search or filter."}</p>
+            <p>
+              {requests.length === 0
+                ? "No requests submitted yet."
+                : "No requests match your search or filter."}
+            </p>
           </div>
         ) : (
           filtered.map((r) => (
-            <div className="table-row" key={r.id} style={{ gridTemplateColumns: "2fr 1.5fr 1.5fr 1.2fr 1fr 1.2fr" }}>
+            <div
+              className="table-row"
+              key={r.id}
+              style={{ gridTemplateColumns: "2fr 1.5fr 1.5fr 1.2fr 1fr 1.2fr" }}
+            >
               <span style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <Avatar
                   initials={initials(r.residentName)}
-                  tone={r.status === "Pending" ? "amber" : r.status === "Declined" ? "amber" : "green"}
+                  tone={
+                    r.status === "Pending"
+                      ? "amber"
+                      : r.status === "Declined"
+                        ? "amber"
+                        : "green"
+                  }
                 />
                 <span>
-                  <strong style={{ display: "block", fontSize: 13 }}>{r.residentName}</strong>
-                  <small style={{ color: "#798b84", fontSize: 11 }}>{r.residentEmail}</small>
+                  <strong style={{ display: "block", fontSize: 13 }}>
+                    {r.residentName}
+                  </strong>
+                  <small style={{ color: "#798b84", fontSize: 11 }}>
+                    {r.residentEmail}
+                  </small>
                 </span>
               </span>
               <span>
                 <strong style={{ fontSize: 13 }}>{r.docType}</strong>
-                <small style={{ display: "block", color: "#798b84", fontSize: 11 }}>{r.trackingNo}</small>
+                <small
+                  style={{ display: "block", color: "#798b84", fontSize: 11 }}
+                >
+                  {r.trackingNo}
+                </small>
               </span>
-              <span className="muted-cell" style={{ fontSize: 13 }}>{r.purpose}</span>
+              <span className="muted-cell" style={{ fontSize: 13 }}>
+                {r.purpose}
+              </span>
               <span>
-                <b className={`status ${statusCssMap[r.status] || r.status.toLowerCase()}`}>{r.status}</b>
+                <b
+                  className={`status ${statusCssMap[r.status] || r.status.toLowerCase()}`}
+                >
+                  {r.status}
+                </b>
               </span>
-              <span style={{ fontSize: 12, color: "#798b84" }}>{r.dateFiled}</span>
+              <span style={{ fontSize: 12, color: "#798b84" }}>
+                {r.dateFiled}
+              </span>
               <span style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                 <button
                   className="row-action"
-                  onClick={() => { setSelected(r); setFeedback(r.adminFeedback || ""); setPickupWindow(r.pickupWindow || "Window 1"); }}
+                  onClick={() => {
+                    setSelected(r);
+                    setFeedback(r.adminFeedback || "");
+                    setPickupWindow(r.pickupWindow || "Window 1");
+                  }}
                 >
                   {r.status === "Pending" ? "Review" : "Manage"}
                 </button>
+                {onDeleteRequest && (
+                  <button
+                    className="row-action"
+                    style={{ color: "#ef4444", borderColor: "#fecaca" }}
+                    onClick={() => {
+                      if (
+                        window.confirm(
+                          `Permanently delete document request ${r.trackingNo} for ${r.residentName}?`,
+                        )
+                      ) {
+                        onDeleteRequest(r.id);
+                      }
+                    }}
+                    title="Delete request"
+                  >
+                    Delete
+                  </button>
+                )}
               </span>
             </div>
           ))
@@ -8074,27 +10756,74 @@ function AdminDocumentsPage({
 
       {/* Admin Review Modal */}
       {selected && (
-        <Modal title="Manage Document Request" close={() => setSelected(null)} maxWidth={540}>
+        <Modal
+          title="Manage Document Request"
+          close={() => setSelected(null)}
+          maxWidth={540}
+        >
           <div className="review-summary">
-            <Avatar initials={initials(selected.residentName)} tone={selected.status === "Pending" ? "amber" : "green"} />
+            <Avatar
+              initials={initials(selected.residentName)}
+              tone={selected.status === "Pending" ? "amber" : "green"}
+            />
             <span>
               <strong>{selected.residentName}</strong>
-              <small>{selected.docType} · {selected.purpose}</small>
+              <small>
+                {selected.docType} · {selected.purpose}
+              </small>
             </span>
-            <b className={`status ${statusCssMap[selected.status] || selected.status.toLowerCase()}`}>{selected.status}</b>
+            <b
+              className={`status ${statusCssMap[selected.status] || selected.status.toLowerCase()}`}
+            >
+              {selected.status}
+            </b>
           </div>
 
           <dl className="request-details">
-            <div><dt>Tracking No.</dt><dd>{selected.trackingNo}</dd></div>
-            <div><dt>Control No.</dt><dd>{selected.controlNo}</dd></div>
-            <div><dt>Date Filed</dt><dd>{selected.dateFiled} at {selected.timeFiled}</dd></div>
-            <div><dt>Fee</dt><dd>{selected.fee} <span className={`status ${selected.paymentStatus === "Paid at Counter" ? "approved" : selected.paymentStatus === "Waived" ? "verified" : "pending"}`} style={{ fontSize: 11 }}>{selected.paymentStatus}</span></dd></div>
-            <div><dt>Mobile</dt><dd>{selected.residentMobile}</dd></div>
-            <div><dt>Address</dt><dd>{selected.residentAddress}</dd></div>
-            {selected.notes && <div><dt>Notes</dt><dd>{selected.notes}</dd></div>}
+            <div>
+              <dt>Tracking No.</dt>
+              <dd>{selected.trackingNo}</dd>
+            </div>
+            <div>
+              <dt>Control No.</dt>
+              <dd>{selected.controlNo}</dd>
+            </div>
+            <div>
+              <dt>Date Filed</dt>
+              <dd>
+                {selected.dateFiled} at {selected.timeFiled}
+              </dd>
+            </div>
+            <div>
+              <dt>Fee</dt>
+              <dd>
+                {selected.fee}{" "}
+                <span
+                  className={`status ${selected.paymentStatus === "Paid at Counter" ? "approved" : selected.paymentStatus === "Waived" ? "verified" : "pending"}`}
+                  style={{ fontSize: 11 }}
+                >
+                  {selected.paymentStatus}
+                </span>
+              </dd>
+            </div>
+            <div>
+              <dt>Mobile</dt>
+              <dd>{selected.residentMobile}</dd>
+            </div>
+            <div>
+              <dt>Address</dt>
+              <dd>{selected.residentAddress}</dd>
+            </div>
+            {selected.notes && (
+              <div>
+                <dt>Notes</dt>
+                <dd>{selected.notes}</dd>
+              </div>
+            )}
           </dl>
 
-          {(selected.status === "Approved" || selected.status === "Ready for Pickup") && (
+          {(selected.status === "Approved" ||
+            selected.status === "Ready for Pickup") && (
             <label className="field">
               Pickup window
               <select
@@ -8121,7 +10850,14 @@ function AdminDocumentsPage({
           </label>
 
           {/* Canned responses */}
-          <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 12 }}>
+          <div
+            style={{
+              display: "flex",
+              gap: 6,
+              flexWrap: "wrap",
+              marginBottom: 12,
+            }}
+          >
             {[
               "Please present a valid government ID upon claiming.",
               "Document is ready for pickup at Window 1.",
@@ -8134,37 +10870,126 @@ function AdminDocumentsPage({
                 onClick={() => setFeedback(canned)}
                 style={{ fontSize: 11 }}
               >
-                {canned.slice(0, 38)}{canned.length > 38 ? "…" : ""}
+                {canned.slice(0, 38)}
+                {canned.length > 38 ? "…" : ""}
               </button>
             ))}
           </div>
 
           {selected.status === "Pending" && (
             <div className="modal-actions split-actions">
-              <button className="danger-button" onClick={() => decide("Declined")}>Decline</button>
-              <button className="primary-button" onClick={() => decide("Approved")}>Approve</button>
+              <button
+                className="danger-button"
+                onClick={() => decide("Declined")}
+              >
+                Decline
+              </button>
+              <button
+                className="primary-button"
+                onClick={() => decide("Approved")}
+              >
+                Approve
+              </button>
             </div>
           )}
           {selected.status === "Approved" && (
             <div className="modal-actions split-actions">
-              <button className="ghost-button" onClick={() => { onOpenChat(selected.residentEmail); setSelected(null); }}>Message Resident</button>
-              <button className="primary-button" onClick={() => decide("Ready for Pickup")}>Mark Ready for Pickup</button>
+              <button
+                className="ghost-button"
+                onClick={() => {
+                  onOpenChat(selected.residentEmail);
+                  setSelected(null);
+                }}
+              >
+                Message Resident
+              </button>
+              <button
+                className="primary-button"
+                onClick={() => decide("Ready for Pickup")}
+              >
+                Mark Ready for Pickup
+              </button>
             </div>
           )}
           {selected.status === "Ready for Pickup" && (
             <div className="modal-actions split-actions">
-              <button className="ghost-button" onClick={() => onPrintCertificate(selected)}>Print Certificate</button>
-              <button className="primary-button" onClick={() => decide("Released")}>Mark as Released</button>
+              <button
+                className="ghost-button"
+                onClick={() => onPrintCertificate(selected)}
+              >
+                Print Certificate
+              </button>
+              <button
+                className="primary-button"
+                onClick={() => decide("Released")}
+              >
+                Mark as Released
+              </button>
             </div>
           )}
           {selected.status === "Released" && (
             <div className="modal-actions split-actions">
-              <button className="ghost-button" onClick={() => onPrintCertificate(selected)}>Print Certificate</button>
-              <button className="primary-button full" onClick={() => { setSelected(null); onToast("Feedback saved."); }}>Save Feedback</button>
+              <button
+                className="ghost-button"
+                onClick={() => onPrintCertificate(selected)}
+              >
+                Print Certificate
+              </button>
+              <button
+                className="primary-button full"
+                onClick={() => {
+                  setSelected(null);
+                  onToast("Feedback saved.");
+                }}
+              >
+                Save Feedback
+              </button>
             </div>
           )}
           {selected.status === "Declined" && (
-            <button className="primary-button full" onClick={() => { onUpdateRequest(selected.id, { status: "Pending", adminFeedback: "" }); onToast("Request reopened."); setSelected(null); }}>Reopen Request</button>
+            <button
+              className="primary-button full"
+              onClick={() => {
+                onUpdateRequest(selected.id, {
+                  status: "Pending",
+                  adminFeedback: "",
+                });
+                onToast("Request reopened.");
+                setSelected(null);
+              }}
+            >
+              Reopen Request
+            </button>
+          )}
+
+          {onDeleteRequest && (
+            <div
+              style={{
+                marginTop: 14,
+                paddingTop: 12,
+                borderTop: "1px solid #edf1ef",
+                display: "flex",
+                justifyContent: "flex-end",
+              }}
+            >
+              <button
+                type="button"
+                className="row-action"
+                style={{ color: "#ef4444", borderColor: "#fecaca" }}
+                onClick={() => {
+                  if (
+                    window.confirm(
+                      `Permanently delete document request ${selected.trackingNo} for ${selected.residentName}?`,
+                    )
+                  ) {
+                    onDeleteRequest(selected.id);
+                    setSelected(null);
+                  }
+                }}
+              >
+                Delete request
+              </button>
+            </div>
           )}
         </Modal>
       )}
@@ -8175,7 +11000,13 @@ function AdminDocumentsPage({
 // ─── Messaging ───────────────────────────────────────────────────────────────
 
 function getInitialsFromEmail(email: string, name?: string): string {
-  if (name) return name.split(" ").map((x) => x[0]).slice(0, 2).join("").toUpperCase();
+  if (name)
+    return name
+      .split(" ")
+      .map((x) => x[0])
+      .slice(0, 2)
+      .join("")
+      .toUpperCase();
   return email.slice(0, 2).toUpperCase();
 }
 
@@ -8237,8 +11068,16 @@ function AdminMessagesPage({
     }
   }, [activeThread, threads]);
 
-  const activeResidentMeta = activeThread ? resolveResidentMeta(activeThread) : null;
-  const activeRequests = activeThread ? allRequests.filter((r) => r.residentEmail === activeThread) : [];
+  const activeResidentMeta = activeThread
+    ? resolveResidentMeta(activeThread)
+    : null;
+  const activeRequests = activeThread
+    ? allRequests.filter((r) => r.residentEmail === activeThread)
+    : [];
+
+  function initials(name: string): string {
+    return getInitials(name);
+  }
 
   return (
     <div className="page inner-page">
@@ -8261,7 +11100,9 @@ function AdminMessagesPage({
             />
           </div>
           {sortedResidents.length === 0 && (
-            <p style={{ padding: "16px", color: "#798b84", fontSize: 13 }}>No conversations yet.</p>
+            <p style={{ padding: "16px", color: "#798b84", fontSize: 13 }}>
+              No conversations yet.
+            </p>
           )}
           {sortedResidents.map((email) => {
             const msgs = threads[email] ?? [];
@@ -8276,12 +11117,17 @@ function AdminMessagesPage({
                 className={`thread-item${activeThread === email ? " active" : ""}`}
                 onClick={() => onSelectThread(email)}
               >
-                <Avatar initials={initials} tone={hasUnread ? "amber" : "green"} />
+                <Avatar
+                  initials={initials}
+                  tone={hasUnread ? "amber" : "green"}
+                />
                 <div className="thread-meta">
                   <strong>{displayName}</strong>
                   <small>
                     {last
-                      ? (last.from === "admin" ? "You: " : "") + last.text.slice(0, 42) + (last.text.length > 42 ? "…" : "")
+                      ? (last.from === "admin" ? "You: " : "") +
+                        last.text.slice(0, 42) +
+                        (last.text.length > 42 ? "…" : "")
                       : "No messages yet"}
                   </small>
                 </div>
@@ -8296,12 +11142,18 @@ function AdminMessagesPage({
           <div className="chat-pane">
             <div className="chat-header">
               <Avatar
-                initials={getInitialsFromEmail(activeThread, activeResidentMeta?.name)}
+                initials={getInitialsFromEmail(
+                  activeThread,
+                  activeResidentMeta?.name,
+                )}
                 tone="green"
               />
               <div style={{ flex: 1 }}>
                 <strong>{activeResidentMeta?.name || activeThread}</strong>
-                <small>Resident · {activeResidentMeta?.address || "Barangay San Isidro"}</small>
+                <small>
+                  Resident ·{" "}
+                  {activeResidentMeta?.address || "Barangay San Isidro"}
+                </small>
               </div>
               {activeRequests.length > 0 && (
                 <button
@@ -8309,28 +11161,45 @@ function AdminMessagesPage({
                   style={{ fontSize: 12, padding: "4px 10px" }}
                   onClick={() => onViewDocRequest(activeRequests[0])}
                 >
-                  <Icon name="document" size={13} /> {activeRequests.length} request{activeRequests.length > 1 ? "s" : ""}
+                  <Icon name="document" size={13} /> {activeRequests.length}{" "}
+                  request{activeRequests.length > 1 ? "s" : ""}
                 </button>
               )}
             </div>
 
             <div className="chat-messages" ref={chatRef}>
-              {(threads[activeThread] ?? []).map((msg, i) => (
-                <div key={i} className={`chat-bubble-wrap ${msg.from === "admin" ? "left" : "right"}`}>
-                  {msg.from === "admin" && <Avatar initials="SI" tone="blue" />}
-                  <div>
-                    <div className="chat-bubble">{msg.text}</div>
-                    <small>{msg.time}</small>
+              {(threads[activeThread] ?? []).map((msg, i) => {
+                const isMe = msg.from === "admin";
+                const residentInitials = activeResidentMeta?.name
+                  ? initials(activeResidentMeta.name)
+                  : getInitialsFromEmail(activeThread || "Resident");
+                return (
+                  <div
+                    key={i}
+                    className={`chat-bubble-wrap ${isMe ? "right" : "left"}`}
+                  >
+                    {!isMe && (
+                      <Avatar initials={residentInitials} tone="amber" />
+                    )}
+                    <div className="chat-bubble-content">
+                      <div className="chat-bubble">{msg.text}</div>
+                      <small className="chat-time">{msg.time}</small>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             {/* Quick replies */}
             <div className="quick-replies">
               {ADMIN_QUICK_REPLIES.map((qr) => (
-                <button key={qr} className="quick-reply-chip" onClick={() => setDraft(qr)}>
-                  {qr.slice(0, 36)}{qr.length > 36 ? "…" : ""}
+                <button
+                  key={qr}
+                  className="quick-reply-chip"
+                  onClick={() => setDraft(qr)}
+                >
+                  {qr.slice(0, 36)}
+                  {qr.length > 36 ? "…" : ""}
                 </button>
               ))}
             </div>
@@ -8339,19 +11208,30 @@ function AdminMessagesPage({
               <input
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
+                onKeyDown={(e) =>
+                  e.key === "Enter" && !e.shiftKey && handleSend()
+                }
                 placeholder={`Reply to ${activeResidentMeta?.name || activeThread}…`}
               />
-              <button className="send-button" onClick={handleSend} disabled={!draft.trim()}>
+              <button
+                className="send-button"
+                onClick={handleSend}
+                disabled={!draft.trim()}
+              >
                 <Icon name="send" size={17} />
               </button>
             </div>
           </div>
         ) : (
           <div className="chat-empty">
-            <span className="rail-icon"><Icon name="message" size={28} /></span>
+            <span className="rail-icon">
+              <Icon name="message" size={28} />
+            </span>
             <h3>Select a conversation</h3>
-            <p>Choose a resident from the list to view and reply to their messages.</p>
+            <p>
+              Choose a resident from the list to view and reply to their
+              messages.
+            </p>
           </div>
         )}
       </div>
@@ -8416,12 +11296,17 @@ function ResidentMessagesPage({
       </section>
 
       {/* Pending requests banner */}
-      {myRequests.filter((r) => r.status === "Ready for Pickup").map((r) => (
-        <div key={r.id} className="doc-ready-banner">
-          <Icon name="document" size={16} />
-          <span>Your <strong>{r.docType}</strong> is ready for pickup at {r.pickupWindow || "Window 1"}!</span>
-        </div>
-      ))}
+      {myRequests
+        .filter((r) => r.status === "Ready for Pickup")
+        .map((r) => (
+          <div key={r.id} className="doc-ready-banner">
+            <Icon name="document" size={16} />
+            <span>
+              Your <strong>{r.docType}</strong> is ready for pickup at{" "}
+              {r.pickupWindow || "Window 1"}!
+            </span>
+          </div>
+        ))}
 
       <div className="messages-shell resident-messages">
         <div className="chat-pane full">
@@ -8437,29 +11322,44 @@ function ResidentMessagesPage({
             {thread.length === 0 && (
               <div className="chat-start-note">
                 <Icon name="message" size={22} />
-                <p>Start a conversation with your barangay office. Use this channel for concerns, inquiries, or follow-ups on your requests.</p>
+                <p>
+                  Start a conversation with your barangay office. Use this
+                  channel for concerns, inquiries, or follow-ups on your
+                  requests.
+                </p>
               </div>
             )}
-            {thread.map((msg, i) => (
-              <div
-                key={i}
-                className={`chat-bubble-wrap ${msg.from === "resident" ? "right" : "left"}`}
-              >
-                {msg.from === "admin" && <Avatar initials="SI" tone="blue" />}
-                <div>
-                  <div className="chat-bubble">{msg.text}</div>
-                  <small>{msg.time}</small>
+            {thread.map((msg, i) => {
+              const isMe = msg.from === "resident";
+              return (
+                <div
+                  key={i}
+                  className={`chat-bubble-wrap ${isMe ? "right" : "left"}`}
+                >
+                  {!isMe && <Avatar initials="SI" tone="blue" />}
+                  <div className="chat-bubble-content">
+                    <div className="chat-bubble">{msg.text}</div>
+                    <small className="chat-time">{msg.time}</small>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Quick prompt pills */}
           {thread.length < 3 && (
-            <div className="quick-replies" style={{ borderTop: "1px solid #e8eeeb", paddingTop: 10 }}>
+            <div
+              className="quick-replies"
+              style={{ borderTop: "1px solid #e8eeeb", paddingTop: 10 }}
+            >
               {QUICK_PROMPTS.map((p) => (
-                <button key={p} className="quick-reply-chip" onClick={() => setDraft(p)}>
-                  {p.slice(0, 42)}{p.length > 42 ? "…" : ""}
+                <button
+                  key={p}
+                  className="quick-reply-chip"
+                  onClick={() => setDraft(p)}
+                >
+                  {p.slice(0, 42)}
+                  {p.length > 42 ? "…" : ""}
                 </button>
               ))}
             </div>
@@ -8469,10 +11369,16 @@ function ResidentMessagesPage({
             <input
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
+              onKeyDown={(e) =>
+                e.key === "Enter" && !e.shiftKey && handleSend()
+              }
               placeholder="Type your message to the barangay office…"
             />
-            <button className="send-button" onClick={handleSend} disabled={!draft.trim()}>
+            <button
+              className="send-button"
+              onClick={handleSend}
+              disabled={!draft.trim()}
+            >
               <Icon name="send" size={17} />
             </button>
           </div>
@@ -8517,7 +11423,13 @@ type ResidentRecord = {
   address: string;
   purok: string;
   role: "resident" | "admin";
-  status: "active" | "pending" | "suspended" | "rejected" | "banned" | "deleted";
+  status:
+    | "active"
+    | "pending"
+    | "suspended"
+    | "rejected"
+    | "banned"
+    | "deleted";
   registered: string;
   isOnline: boolean;
   rejectionReason?: string;
@@ -8555,7 +11467,7 @@ function saveResidentMeta(
     deletedAt?: string;
     tempPassword?: string;
     needsPwChange?: boolean;
-  }
+  },
 ) {
   try {
     const current = getResidentMeta();
@@ -8580,7 +11492,10 @@ function addPurgedId(id: string) {
     const list = getPurgedIds();
     if (!list.includes(id)) {
       list.push(id);
-      localStorage.setItem("barangay_purged_resident_ids", JSON.stringify(list));
+      localStorage.setItem(
+        "barangay_purged_resident_ids",
+        JSON.stringify(list),
+      );
     }
   } catch (e) {
     console.error(e);
@@ -8698,7 +11613,9 @@ function ResidentsPage({
   const [refreshing, setRefreshing] = useState(false);
   const [search, setSearch] = useState("");
   const [purokFilter, setPurokFilter] = useState("all");
-  const [tab, setTab] = useState<"approved" | "pending" | "rejected" | "suspended" | "deleted" | "pwresets">("approved");
+  const [tab, setTab] = useState<
+    "approved" | "pending" | "rejected" | "suspended" | "deleted" | "pwresets"
+  >("approved");
 
   // Modals state
   const [selected, setSelected] = useState<ResidentRecord | null>(null);
@@ -8722,23 +11639,31 @@ function ResidentsPage({
 
   // Rejection modal
   const [rejectModalOpen, setRejectModalOpen] = useState(false);
-  const [rejectingResident, setRejectingResident] = useState<ResidentRecord | null>(null);
+  const [rejectingResident, setRejectingResident] =
+    useState<ResidentRecord | null>(null);
   const [rejectionReason, setRejectionReason] = useState("");
   const [selectedPresetReason, setSelectedPresetReason] = useState("");
 
   // Delete modal (Soft delete -> moves to Deleted Accounts tab)
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [deletingResident, setDeletingResident] = useState<ResidentRecord | null>(null);
+  const [deletingResident, setDeletingResident] =
+    useState<ResidentRecord | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
   // Purge modal (Hard delete -> erases from database)
   const [purgeModalOpen, setPurgeModalOpen] = useState(false);
-  const [purgingResident, setPurgingResident] = useState<ResidentRecord | null>(null);
+  const [purgingResident, setPurgingResident] = useState<ResidentRecord | null>(
+    null,
+  );
   const [isPurging, setIsPurging] = useState(false);
 
   // Password reset requests & direct resident resets
   const [pwResetRequests, setPwResetRequests] = useState<any[]>(() => {
-    try { return JSON.parse(localStorage.getItem("brgy_pw_reset_requests") || "[]"); } catch { return []; }
+    try {
+      return JSON.parse(localStorage.getItem("brgy_pw_reset_requests") || "[]");
+    } catch {
+      return [];
+    }
   });
   const [pwResetModalOpen, setPwResetModalOpen] = useState(false);
   const [pwResetTarget, setPwResetTarget] = useState<any>(null);
@@ -8755,7 +11680,9 @@ function ResidentsPage({
   // Reload pw reset requests from storage and Supabase
   async function reloadPwResetRequests() {
     try {
-      const local = JSON.parse(localStorage.getItem("brgy_pw_reset_requests") || "[]");
+      const local = JSON.parse(
+        localStorage.getItem("brgy_pw_reset_requests") || "[]",
+      );
       try {
         const { data, error } = await supabase
           .from("password_reset_requests")
@@ -8767,18 +11694,31 @@ function ResidentsPage({
             name: d.full_name || d.name,
             email: d.email,
             phone: d.phone,
-            requestedAt: d.created_at || d.requested_at || new Date().toISOString(),
+            requestedAt:
+              d.created_at || d.requested_at || new Date().toISOString(),
             status: d.status || "pending",
             tempPassword: d.temp_password,
+            dismissedAt:
+              d.status === "dismissed"
+                ? d.updated_at || d.created_at
+                : undefined,
+            updatedAt: d.updated_at || d.created_at,
           }));
           const merged = [...dbMapped];
           local.forEach((l: any) => {
-            if (!merged.some((m) => m.email?.toLowerCase() === l.email?.toLowerCase())) {
+            if (
+              !merged.some(
+                (m) => m.email?.toLowerCase() === l.email?.toLowerCase(),
+              )
+            ) {
               merged.push(l);
             }
           });
           setPwResetRequests(merged);
-          localStorage.setItem("brgy_pw_reset_requests", JSON.stringify(merged));
+          localStorage.setItem(
+            "brgy_pw_reset_requests",
+            JSON.stringify(merged),
+          );
           return;
         }
       } catch {}
@@ -8795,7 +11735,13 @@ function ResidentsPage({
     return `${prefix}${sym}${num}`;
   }
 
-  function handleOpenResetModal(target: { id?: string; name: string; email: string; phone: string; reqId?: string }) {
+  function handleOpenResetModal(target: {
+    id?: string;
+    name: string;
+    email: string;
+    phone: string;
+    reqId?: string;
+  }) {
     const autoPass = generateSecurePassword();
     setPwResetTarget(target);
     setPwResetAdminPass("");
@@ -8814,11 +11760,15 @@ function ResidentsPage({
     setPwResetError("");
 
     if (!pwResetAdminPass.trim()) {
-      setPwResetError("Please enter your administrator password to authorize this action.");
+      setPwResetError(
+        "Please enter your administrator password to authorize this action.",
+      );
       return;
     }
     if (!pwResetNewPass.trim() || pwResetNewPass.length < 6) {
-      setPwResetError("New temporary password must be at least 6 characters long.");
+      setPwResetError(
+        "New temporary password must be at least 6 characters long.",
+      );
       return;
     }
     if (pwResetNewPass !== pwResetConfirmPass) {
@@ -8835,52 +11785,84 @@ function ResidentsPage({
           password: pwResetAdminPass,
         });
         if (authErr) {
-          setPwResetError("Administrator verification failed: Your password was incorrect. Authorization denied.");
+          setPwResetError(
+            "Administrator verification failed: Your password was incorrect. Authorization denied.",
+          );
           setPwResetSubmitting(false);
           return;
         }
       }
 
+      const nowIso = new Date().toISOString();
+
       // 2. Update local requests queue
-      const localRequests: any[] = JSON.parse(localStorage.getItem("brgy_pw_reset_requests") || "[]");
+      const localRequests: any[] = JSON.parse(
+        localStorage.getItem("brgy_pw_reset_requests") || "[]",
+      );
       const updatedLocal = localRequests.map((req) => {
-        if ((pwResetTarget.reqId && req.id === pwResetTarget.reqId) || req.email?.toLowerCase() === pwResetTarget.email?.toLowerCase()) {
+        if (
+          (pwResetTarget.reqId && req.id === pwResetTarget.reqId) ||
+          req.email?.toLowerCase() === pwResetTarget.email?.toLowerCase()
+        ) {
           return {
             ...req,
             status: "completed",
             tempPassword: pwResetNewPass,
-            resetAt: new Date().toISOString(),
+            resetAt: nowIso,
+            updatedAt: nowIso,
             resetBy: currentUser?.name || "Administrator",
           };
         }
         return req;
       });
-      localStorage.setItem("brgy_pw_reset_requests", JSON.stringify(updatedLocal));
+      localStorage.setItem(
+        "brgy_pw_reset_requests",
+        JSON.stringify(updatedLocal),
+      );
       setPwResetRequests(updatedLocal);
 
       // 3. Save temporary password mapping so resident can sign in
-      const tempMap = JSON.parse(localStorage.getItem("brgy_temp_passwords") || "{}");
+      const tempMap = JSON.parse(
+        localStorage.getItem("brgy_temp_passwords") || "{}",
+      );
       tempMap[pwResetTarget.email.toLowerCase()] = {
         tempPassword: pwResetNewPass,
         phone: pwResetTarget.phone,
         name: pwResetTarget.name,
-        resetAt: new Date().toISOString(),
+        resetAt: nowIso,
       };
       localStorage.setItem("brgy_temp_passwords", JSON.stringify(tempMap));
 
-      // 4. Update Supabase password_reset_requests table if available
+      // 4. Update Supabase password_reset_requests table
       try {
-        await supabase
+        const { data: updatedDb } = await supabase
           .from("password_reset_requests")
           .update({
             status: "completed",
             temp_password: pwResetNewPass,
-            updated_at: new Date().toISOString(),
+            updated_at: nowIso,
           })
-          .eq("email", pwResetTarget.email.toLowerCase());
+          .eq("email", pwResetTarget.email.toLowerCase())
+          .select();
+
+        if (!updatedDb || updatedDb.length === 0) {
+          await supabase.from("password_reset_requests").insert([
+            {
+              full_name: pwResetTarget.name,
+              email: pwResetTarget.email.toLowerCase(),
+              phone: pwResetTarget.phone || "",
+              status: "completed",
+              temp_password: pwResetNewPass,
+              updated_at: nowIso,
+            },
+          ]);
+        }
       } catch {}
 
-      // 5. Try RPC if backend function exists
+      // 5. Synchronize active reset across all devices via barangay metadata
+      await syncActiveReset(pwResetTarget.email, pwResetNewPass);
+
+      // 6. Try RPC if backend function exists
       if (pwResetTarget.id) {
         try {
           await supabase.rpc("admin_reset_password", {
@@ -8898,18 +11880,47 @@ function ResidentsPage({
       setPwResetSuccess(true);
       onToast(`Password successfully reset for ${pwResetTarget.name}! 🔑`);
     } catch (err: any) {
-      setPwResetError(err?.message || "Failed to reset password. Please try again.");
+      setPwResetError(
+        err?.message || "Failed to reset password. Please try again.",
+      );
     } finally {
       setPwResetSubmitting(false);
     }
   }
 
-  function handleDismissResetRequest(reqId: string) {
-    const localRequests: any[] = JSON.parse(localStorage.getItem("brgy_pw_reset_requests") || "[]");
-    const updated = localRequests.map((r) => (r.id === reqId ? { ...r, status: "dismissed" } : r));
+  async function handleDismissResetRequest(reqId: string, email?: string) {
+    const nowIso = new Date().toISOString();
+    const localRequests: any[] = JSON.parse(
+      localStorage.getItem("brgy_pw_reset_requests") || "[]",
+    );
+    const updated = localRequests.map((r) =>
+      r.id === reqId ||
+      (email && r.email?.toLowerCase() === email.toLowerCase())
+        ? { ...r, status: "dismissed", dismissedAt: nowIso, updatedAt: nowIso }
+        : r,
+    );
     localStorage.setItem("brgy_pw_reset_requests", JSON.stringify(updated));
     setPwResetRequests(updated);
-    onToast("Password reset request dismissed.");
+
+    try {
+      const numId = parseInt(reqId, 10);
+      if (!isNaN(numId)) {
+        await supabase
+          .from("password_reset_requests")
+          .update({ status: "dismissed", updated_at: nowIso })
+          .eq("id", numId);
+      }
+      if (email) {
+        await supabase
+          .from("password_reset_requests")
+          .update({ status: "dismissed", updated_at: nowIso })
+          .eq("email", email.toLowerCase());
+      }
+    } catch (err) {
+      console.warn("Supabase dismiss error:", err);
+    }
+
+    onToast("Password reset request permanently dismissed.");
   }
 
   // Fetch accounts directly from Supabase
@@ -8926,13 +11937,17 @@ function ResidentsPage({
       const meta = getResidentMeta();
       const purged = getPurgedIds();
 
-      const rawRows = (data && data.length > 0) ? data : fallbackResidents;
+      const rawRows = data && data.length > 0 ? data : fallbackResidents;
 
       const mapped: ResidentRecord[] = rawRows
         .filter((row: any) => !purged.includes(String(row.id)))
         .map((row: any, idx: number) => {
           const rowMeta = meta[row.id] || {};
-          let finalStatus = (rowMeta.statusOverride || row.status || "active").toLowerCase() as any;
+          let finalStatus = (
+            rowMeta.statusOverride ||
+            row.status ||
+            "active"
+          ).toLowerCase() as any;
           if (finalStatus === "verified") finalStatus = "active";
 
           // Derive Purok
@@ -8948,7 +11963,9 @@ function ResidentsPage({
           const isOnline =
             finalStatus === "deleted"
               ? false
-              : isCurrent || (rowMeta.isOnline ?? (idx % 3 !== 1 && finalStatus === "active"));
+              : isCurrent ||
+                (rowMeta.isOnline ??
+                  (idx % 3 !== 1 && finalStatus === "active"));
 
           return {
             id: String(row.id),
@@ -8996,7 +12013,7 @@ function ResidentsPage({
         { event: "*", schema: "public", table: "accounts" },
         () => {
           fetchResidents(true);
-        }
+        },
       )
       .subscribe();
 
@@ -9042,8 +12059,8 @@ function ResidentsPage({
                 rejectionReason: undefined,
                 deletedAt: undefined,
               }
-            : r
-        )
+            : r,
+        ),
       );
 
       const nextPending = Math.max(0, pendingCount - 1);
@@ -9058,15 +12075,20 @@ function ResidentsPage({
                 rejectionReason: undefined,
                 deletedAt: undefined,
               }
-            : null
+            : null,
         );
       }
       onToast("Resident account approved and activated! 🎉");
     } catch (err: any) {
       console.error("Approve error:", err);
-      saveResidentMeta(residentId, { statusOverride: "active", isOnline: true });
+      saveResidentMeta(residentId, {
+        statusOverride: "active",
+        isOnline: true,
+      });
       setResidents((prev) =>
-        prev.map((r) => (r.id === residentId ? { ...r, status: "active", isOnline: true } : r))
+        prev.map((r) =>
+          r.id === residentId ? { ...r, status: "active", isOnline: true } : r,
+        ),
       );
       onToast("Resident approved and activated.");
     }
@@ -9082,7 +12104,9 @@ function ResidentsPage({
   async function handleConfirmReject() {
     if (!rejectingResident) return;
     const finalReason =
-      rejectionReason.trim() || selectedPresetReason || "Registration criteria not met";
+      rejectionReason.trim() ||
+      selectedPresetReason ||
+      "Registration criteria not met";
 
     try {
       // Try updating status to 'rejected'
@@ -9108,9 +12132,14 @@ function ResidentsPage({
       setResidents((prev) =>
         prev.map((r) =>
           r.id === rejectingResident.id
-            ? { ...r, status: "rejected", rejectionReason: finalReason, isOnline: false }
-            : r
-        )
+            ? {
+                ...r,
+                status: "rejected",
+                rejectionReason: finalReason,
+                isOnline: false,
+              }
+            : r,
+        ),
       );
 
       if (rejectingResident.status === "pending") {
@@ -9134,9 +12163,14 @@ function ResidentsPage({
       setResidents((prev) =>
         prev.map((r) =>
           r.id === rejectingResident.id
-            ? { ...r, status: "rejected", rejectionReason: finalReason, isOnline: false }
-            : r
-        )
+            ? {
+                ...r,
+                status: "rejected",
+                rejectionReason: finalReason,
+                isOnline: false,
+              }
+            : r,
+        ),
       );
       setRejectModalOpen(false);
       setRejectingResident(null);
@@ -9153,25 +12187,35 @@ function ResidentsPage({
 
       if (error) throw error;
 
-      saveResidentMeta(residentId, { statusOverride: "suspended", isOnline: false });
+      saveResidentMeta(residentId, {
+        statusOverride: "suspended",
+        isOnline: false,
+      });
       setResidents((prev) =>
         prev.map((r) =>
-          r.id === residentId ? { ...r, status: "suspended", isOnline: false } : r
-        )
+          r.id === residentId
+            ? { ...r, status: "suspended", isOnline: false }
+            : r,
+        ),
       );
       if (selected?.id === residentId) {
         setSelected((prev) =>
-          prev ? { ...prev, status: "suspended", isOnline: false } : null
+          prev ? { ...prev, status: "suspended", isOnline: false } : null,
         );
       }
       onToast("Resident account has been suspended.");
     } catch (err: any) {
       console.error("Suspend error:", err);
-      saveResidentMeta(residentId, { statusOverride: "suspended", isOnline: false });
+      saveResidentMeta(residentId, {
+        statusOverride: "suspended",
+        isOnline: false,
+      });
       setResidents((prev) =>
         prev.map((r) =>
-          r.id === residentId ? { ...r, status: "suspended", isOnline: false } : r
-        )
+          r.id === residentId
+            ? { ...r, status: "suspended", isOnline: false }
+            : r,
+        ),
       );
       onToast("Resident account suspended.");
     }
@@ -9207,21 +12251,24 @@ function ResidentsPage({
                 banReason: "Permanent ban issued by Barangay Administrator",
                 isOnline: false,
               }
-            : r
-        )
+            : r,
+        ),
       );
 
       if (selected?.id === residentId) {
         setSelected((prev) =>
-          prev ? { ...prev, status: "banned", isOnline: false } : null
+          prev ? { ...prev, status: "banned", isOnline: false } : null,
         );
       }
       onToast("Resident has been permanently banned.");
     } catch (err: any) {
       console.error("Ban error:", err);
-      saveResidentMeta(residentId, { statusOverride: "banned", isOnline: false });
+      saveResidentMeta(residentId, {
+        statusOverride: "banned",
+        isOnline: false,
+      });
       setResidents((prev) =>
-        prev.map((r) => (r.id === residentId ? { ...r, status: "banned" } : r))
+        prev.map((r) => (r.id === residentId ? { ...r, status: "banned" } : r)),
       );
       onToast("Resident banned.");
     }
@@ -9237,29 +12284,35 @@ function ResidentsPage({
         .eq("id", residentId);
       if (error) throw error;
       setResidents((prev) =>
-        prev.map((r) => (r.id === residentId ? { ...r, role: "admin" } : r))
+        prev.map((r) => (r.id === residentId ? { ...r, role: "admin" } : r)),
       );
       if (selected?.id === residentId) {
-        setSelected((prev) => prev ? { ...prev, role: "admin" } : null);
+        setSelected((prev) => (prev ? { ...prev, role: "admin" } : null));
       }
       // Also update barangay_settings so the promoted user's browser detects the role
       // change via the promotedAdmins state even before their next login
       if (targetResident?.email) {
-        const newList = await syncPromotedAdminEmail(targetResident.email, true);
+        const newList = await syncPromotedAdminEmail(
+          targetResident.email,
+          true,
+        );
         onPromotedAdminsChange?.(newList);
       }
       onToast("Resident promoted to Administrator! 👑");
     } catch (err: any) {
       console.error("Promote error:", err);
       setResidents((prev) =>
-        prev.map((r) => (r.id === residentId ? { ...r, role: "admin" } : r))
+        prev.map((r) => (r.id === residentId ? { ...r, role: "admin" } : r)),
       );
       if (selected?.id === residentId) {
-        setSelected((prev) => prev ? { ...prev, role: "admin" } : null);
+        setSelected((prev) => (prev ? { ...prev, role: "admin" } : null));
       }
       // Still try to sync via settings even if accounts update failed
       if (targetResident?.email) {
-        const newList = await syncPromotedAdminEmail(targetResident.email, true);
+        const newList = await syncPromotedAdminEmail(
+          targetResident.email,
+          true,
+        );
         onPromotedAdminsChange?.(newList);
       }
       onToast("Resident promoted to Administrator.");
@@ -9275,27 +12328,33 @@ function ResidentsPage({
         .eq("id", residentId);
       if (error) throw error;
       setResidents((prev) =>
-        prev.map((r) => (r.id === residentId ? { ...r, role: "resident" } : r))
+        prev.map((r) => (r.id === residentId ? { ...r, role: "resident" } : r)),
       );
       if (selected?.id === residentId) {
-        setSelected((prev) => prev ? { ...prev, role: "resident" } : null);
+        setSelected((prev) => (prev ? { ...prev, role: "resident" } : null));
       }
       // Remove from promoted admins list in barangay_settings
       if (targetResident?.email) {
-        const newList = await syncPromotedAdminEmail(targetResident.email, false);
+        const newList = await syncPromotedAdminEmail(
+          targetResident.email,
+          false,
+        );
         onPromotedAdminsChange?.(newList);
       }
       onToast("Admin privileges revoked. Account demoted to Resident.");
     } catch (err: any) {
       console.error("Demote error:", err);
       setResidents((prev) =>
-        prev.map((r) => (r.id === residentId ? { ...r, role: "resident" } : r))
+        prev.map((r) => (r.id === residentId ? { ...r, role: "resident" } : r)),
       );
       if (selected?.id === residentId) {
-        setSelected((prev) => prev ? { ...prev, role: "resident" } : null);
+        setSelected((prev) => (prev ? { ...prev, role: "resident" } : null));
       }
       if (targetResident?.email) {
-        const newList = await syncPromotedAdminEmail(targetResident.email, false);
+        const newList = await syncPromotedAdminEmail(
+          targetResident.email,
+          false,
+        );
         onPromotedAdminsChange?.(newList);
       }
       onToast("Account demoted to Resident.");
@@ -9332,8 +12391,8 @@ function ResidentsPage({
                 deletedAt: undefined,
                 isOnline: true,
               }
-            : r
-        )
+            : r,
+        ),
       );
 
       if (selected?.id === residentId) {
@@ -9347,15 +12406,20 @@ function ResidentsPage({
                 rejectionReason: undefined,
                 banReason: undefined,
               }
-            : null
+            : null,
         );
       }
       onToast("Account restored and reactivated! 🟢");
     } catch (err: any) {
       console.error("Reactivate error:", err);
-      saveResidentMeta(residentId, { statusOverride: "active", isOnline: true });
+      saveResidentMeta(residentId, {
+        statusOverride: "active",
+        isOnline: true,
+      });
       setResidents((prev) =>
-        prev.map((r) => (r.id === residentId ? { ...r, status: "active", isOnline: true } : r))
+        prev.map((r) =>
+          r.id === residentId ? { ...r, status: "active", isOnline: true } : r,
+        ),
       );
       onToast("Account reactivated.");
     }
@@ -9400,9 +12464,14 @@ function ResidentsPage({
       setResidents((prev) =>
         prev.map((r) =>
           r.id === targetId
-            ? { ...r, status: "deleted", deletedAt: deletedDate, isOnline: false }
-            : r
-        )
+            ? {
+                ...r,
+                status: "deleted",
+                deletedAt: deletedDate,
+                isOnline: false,
+              }
+            : r,
+        ),
       );
 
       if (deletingResident.status === "pending") {
@@ -9412,8 +12481,13 @@ function ResidentsPage({
       if (selected?.id === targetId) {
         setSelected((prev) =>
           prev
-            ? { ...prev, status: "deleted", isOnline: false, deletedAt: deletedDate }
-            : null
+            ? {
+                ...prev,
+                status: "deleted",
+                isOnline: false,
+                deletedAt: deletedDate,
+              }
+            : null,
         );
       }
 
@@ -9430,9 +12504,14 @@ function ResidentsPage({
       setResidents((prev) =>
         prev.map((r) =>
           r.id === targetId
-            ? { ...r, status: "deleted", deletedAt: deletedDate, isOnline: false }
-            : r
-        )
+            ? {
+                ...r,
+                status: "deleted",
+                deletedAt: deletedDate,
+                isOnline: false,
+              }
+            : r,
+        ),
       );
       setDeleteModalOpen(false);
       setDeletingResident(null);
@@ -9473,8 +12552,8 @@ function ResidentsPage({
                 banReason: undefined,
                 isOnline: true,
               }
-            : r
-        )
+            : r,
+        ),
       );
 
       if (selected?.id === residentId) {
@@ -9488,7 +12567,7 @@ function ResidentsPage({
                 rejectionReason: undefined,
                 banReason: undefined,
               }
-            : null
+            : null,
         );
       }
       onToast("Account restored to Approved Residents! 🟢");
@@ -9503,12 +12582,19 @@ function ResidentsPage({
         prev.map((r) =>
           r.id === residentId
             ? { ...r, status: "active", deletedAt: undefined, isOnline: true }
-            : r
-        )
+            : r,
+        ),
       );
       if (selected?.id === residentId) {
         setSelected((prev) =>
-          prev ? { ...prev, status: "active", isOnline: true, deletedAt: undefined } : null
+          prev
+            ? {
+                ...prev,
+                status: "active",
+                isOnline: true,
+                deletedAt: undefined,
+              }
+            : null,
         );
       }
       onToast("Account restored to Approved Residents.");
@@ -9575,8 +12661,8 @@ function ResidentsPage({
                 mobile: editMobile.trim() || "No contact",
                 address: editAddress.trim(),
               }
-            : r
-        )
+            : r,
+        ),
       );
 
       setSelected((prev) =>
@@ -9587,7 +12673,7 @@ function ResidentsPage({
               mobile: editMobile.trim() || "No contact",
               address: editAddress.trim(),
             }
-          : null
+          : null,
       );
 
       setIsEditing(false);
@@ -9698,7 +12784,7 @@ function ResidentsPage({
   const pendingList = residents.filter((r) => r.status === "pending");
   const rejectedList = residents.filter((r) => r.status === "rejected");
   const suspendedList = residents.filter(
-    (r) => r.status === "suspended" || r.status === "banned"
+    (r) => r.status === "suspended" || r.status === "banned",
   );
   const deletedList = residents.filter((r) => r.status === "deleted");
 
@@ -9749,7 +12835,8 @@ function ResidentsPage({
             )}
           </h1>
           <p>
-            Review applications, verify identity, manage resident access, and monitor community standing.
+            Review applications, verify identity, manage resident access, and
+            monitor community standing.
           </p>
         </div>
         <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
@@ -9759,7 +12846,12 @@ function ResidentsPage({
             title="Refresh database"
             style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
           >
-            <span style={{ display: "inline-block", animation: refreshing ? "spin 1s linear infinite" : "none" }}>
+            <span
+              style={{
+                display: "inline-block",
+                animation: refreshing ? "spin 1s linear infinite" : "none",
+              }}
+            >
               <Icon name="refresh" size={14} />
             </span>
             Refresh
@@ -9779,7 +12871,9 @@ function ResidentsPage({
           <Icon name="userCheck" size={17} />
           <span>Approved Residents</span>
           <span className="tab-counter">{approvedList.length}</span>
-          <span style={{ fontSize: "11px", color: "#059669", marginLeft: "4px" }}>
+          <span
+            style={{ fontSize: "11px", color: "#059669", marginLeft: "4px" }}
+          >
             ({onlineCount} online)
           </span>
         </button>
@@ -9790,7 +12884,9 @@ function ResidentsPage({
         >
           <Icon name="clock" size={17} />
           <span>Pending Approvals</span>
-          <span className={`tab-counter ${pendingList.length > 0 ? "pending" : ""}`}>
+          <span
+            className={`tab-counter ${pendingList.length > 0 ? "pending" : ""}`}
+          >
             {pendingList.length}
           </span>
         </button>
@@ -9801,7 +12897,9 @@ function ResidentsPage({
         >
           <Icon name="ban" size={17} />
           <span>Rejected Accounts</span>
-          <span className={`tab-counter ${rejectedList.length > 0 ? "rejected" : ""}`}>
+          <span
+            className={`tab-counter ${rejectedList.length > 0 ? "rejected" : ""}`}
+          >
             {rejectedList.length}
           </span>
         </button>
@@ -9821,19 +12919,26 @@ function ResidentsPage({
         >
           <Icon name="trash" size={17} />
           <span>Deleted Accounts</span>
-          <span className={`tab-counter ${deletedList.length > 0 ? "deleted" : ""}`}>
+          <span
+            className={`tab-counter ${deletedList.length > 0 ? "deleted" : ""}`}
+          >
             {deletedList.length}
           </span>
         </button>
 
         <button
           className={`resident-tab-btn ${tab === "pwresets" ? "active" : ""}`}
-          onClick={() => { setTab("pwresets"); reloadPwResetRequests(); }}
+          onClick={() => {
+            setTab("pwresets");
+            reloadPwResetRequests();
+          }}
           style={{ borderLeft: "2px solid #e5e7eb" }}
         >
           <Icon name="shield" size={17} />
           <span>Password Resets</span>
-          <span className={`tab-counter ${pwResetRequests.filter((r: any) => r.status === "pending").length > 0 ? "pending" : ""}`}>
+          <span
+            className={`tab-counter ${pwResetRequests.filter((r: any) => r.status === "pending").length > 0 ? "pending" : ""}`}
+          >
             {pwResetRequests.filter((r: any) => r.status === "pending").length}
           </span>
         </button>
@@ -9841,8 +12946,14 @@ function ResidentsPage({
 
       {/* ── Filter & Search Toolbar ───────────────────────────────────── */}
       <section className="table-card">
-        <div className="table-tools" style={{ flexWrap: "wrap", gap: "12px", alignItems: "center" }}>
-          <label className="search-box" style={{ flex: "1 1 240px", maxWidth: "420px" }}>
+        <div
+          className="table-tools"
+          style={{ flexWrap: "wrap", gap: "12px", alignItems: "center" }}
+        >
+          <label
+            className="search-box"
+            style={{ flex: "1 1 240px", maxWidth: "420px" }}
+          >
             <Icon name="search" />
             <input
               placeholder={
@@ -9857,7 +12968,15 @@ function ResidentsPage({
 
           <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
             {tab !== "pwresets" && (
-              <label style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "11px", color: "#50655d" }}>
+              <label
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  fontSize: "11px",
+                  color: "#50655d",
+                }}
+              >
                 <Icon name="filter" size={14} />
                 <span>Area:</span>
                 <select
@@ -9907,13 +13026,15 @@ function ResidentsPage({
             <>
               <span>Resident</span>
               <span>Contact & Address</span>
-              <span>{tab === "approved" ? "Status & Presence" : "Account Status"}</span>
+              <span>
+                {tab === "approved" ? "Status & Presence" : "Account Status"}
+              </span>
               <span>
                 {tab === "rejected"
                   ? "Rejection Reason"
                   : tab === "deleted"
-                  ? "Date Deleted"
-                  : "Registered"}
+                    ? "Date Deleted"
+                    : "Registered"}
               </span>
               <span style={{ textAlign: "right" }}>Actions</span>
             </>
@@ -9923,19 +13044,43 @@ function ResidentsPage({
         {/* ── Table Body ────────────────────────────────────────────── */}
         {tab === "pwresets" ? (
           filteredPwResets.length === 0 ? (
-            <div style={{ padding: "48px 20px", textAlign: "center", color: "#758880" }}>
-              <p style={{ fontSize: "15px", fontWeight: "700", color: "#163e32", margin: "0 0 6px" }}>
+            <div
+              style={{
+                padding: "48px 20px",
+                textAlign: "center",
+                color: "#758880",
+              }}
+            >
+              <p
+                style={{
+                  fontSize: "15px",
+                  fontWeight: "700",
+                  color: "#163e32",
+                  margin: "0 0 6px",
+                }}
+              >
                 No password reset requests 🎉
               </p>
               <p style={{ fontSize: "12px", margin: 0 }}>
-                When residents request password recovery on the login screen, their verified details will appear here for manual admin review and credential dispatch.
+                When residents request password recovery on the login screen,
+                their verified details will appear here for manual admin review
+                and credential dispatch.
               </p>
             </div>
           ) : (
             filteredPwResets.map((req: any) => (
               <div className="resident-table-row table-row" key={req.id}>
                 <div className="resident-cell-user">
-                  <Avatar initials={getInitials(req.name)} tone={req.status === "completed" ? "green" : req.status === "dismissed" ? "blue" : "amber"} />
+                  <Avatar
+                    initials={getInitials(req.name)}
+                    tone={
+                      req.status === "completed"
+                        ? "green"
+                        : req.status === "dismissed"
+                          ? "blue"
+                          : "amber"
+                    }
+                  />
                   <div className="resident-meta">
                     <strong>{req.name}</strong>
                     <small>{req.email}</small>
@@ -9948,14 +13093,25 @@ function ResidentsPage({
                 </div>
 
                 <div>
-                  <b className={`status ${req.status === "completed" ? "active" : req.status === "pending" ? "pending" : "rejected"}`}>
-                    {req.status === "completed" ? "Reset Completed" : req.status === "pending" ? "Pending Admin Reset" : "Dismissed"}
+                  <b
+                    className={`status ${req.status === "completed" ? "active" : req.status === "pending" ? "pending" : "rejected"}`}
+                  >
+                    {req.status === "completed"
+                      ? "Reset Completed"
+                      : req.status === "pending"
+                        ? "Pending Admin Reset"
+                        : "Dismissed"}
                   </b>
                 </div>
 
                 <div>
                   <span style={{ fontSize: "11px", color: "#61756e" }}>
-                    {new Date(req.requestedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                    {new Date(req.requestedAt).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
                   </span>
                 </div>
 
@@ -9964,15 +13120,24 @@ function ResidentsPage({
                     <>
                       <button
                         className="btn-sm-action primary"
-                        onClick={() => handleOpenResetModal({ name: req.name, email: req.email, phone: req.phone, reqId: req.id })}
+                        onClick={() =>
+                          handleOpenResetModal({
+                            name: req.name,
+                            email: req.email,
+                            phone: req.phone,
+                            reqId: req.id,
+                          })
+                        }
                         title="Reset password with admin verification"
                       >
                         <Icon name="lock" size={13} /> Reset Password
                       </button>
                       <button
                         className="btn-sm-action danger"
-                        onClick={() => handleDismissResetRequest(req.id)}
-                        title="Dismiss this request"
+                        onClick={() =>
+                          handleDismissResetRequest(req.id, req.email)
+                        }
+                        title="Dismiss this request permanently"
                       >
                         <Icon name="x" size={13} /> Dismiss
                       </button>
@@ -9981,10 +13146,21 @@ function ResidentsPage({
                     <>
                       <button
                         className="btn-sm-action"
-                        style={{ borderColor: "#10b981", color: "#065f46", background: "#ecfdf5" }}
+                        style={{
+                          borderColor: "#10b981",
+                          color: "#065f46",
+                          background: "#ecfdf5",
+                        }}
                         onClick={() => {
-                          setPwResetTarget({ name: req.name, email: req.email, phone: req.phone, reqId: req.id });
-                          setPwResetNewPass(req.tempPassword || "Resident@2025!");
+                          setPwResetTarget({
+                            name: req.name,
+                            email: req.email,
+                            phone: req.phone,
+                            reqId: req.id,
+                          });
+                          setPwResetNewPass(
+                            req.tempPassword || "Resident@2025!",
+                          );
                           setPwResetSuccess(true);
                           setPwResetModalOpen(true);
                         }}
@@ -9994,55 +13170,93 @@ function ResidentsPage({
                       </button>
                       <button
                         className="btn-sm-action"
-                        onClick={() => handleOpenResetModal({ name: req.name, email: req.email, phone: req.phone, reqId: req.id })}
+                        onClick={() =>
+                          handleOpenResetModal({
+                            name: req.name,
+                            email: req.email,
+                            phone: req.phone,
+                            reqId: req.id,
+                          })
+                        }
                         title="Reset password again"
                       >
                         Reset Again
                       </button>
                     </>
                   ) : (
-                    <button
-                      className="btn-sm-action"
-                      onClick={() => {
-                        const updated = pwResetRequests.map((r: any) => (r.id === req.id ? { ...r, status: "pending" } : r));
-                        localStorage.setItem("brgy_pw_reset_requests", JSON.stringify(updated));
-                        setPwResetRequests(updated);
+                    <span
+                      style={{
+                        fontSize: 11,
+                        color: "#94a3b8",
+                        fontStyle: "italic",
+                        padding: "4px 8px",
                       }}
                     >
-                      Re-open
-                    </button>
+                      Permanently Dismissed
+                    </span>
                   )}
                 </div>
               </div>
             ))
           )
         ) : loading ? (
-          <div style={{ padding: "40px", textAlign: "center", color: "#7a8e85" }}>
+          <div
+            style={{ padding: "40px", textAlign: "center", color: "#7a8e85" }}
+          >
             <p>Loading resident accounts from database...</p>
           </div>
         ) : filteredList.length === 0 ? (
-          <div style={{ padding: "48px 20px", textAlign: "center", color: "#758880" }}>
+          <div
+            style={{
+              padding: "48px 20px",
+              textAlign: "center",
+              color: "#758880",
+            }}
+          >
             {tab === "pending" ? (
               <div>
-                <p style={{ fontSize: "15px", fontWeight: "700", color: "#163e32", margin: "0 0 6px" }}>
+                <p
+                  style={{
+                    fontSize: "15px",
+                    fontWeight: "700",
+                    color: "#163e32",
+                    margin: "0 0 6px",
+                  }}
+                >
                   All caught up! 🎉
                 </p>
                 <p style={{ fontSize: "12px", margin: 0 }}>
-                  There are no pending resident registration requests awaiting review.
+                  There are no pending resident registration requests awaiting
+                  review.
                 </p>
               </div>
             ) : tab === "rejected" ? (
               <div>
-                <p style={{ fontSize: "15px", fontWeight: "700", color: "#163e32", margin: "0 0 6px" }}>
+                <p
+                  style={{
+                    fontSize: "15px",
+                    fontWeight: "700",
+                    color: "#163e32",
+                    margin: "0 0 6px",
+                  }}
+                >
                   No rejected accounts on file
                 </p>
                 <p style={{ fontSize: "12px", margin: 0 }}>
-                  Accounts that get declined during verification will appear here cleanly separated from approved residents.
+                  Accounts that get declined during verification will appear
+                  here cleanly separated from approved residents.
                 </p>
               </div>
             ) : tab === "suspended" ? (
               <div>
-                <p style={{ fontSize: "15px", fontWeight: "700", color: "#163e32", margin: "0 0 6px" }}>
+                <p
+                  style={{
+                    fontSize: "15px",
+                    fontWeight: "700",
+                    color: "#163e32",
+                    margin: "0 0 6px",
+                  }}
+                >
                   No accounts sanctioned
                 </p>
                 <p style={{ fontSize: "12px", margin: 0 }}>
@@ -10051,16 +13265,32 @@ function ResidentsPage({
               </div>
             ) : tab === "deleted" ? (
               <div>
-                <p style={{ fontSize: "15px", fontWeight: "700", color: "#163e32", margin: "0 0 6px" }}>
+                <p
+                  style={{
+                    fontSize: "15px",
+                    fontWeight: "700",
+                    color: "#163e32",
+                    margin: "0 0 6px",
+                  }}
+                >
                   No deleted accounts on file
                 </p>
                 <p style={{ fontSize: "12px", margin: 0 }}>
-                  Resident accounts deleted by an administrator will be stored here, allowing you to restore them anytime or permanently purge them.
+                  Resident accounts deleted by an administrator will be stored
+                  here, allowing you to restore them anytime or permanently
+                  purge them.
                 </p>
               </div>
             ) : (
               <div>
-                <p style={{ fontSize: "15px", fontWeight: "700", color: "#163e32", margin: "0 0 6px" }}>
+                <p
+                  style={{
+                    fontSize: "15px",
+                    fontWeight: "700",
+                    color: "#163e32",
+                    margin: "0 0 6px",
+                  }}
+                >
                   No residents match your search
                 </p>
                 <p style={{ fontSize: "12px", margin: 0 }}>
@@ -10084,18 +13314,34 @@ function ResidentsPage({
                   tone={
                     resident.status === "pending"
                       ? "amber"
-                      : resident.status === "rejected" || resident.status === "banned" || resident.status === "deleted"
-                      ? "blue"
-                      : "green"
+                      : resident.status === "rejected" ||
+                          resident.status === "banned" ||
+                          resident.status === "deleted"
+                        ? "blue"
+                        : "green"
                   }
                 />
                 <div className="resident-meta">
-                  <strong style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                  <strong
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "5px",
+                    }}
+                  >
                     {resident.name}
                     {resident.role === "admin" && (
                       <span
                         title="Administrator account"
-                        style={{ fontSize: "10px", background: "#7c3aed", color: "white", padding: "1px 6px", borderRadius: "8px", fontWeight: 700, letterSpacing: "0.3px" }}
+                        style={{
+                          fontSize: "10px",
+                          background: "#7c3aed",
+                          color: "white",
+                          padding: "1px 6px",
+                          borderRadius: "8px",
+                          fontWeight: 700,
+                          letterSpacing: "0.3px",
+                        }}
                       >
                         👑 Admin
                       </span>
@@ -10113,29 +13359,40 @@ function ResidentsPage({
 
               {/* Status & Online Presence Column */}
               <div>
-                <div style={{ display: "flex", flexDirection: "column", gap: "6px", alignItems: "flex-start" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "6px",
+                    alignItems: "flex-start",
+                  }}
+                >
                   <b className={`status ${resident.status}`}>
                     {resident.status === "active"
                       ? "Approved"
                       : resident.status === "pending"
-                      ? "Pending Review"
-                      : resident.status === "rejected"
-                      ? "Rejected"
-                      : resident.status === "suspended"
-                      ? "Suspended"
-                      : resident.status === "banned"
-                      ? "Banned"
-                      : "Deleted"}
+                        ? "Pending Review"
+                        : resident.status === "rejected"
+                          ? "Rejected"
+                          : resident.status === "suspended"
+                            ? "Suspended"
+                            : resident.status === "banned"
+                              ? "Banned"
+                              : "Deleted"}
                   </b>
 
                   {tab === "approved" && (
-                    <span className={`presence-badge ${resident.isOnline ? "online" : "offline"}`}>
-                      <span className={`presence-dot ${resident.isOnline ? "online" : "offline"}`} />
+                    <span
+                      className={`presence-badge ${resident.isOnline ? "online" : "offline"}`}
+                    >
+                      <span
+                        className={`presence-dot ${resident.isOnline ? "online" : "offline"}`}
+                      />
                       {currentUser?.id === resident.id
                         ? "Online (You)"
                         : resident.isOnline
-                        ? "Online"
-                        : "Offline"}
+                          ? "Online"
+                          : "Offline"}
                     </span>
                   )}
                 </div>
@@ -10256,7 +13513,8 @@ function ResidentsPage({
                       <Icon name="trash" size={13} /> Purge
                     </button>
                   </>
-                ) : resident.status === "suspended" || resident.status === "banned" ? (
+                ) : resident.status === "suspended" ||
+                  resident.status === "banned" ? (
                   <>
                     <button
                       className="btn-sm-action primary"
@@ -10289,7 +13547,14 @@ function ResidentsPage({
                     </button>
                     <button
                       className="btn-sm-action"
-                      onClick={() => handleOpenResetModal({ id: resident.id, name: resident.name, email: resident.email, phone: resident.mobile })}
+                      onClick={() =>
+                        handleOpenResetModal({
+                          id: resident.id,
+                          name: resident.name,
+                          email: resident.email,
+                          phone: resident.mobile,
+                        })
+                      }
                       title="Reset resident password (requires administrator verification)"
                     >
                       <Icon name="lock" size={13} /> Reset PW
@@ -10338,9 +13603,11 @@ function ResidentsPage({
                   tone={
                     selected.status === "pending"
                       ? "amber"
-                      : selected.status === "rejected" || selected.status === "banned" || selected.status === "deleted"
-                      ? "blue"
-                      : "green"
+                      : selected.status === "rejected" ||
+                          selected.status === "banned" ||
+                          selected.status === "deleted"
+                        ? "blue"
+                        : "green"
                   }
                 />
                 <div className="resident-hero-info">
@@ -10348,17 +13615,37 @@ function ResidentsPage({
                   <p>{selected.email}</p>
                 </div>
               </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: "6px", alignItems: "flex-end" }}>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "6px",
+                  alignItems: "flex-end",
+                }}
+              >
                 <b className={`status ${selected.status}`}>
                   {selected.status.toUpperCase()}
                 </b>
                 {selected.role === "admin" && (
-                  <span style={{ fontSize: "10px", background: "#7c3aed", color: "white", padding: "2px 8px", borderRadius: "8px", fontWeight: 700 }}>
+                  <span
+                    style={{
+                      fontSize: "10px",
+                      background: "#7c3aed",
+                      color: "white",
+                      padding: "2px 8px",
+                      borderRadius: "8px",
+                      fontWeight: 700,
+                    }}
+                  >
                     👑 Administrator
                   </span>
                 )}
-                <span className={`presence-badge ${selected.isOnline ? "online" : "offline"}`}>
-                  <span className={`presence-dot ${selected.isOnline ? "online" : "offline"}`} />
+                <span
+                  className={`presence-badge ${selected.isOnline ? "online" : "offline"}`}
+                >
+                  <span
+                    className={`presence-dot ${selected.isOnline ? "online" : "offline"}`}
+                  />
                   {selected.isOnline ? "Online Now" : "Offline"}
                 </span>
               </div>
@@ -10366,19 +13653,49 @@ function ResidentsPage({
 
             {/* Rejection / Sanction / Deleted Alert Box */}
             {selected.status === "deleted" && (
-              <div style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: "10px", padding: "12px 14px" }}>
-                <strong style={{ color: "#991b1b", fontSize: "12px", display: "block", marginBottom: "4px" }}>
+              <div
+                style={{
+                  background: "#fef2f2",
+                  border: "1px solid #fecaca",
+                  borderRadius: "10px",
+                  padding: "12px 14px",
+                }}
+              >
+                <strong
+                  style={{
+                    color: "#991b1b",
+                    fontSize: "12px",
+                    display: "block",
+                    marginBottom: "4px",
+                  }}
+                >
                   Account in Deleted Archive
                 </strong>
                 <p style={{ margin: 0, fontSize: "12px", color: "#b91c1c" }}>
-                  This resident account was moved to Deleted Accounts {selected.deletedAt ? `(${selected.deletedAt})` : ""}. Access to the portal is completely blocked.
+                  This resident account was moved to Deleted Accounts{" "}
+                  {selected.deletedAt ? `(${selected.deletedAt})` : ""}. Access
+                  to the portal is completely blocked.
                 </p>
               </div>
             )}
 
             {selected.status === "rejected" && selected.rejectionReason && (
-              <div style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: "10px", padding: "12px 14px" }}>
-                <strong style={{ color: "#991b1b", fontSize: "12px", display: "block", marginBottom: "4px" }}>
+              <div
+                style={{
+                  background: "#fef2f2",
+                  border: "1px solid #fecaca",
+                  borderRadius: "10px",
+                  padding: "12px 14px",
+                }}
+              >
+                <strong
+                  style={{
+                    color: "#991b1b",
+                    fontSize: "12px",
+                    display: "block",
+                    marginBottom: "4px",
+                  }}
+                >
                   Rejection Reason on Record:
                 </strong>
                 <p style={{ margin: 0, fontSize: "12px", color: "#b91c1c" }}>
@@ -10388,12 +13705,27 @@ function ResidentsPage({
             )}
 
             {selected.status === "banned" && (
-              <div style={{ background: "#450a0a", border: "1px solid #7f1d1d", borderRadius: "10px", padding: "12px 14px", color: "#fecaca" }}>
-                <strong style={{ fontSize: "12px", display: "block", marginBottom: "4px" }}>
+              <div
+                style={{
+                  background: "#450a0a",
+                  border: "1px solid #7f1d1d",
+                  borderRadius: "10px",
+                  padding: "12px 14px",
+                  color: "#fecaca",
+                }}
+              >
+                <strong
+                  style={{
+                    fontSize: "12px",
+                    display: "block",
+                    marginBottom: "4px",
+                  }}
+                >
                   Permanent Ban Active
                 </strong>
                 <p style={{ margin: 0, fontSize: "11px", opacity: 0.9 }}>
-                  This resident is barred from accessing community portal services.
+                  This resident is barred from accessing community portal
+                  services.
                 </p>
               </div>
             )}
@@ -10431,15 +13763,33 @@ function ResidentsPage({
                     type="button"
                     className="row-action"
                     onClick={() => setIsEditing(true)}
-                    style={{ alignSelf: "flex-start", display: "inline-flex", alignItems: "center", gap: "6px" }}
+                    style={{
+                      alignSelf: "flex-start",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "6px",
+                    }}
                   >
                     <Icon name="edit" size={13} /> Edit Profile Information
                   </button>
                 )}
               </>
             ) : (
-              <div style={{ background: "#f8faf9", border: "1px solid #e1ebe6", borderRadius: "10px", padding: "14px" }}>
-                <h4 style={{ margin: "0 0 10px 0", fontSize: "12px", color: "#25483a" }}>
+              <div
+                style={{
+                  background: "#f8faf9",
+                  border: "1px solid #e1ebe6",
+                  borderRadius: "10px",
+                  padding: "14px",
+                }}
+              >
+                <h4
+                  style={{
+                    margin: "0 0 10px 0",
+                    fontSize: "12px",
+                    color: "#25483a",
+                  }}
+                >
                   Update Resident Profile
                 </h4>
                 <label className="field" style={{ margin: "8px 0" }}>
@@ -10468,7 +13818,10 @@ function ResidentsPage({
                   <button className="primary-button" onClick={handleSaveEdit}>
                     Save Changes
                   </button>
-                  <button className="row-action" onClick={() => setIsEditing(false)}>
+                  <button
+                    className="row-action"
+                    onClick={() => setIsEditing(false)}
+                  >
                     Cancel
                   </button>
                 </div>
@@ -10478,7 +13831,8 @@ function ResidentsPage({
             {/* ── Admin Authority Actions Control Box ─────────────────── */}
             <div className="authority-box">
               <h3 className="authority-title">
-                <Icon name="shield" size={15} /> Administrator Authority & Standing
+                <Icon name="shield" size={15} /> Administrator Authority &
+                Standing
               </h3>
 
               <div className="authority-actions-row">
@@ -10487,14 +13841,23 @@ function ResidentsPage({
                     <button
                       className="primary-button"
                       onClick={() => handleRestore(selected.id)}
-                      style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "6px",
+                      }}
                     >
-                      <Icon name="refresh" size={15} /> Restore Account to Approved
+                      <Icon name="refresh" size={15} /> Restore Account to
+                      Approved
                     </button>
                     <button
                       className="btn-sm-action danger"
                       onClick={() => openPurgeModal(selected)}
-                      style={{ padding: "9px 14px", fontSize: "12px", marginLeft: "auto" }}
+                      style={{
+                        padding: "9px 14px",
+                        fontSize: "12px",
+                        marginLeft: "auto",
+                      }}
                     >
                       <Icon name="trash" size={14} /> Permanently Purge Record
                     </button>
@@ -10506,9 +13869,14 @@ function ResidentsPage({
                         <button
                           className="primary-button"
                           onClick={() => handleApprove(selected.id)}
-                          style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "6px",
+                          }}
                         >
-                          <Icon name="check" size={15} /> Approve & Activate Account
+                          <Icon name="check" size={15} /> Approve & Activate
+                          Account
                         </button>
                         <button
                           className="btn-sm-action danger"
@@ -10526,7 +13894,16 @@ function ResidentsPage({
                         {selected.role === "resident" ? (
                           <button
                             className="btn-sm-action primary"
-                            style={{ padding: "9px 14px", fontSize: "12px", background: "#7c3aed", borderColor: "#7c3aed", color: "white", display: "inline-flex", alignItems: "center", gap: "6px" }}
+                            style={{
+                              padding: "9px 14px",
+                              fontSize: "12px",
+                              background: "#7c3aed",
+                              borderColor: "#7c3aed",
+                              color: "white",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "6px",
+                            }}
                             title="Grant admin privileges to this resident"
                             onClick={() => handlePromoteToAdmin(selected.id)}
                           >
@@ -10535,7 +13912,13 @@ function ResidentsPage({
                         ) : selected.role === "admin" ? (
                           <button
                             className="btn-sm-action warning"
-                            style={{ padding: "9px 14px", fontSize: "12px", display: "inline-flex", alignItems: "center", gap: "6px" }}
+                            style={{
+                              padding: "9px 14px",
+                              fontSize: "12px",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "6px",
+                            }}
                             title="Revoke admin privileges and demote to resident"
                             onClick={() => handleDemoteToResident(selected.id)}
                           >
@@ -10544,9 +13927,22 @@ function ResidentsPage({
                         ) : null}
                         <button
                           className="btn-sm-action"
-                          style={{ padding: "9px 14px", fontSize: "12px", display: "inline-flex", alignItems: "center", gap: "6px" }}
+                          style={{
+                            padding: "9px 14px",
+                            fontSize: "12px",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "6px",
+                          }}
                           title="Reset resident password (requires administrator verification)"
-                          onClick={() => handleOpenResetModal({ id: selected.id, name: selected.name, email: selected.email, phone: selected.mobile })}
+                          onClick={() =>
+                            handleOpenResetModal({
+                              id: selected.id,
+                              name: selected.name,
+                              email: selected.email,
+                              phone: selected.mobile,
+                            })
+                          }
                         >
                           <Icon name="lock" size={14} /> Reset Password
                         </button>
@@ -10571,26 +13967,41 @@ function ResidentsPage({
                       <button
                         className="primary-button"
                         onClick={() => handleApprove(selected.id)}
-                        style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "6px",
+                        }}
                       >
-                        <Icon name="check" size={15} /> Re-evaluate & Restore to Approved
+                        <Icon name="check" size={15} /> Re-evaluate & Restore to
+                        Approved
                       </button>
                     )}
 
-                    {(selected.status === "suspended" || selected.status === "banned") && (
+                    {(selected.status === "suspended" ||
+                      selected.status === "banned") && (
                       <button
                         className="primary-button"
                         onClick={() => handleReactivate(selected.id)}
-                        style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "6px",
+                        }}
                       >
-                        <Icon name="check" size={15} /> Lift Sanctions & Reactivate
+                        <Icon name="check" size={15} /> Lift Sanctions &
+                        Reactivate
                       </button>
                     )}
 
                     <button
                       className="btn-sm-action danger"
                       onClick={() => openDeleteModal(selected)}
-                      style={{ padding: "9px 14px", fontSize: "12px", marginLeft: "auto" }}
+                      style={{
+                        padding: "9px 14px",
+                        fontSize: "12px",
+                        marginLeft: "auto",
+                      }}
                     >
                       <Icon name="trash" size={14} /> Delete Account
                     </button>
@@ -10611,13 +14022,31 @@ function ResidentsPage({
             setRejectingResident(null);
           }}
         >
-          <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-            <p style={{ margin: 0, fontSize: "12px", color: "#485b54", lineHeight: "1.6" }}>
-              Rejecting <strong>{rejectingResident.name}</strong> (`{rejectingResident.email}`) will move their application to the <strong>Rejected Accounts</strong> tab and prevent them from logging into Barangay Connect.
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "14px" }}
+          >
+            <p
+              style={{
+                margin: 0,
+                fontSize: "12px",
+                color: "#485b54",
+                lineHeight: "1.6",
+              }}
+            >
+              Rejecting <strong>{rejectingResident.name}</strong> (`
+              {rejectingResident.email}`) will move their application to the{" "}
+              <strong>Rejected Accounts</strong> tab and prevent them from
+              logging into Barangay Connect.
             </p>
 
             <div>
-              <span style={{ fontSize: "11px", fontWeight: "700", color: "#374f45" }}>
+              <span
+                style={{
+                  fontSize: "11px",
+                  fontWeight: "700",
+                  color: "#374f45",
+                }}
+              >
                 Select Common Reason:
               </span>
               <div className="rejection-preset-container">
@@ -10656,7 +14085,14 @@ function ResidentsPage({
               />
             </label>
 
-            <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end", marginTop: "10px" }}>
+            <div
+              style={{
+                display: "flex",
+                gap: "10px",
+                justifyContent: "flex-end",
+                marginTop: "10px",
+              }}
+            >
               <button
                 type="button"
                 className="row-action"
@@ -10670,7 +14106,11 @@ function ResidentsPage({
               <button
                 type="button"
                 className="btn-sm-action danger"
-                style={{ padding: "9px 18px", fontSize: "12px", fontWeight: "700" }}
+                style={{
+                  padding: "9px 18px",
+                  fontSize: "12px",
+                  fontWeight: "700",
+                }}
                 onClick={handleConfirmReject}
               >
                 Confirm Rejection
@@ -10697,10 +14137,21 @@ function ResidentsPage({
               Delete {deletingResident.name}'s Account?
             </h3>
             <p className="danger-modal-desc">
-              Moving <strong>{deletingResident.name}</strong> (`{deletingResident.email}`) to the <strong>Deleted Accounts</strong> tab will immediately revoke their portal access. You can restore their profile anytime or permanently purge it from the Deleted Accounts tab.
+              Moving <strong>{deletingResident.name}</strong> (`
+              {deletingResident.email}`) to the{" "}
+              <strong>Deleted Accounts</strong> tab will immediately revoke
+              their portal access. You can restore their profile anytime or
+              permanently purge it from the Deleted Accounts tab.
             </p>
 
-            <div style={{ display: "flex", gap: "10px", justifyContent: "center", marginTop: "12px" }}>
+            <div
+              style={{
+                display: "flex",
+                gap: "10px",
+                justifyContent: "center",
+                marginTop: "12px",
+              }}
+            >
               <button
                 className="row-action"
                 onClick={() => {
@@ -10713,7 +14164,11 @@ function ResidentsPage({
               </button>
               <button
                 className="btn-sm-action danger"
-                style={{ padding: "9px 20px", fontSize: "12px", fontWeight: "700" }}
+                style={{
+                  padding: "9px 20px",
+                  fontSize: "12px",
+                  fontWeight: "700",
+                }}
                 onClick={handleConfirmDelete}
                 disabled={isDeleting}
               >
@@ -10734,17 +14189,29 @@ function ResidentsPage({
           }}
         >
           <div className="danger-modal-box">
-            <div className="danger-modal-icon" style={{ background: "#450a0a", color: "#fecaca" }}>
+            <div
+              className="danger-modal-icon"
+              style={{ background: "#450a0a", color: "#fecaca" }}
+            >
               <Icon name="ban" size={26} />
             </div>
             <h3 className="danger-modal-title" style={{ color: "#7f1d1d" }}>
               Permanently Erase {purgingResident.name}'s Record?
             </h3>
             <p className="danger-modal-desc">
-              This action will completely wipe all database records for <strong>{purgingResident.name}</strong> (`{purgingResident.email}`). This cannot be undone or recovered.
+              This action will completely wipe all database records for{" "}
+              <strong>{purgingResident.name}</strong> (`{purgingResident.email}
+              `). This cannot be undone or recovered.
             </p>
 
-            <div style={{ display: "flex", gap: "10px", justifyContent: "center", marginTop: "12px" }}>
+            <div
+              style={{
+                display: "flex",
+                gap: "10px",
+                justifyContent: "center",
+                marginTop: "12px",
+              }}
+            >
               <button
                 className="row-action"
                 onClick={() => {
@@ -10757,7 +14224,13 @@ function ResidentsPage({
               </button>
               <button
                 className="btn-sm-action danger"
-                style={{ padding: "9px 20px", fontSize: "12px", fontWeight: "700", background: "#991b1b", color: "#fff" }}
+                style={{
+                  padding: "9px 20px",
+                  fontSize: "12px",
+                  fontWeight: "700",
+                  background: "#991b1b",
+                  color: "#fff",
+                }}
                 onClick={handleConfirmPurge}
                 disabled={isPurging}
               >
@@ -10770,9 +14243,13 @@ function ResidentsPage({
 
       {/* ── Modal: Manually Add Resident ─────────────────────────────── */}
       {addOpen && (
-        <Modal title="Manually Register Resident" close={() => setAddOpen(false)}>
+        <Modal
+          title="Manually Register Resident"
+          close={() => setAddOpen(false)}
+        >
           <p className="modal-intro" style={{ marginBottom: "16px" }}>
-            Create an official resident profile on behalf of a citizen who cannot register online.
+            Create an official resident profile on behalf of a citizen who
+            cannot register online.
           </p>
 
           <label className="field">
@@ -10871,7 +14348,8 @@ function ResidentsPage({
               </button>
             </div>
             <small style={{ color: "#74867f", fontSize: "10px" }}>
-              Default is `Resident@2025!`. Resident can change this after logging in.
+              Default is `Resident@2025!`. Resident can change this after
+              logging in.
             </small>
           </label>
 
@@ -10905,7 +14383,9 @@ function ResidentsPage({
             }
             style={{ marginTop: "16px" }}
           >
-            {addSubmitting ? "Creating resident account..." : "Create resident account"}
+            {addSubmitting
+              ? "Creating resident account..."
+              : "Create resident account"}
           </button>
         </Modal>
       )}
@@ -10913,7 +14393,11 @@ function ResidentsPage({
       {/* ── Modal: Secure Password Reset & SMS Gateway ───────────────── */}
       {pwResetModalOpen && pwResetTarget && (
         <Modal
-          title={pwResetSuccess ? "SMS Notification Dispatch" : `Reset Password: ${pwResetTarget.name}`}
+          title={
+            pwResetSuccess
+              ? "SMS Notification Dispatch"
+              : `Reset Password: ${pwResetTarget.name}`
+          }
           close={() => {
             setPwResetModalOpen(false);
             setPwResetSuccess(false);
@@ -10921,37 +14405,136 @@ function ResidentsPage({
           }}
         >
           {pwResetSuccess ? (
-            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-              <div style={{ background: "#ecfdf5", border: "1px solid #a7f3d0", borderRadius: "10px", padding: "14px 16px", display: "flex", alignItems: "center", gap: "12px" }}>
-                <div style={{ width: 42, height: 42, borderRadius: "50%", background: "#10b981", color: "white", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <div
+              style={{ display: "flex", flexDirection: "column", gap: "16px" }}
+            >
+              <div
+                style={{
+                  background: "#ecfdf5",
+                  border: "1px solid #a7f3d0",
+                  borderRadius: "10px",
+                  padding: "14px 16px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "12px",
+                }}
+              >
+                <div
+                  style={{
+                    width: 42,
+                    height: 42,
+                    borderRadius: "50%",
+                    background: "#10b981",
+                    color: "white",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                  }}
+                >
                   <Icon name="check" size={22} />
                 </div>
                 <div>
-                  <h4 style={{ margin: 0, color: "#065f46", fontSize: "14px", fontWeight: 700 }}>
+                  <h4
+                    style={{
+                      margin: 0,
+                      color: "#065f46",
+                      fontSize: "14px",
+                      fontWeight: 700,
+                    }}
+                  >
                     Password Successfully Reset!
                   </h4>
-                  <p style={{ margin: "2px 0 0", fontSize: "12px", color: "#047857" }}>
-                    The temporary credentials for <strong>{pwResetTarget.name}</strong> are ready. Send the SMS message below to their registered phone number.
+                  <p
+                    style={{
+                      margin: "2px 0 0",
+                      fontSize: "12px",
+                      color: "#047857",
+                    }}
+                  >
+                    The temporary credentials for{" "}
+                    <strong>{pwResetTarget.name}</strong> are ready. Send the
+                    SMS message below to their registered phone number.
                   </p>
                 </div>
               </div>
 
               {/* Resident Credential Summary */}
-              <div style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: "10px", padding: "14px" }}>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", fontSize: "12px", marginBottom: "12px" }}>
+              <div
+                style={{
+                  background: "#f8fafc",
+                  border: "1px solid #e2e8f0",
+                  borderRadius: "10px",
+                  padding: "14px",
+                }}
+              >
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    gap: "10px",
+                    fontSize: "12px",
+                    marginBottom: "12px",
+                  }}
+                >
                   <div>
-                    <span style={{ color: "#64748b", fontSize: "11px", display: "block" }}>Resident</span>
-                    <strong style={{ color: "#0f172a" }}>{pwResetTarget.name}</strong>
+                    <span
+                      style={{
+                        color: "#64748b",
+                        fontSize: "11px",
+                        display: "block",
+                      }}
+                    >
+                      Resident
+                    </span>
+                    <strong style={{ color: "#0f172a" }}>
+                      {pwResetTarget.name}
+                    </strong>
                   </div>
                   <div>
-                    <span style={{ color: "#64748b", fontSize: "11px", display: "block" }}>Registered Mobile</span>
-                    <strong style={{ color: "#0f172a" }}>{pwResetTarget.phone}</strong>
+                    <span
+                      style={{
+                        color: "#64748b",
+                        fontSize: "11px",
+                        display: "block",
+                      }}
+                    >
+                      Registered Mobile
+                    </span>
+                    <strong style={{ color: "#0f172a" }}>
+                      {pwResetTarget.phone}
+                    </strong>
                   </div>
                 </div>
-                <div style={{ background: "#ffffff", border: "1px dashed #cbd5e1", borderRadius: "8px", padding: "10px 12px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <div
+                  style={{
+                    background: "#ffffff",
+                    border: "1px dashed #cbd5e1",
+                    borderRadius: "8px",
+                    padding: "10px 12px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
                   <div>
-                    <span style={{ fontSize: "11px", color: "#64748b", display: "block" }}>New Temporary Password:</span>
-                    <code style={{ fontSize: "15px", fontWeight: 700, color: "#166534", letterSpacing: "1px" }}>
+                    <span
+                      style={{
+                        fontSize: "11px",
+                        color: "#64748b",
+                        display: "block",
+                      }}
+                    >
+                      New Temporary Password:
+                    </span>
+                    <code
+                      style={{
+                        fontSize: "15px",
+                        fontWeight: 700,
+                        color: "#166534",
+                        letterSpacing: "1px",
+                      }}
+                    >
                       {pwResetNewPass}
                     </code>
                   </div>
@@ -10970,16 +14553,44 @@ function ResidentsPage({
 
               {/* SMS Message Template Box */}
               <div>
-                <label style={{ fontSize: "12px", fontWeight: 700, color: "#334155", display: "block", marginBottom: "6px" }}>
+                <label
+                  style={{
+                    fontSize: "12px",
+                    fontWeight: 700,
+                    color: "#334155",
+                    display: "block",
+                    marginBottom: "6px",
+                  }}
+                >
                   <Icon name="message" size={14} /> SMS Dispatch Template:
                 </label>
-                <div style={{ background: "#f1f5f9", border: "1px solid #cbd5e1", borderRadius: "8px", padding: "12px", fontSize: "12.5px", color: "#1e293b", lineHeight: 1.6, whiteSpace: "pre-wrap", fontFamily: "monospace" }}>
+                <div
+                  style={{
+                    background: "#f1f5f9",
+                    border: "1px solid #cbd5e1",
+                    borderRadius: "8px",
+                    padding: "12px",
+                    fontSize: "12.5px",
+                    color: "#1e293b",
+                    lineHeight: 1.6,
+                    whiteSpace: "pre-wrap",
+                    fontFamily: "monospace",
+                  }}
+                >
                   {`Good day ${pwResetTarget.name}! Your Barangay Connect portal password has been reset by the Barangay Administration.\n\nTemporary Password: ${pwResetNewPass}\n\nPlease sign in to the portal and update your password under Settings. Thank you!`}
                 </div>
               </div>
 
               {/* Quick Action Buttons */}
-              <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end", flexWrap: "wrap", marginTop: "4px" }}>
+              <div
+                style={{
+                  display: "flex",
+                  gap: "10px",
+                  justifyContent: "flex-end",
+                  flexWrap: "wrap",
+                  marginTop: "4px",
+                }}
+              >
                 <button
                   type="button"
                   className="btn-sm-action"
@@ -10992,18 +14603,28 @@ function ResidentsPage({
                   }}
                   style={{ padding: "9px 14px" }}
                 >
-                  <Icon name="check" size={14} /> {copiedSms ? "Copied to Clipboard!" : "Copy SMS Text"}
+                  <Icon name="check" size={14} />{" "}
+                  {copiedSms ? "Copied to Clipboard!" : "Copy SMS Text"}
                 </button>
 
                 <a
                   href={`sms:${pwResetTarget.phone}?body=${encodeURIComponent(
-                    `Good day ${pwResetTarget.name}! Your Barangay Connect portal password has been reset by the Barangay Administration.\n\nTemporary Password: ${pwResetNewPass}\n\nPlease sign in to the portal and update your password under Settings. Thank you!`
+                    `Good day ${pwResetTarget.name}! Your Barangay Connect portal password has been reset by the Barangay Administration.\n\nTemporary Password: ${pwResetNewPass}\n\nPlease sign in to the portal and update your password under Settings. Thank you!`,
                   )}`}
                   className="primary-button"
-                  style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "6px", padding: "9px 16px" }}
-                  onClick={() => onToast("Opening messaging app to send SMS...")}
+                  style={{
+                    textDecoration: "none",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    padding: "9px 16px",
+                  }}
+                  onClick={() =>
+                    onToast("Opening messaging app to send SMS...")
+                  }
                 >
-                  <Icon name="message" size={14} /> Send SMS to {pwResetTarget.phone}
+                  <Icon name="message" size={14} /> Send SMS to{" "}
+                  {pwResetTarget.phone}
                 </a>
 
                 <button
@@ -11020,18 +14641,45 @@ function ResidentsPage({
               </div>
             </div>
           ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+            <div
+              style={{ display: "flex", flexDirection: "column", gap: "14px" }}
+            >
               {/* Security Warning & Re-auth Gate */}
-              <div style={{ background: "#fff7ed", border: "1px solid #ffedd5", borderRadius: "8px", padding: "12px", display: "flex", gap: "10px", alignItems: "flex-start" }}>
+              <div
+                style={{
+                  background: "#fff7ed",
+                  border: "1px solid #ffedd5",
+                  borderRadius: "8px",
+                  padding: "12px",
+                  display: "flex",
+                  gap: "10px",
+                  alignItems: "flex-start",
+                }}
+              >
                 <div style={{ color: "#c2410c", marginTop: "2px" }}>
                   <Icon name="shield" size={18} />
                 </div>
                 <div>
-                  <strong style={{ fontSize: "12.5px", color: "#9a3412", display: "block" }}>
+                  <strong
+                    style={{
+                      fontSize: "12.5px",
+                      color: "#9a3412",
+                      display: "block",
+                    }}
+                  >
                     Security Gate: Admin Authentication Required
                   </strong>
-                  <p style={{ margin: "2px 0 0", fontSize: "11.5px", color: "#7c2d12", lineHeight: 1.5 }}>
-                    Resetting resident credentials is a sensitive operation. You must enter your administrator password to authorize this action.
+                  <p
+                    style={{
+                      margin: "2px 0 0",
+                      fontSize: "11.5px",
+                      color: "#7c2d12",
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    Resetting resident credentials is a sensitive operation. You
+                    must enter your administrator password to authorize this
+                    action.
                   </p>
                 </div>
               </div>
@@ -11043,14 +14691,51 @@ function ResidentsPage({
               )}
 
               {/* Target info card */}
-              <div style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: "8px", padding: "10px 14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div
+                style={{
+                  background: "#f8fafc",
+                  border: "1px solid #e2e8f0",
+                  borderRadius: "8px",
+                  padding: "10px 14px",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
                 <div>
-                  <span style={{ fontSize: "11px", color: "#64748b", display: "block" }}>Target Resident Account</span>
-                  <strong style={{ fontSize: "13px", color: "#0f172a" }}>{pwResetTarget.name}</strong>
-                  <span style={{ fontSize: "11.5px", color: "#475569", display: "block" }}>{pwResetTarget.email} · {pwResetTarget.phone}</span>
+                  <span
+                    style={{
+                      fontSize: "11px",
+                      color: "#64748b",
+                      display: "block",
+                    }}
+                  >
+                    Target Resident Account
+                  </span>
+                  <strong style={{ fontSize: "13px", color: "#0f172a" }}>
+                    {pwResetTarget.name}
+                  </strong>
+                  <span
+                    style={{
+                      fontSize: "11.5px",
+                      color: "#475569",
+                      display: "block",
+                    }}
+                  >
+                    {pwResetTarget.email} · {pwResetTarget.phone}
+                  </span>
                 </div>
                 <div style={{ textAlign: "right" }}>
-                  <span style={{ fontSize: "10px", background: "#e2e8f0", color: "#334155", padding: "3px 8px", borderRadius: "6px", fontWeight: 600 }}>
+                  <span
+                    style={{
+                      fontSize: "10px",
+                      background: "#e2e8f0",
+                      color: "#334155",
+                      padding: "3px 8px",
+                      borderRadius: "6px",
+                      fontWeight: 600,
+                    }}
+                  >
                     SMS Destination Verified
                   </span>
                 </div>
@@ -11058,9 +14743,13 @@ function ResidentsPage({
 
               {/* Admin Password Re-entry */}
               <label className="field" style={{ margin: 0 }}>
-                <span style={{ display: "flex", justifyContent: "space-between" }}>
+                <span
+                  style={{ display: "flex", justifyContent: "space-between" }}
+                >
                   <strong>Your Administrator Password *</strong>
-                  <small style={{ color: "#dc2626", fontWeight: 600 }}>Required for safety</small>
+                  <small style={{ color: "#dc2626", fontWeight: 600 }}>
+                    Required for safety
+                  </small>
                 </span>
                 <div className="password-wrapper">
                   <input
@@ -11076,7 +14765,9 @@ function ResidentsPage({
                   <button
                     type="button"
                     className="show-password-btn"
-                    onClick={() => setShowPwResetAdminPass(!showPwResetAdminPass)}
+                    onClick={() =>
+                      setShowPwResetAdminPass(!showPwResetAdminPass)
+                    }
                   >
                     {showPwResetAdminPass ? "Hide" : "Show"}
                   </button>
@@ -11085,7 +14776,13 @@ function ResidentsPage({
 
               {/* New Temporary Password with Generator */}
               <label className="field" style={{ margin: 0 }}>
-                <span style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
                   <strong>New Temporary Password for Resident *</strong>
                   <button
                     type="button"
@@ -11094,7 +14791,15 @@ function ResidentsPage({
                       setPwResetNewPass(pass);
                       setPwResetConfirmPass(pass);
                     }}
-                    style={{ border: "none", background: "none", color: "#059669", fontSize: "11px", fontWeight: 700, cursor: "pointer", textDecoration: "underline" }}
+                    style={{
+                      border: "none",
+                      background: "none",
+                      color: "#059669",
+                      fontSize: "11px",
+                      fontWeight: 700,
+                      cursor: "pointer",
+                      textDecoration: "underline",
+                    }}
                   >
                     🎲 Generate Random Password
                   </button>
@@ -11126,7 +14831,14 @@ function ResidentsPage({
                 />
               </label>
 
-              <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end", marginTop: "10px" }}>
+              <div
+                style={{
+                  display: "flex",
+                  gap: "10px",
+                  justifyContent: "flex-end",
+                  marginTop: "10px",
+                }}
+              >
                 <button
                   type="button"
                   className="row-action"
@@ -11143,10 +14855,16 @@ function ResidentsPage({
                   className="primary-button"
                   onClick={handleConfirmAdminPasswordReset}
                   disabled={pwResetSubmitting}
-                  style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "6px",
+                  }}
                 >
                   <Icon name="shield" size={15} />
-                  {pwResetSubmitting ? "Verifying & Resetting…" : "Verify & Reset Password"}
+                  {pwResetSubmitting
+                    ? "Verifying & Resetting…"
+                    : "Verify & Reset Password"}
                 </button>
               </div>
             </div>
@@ -11156,7 +14874,6 @@ function ResidentsPage({
     </div>
   );
 }
-
 
 // ─── Barangay Settings ───────────────────────────────────────────────────────
 
@@ -11171,26 +14888,38 @@ function BarangaySettingsPage({
   onBarangayChange: (info: BarangayInfo) => void;
   currentUser?: Account | null;
 }) {
-  const [tab, setTab] = useState<"profile" | "hours" | "documents" | "notifications" | "security">("profile");
+  const [tab, setTab] = useState<
+    "profile" | "hours" | "documents" | "notifications" | "security"
+  >("profile");
   const [info, setInfo] = useState<BarangayInfo>(barangay);
+  const [isDirty, setIsDirty] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const [lastSyncTime, setLastSyncTime] = useState<string>("Synced with cloud");
 
-  // Keep info in sync if parent barangay changes
+  // Keep info in sync if parent barangay changes and user isn't actively editing
   useEffect(() => {
-    setInfo(barangay);
-  }, [barangay]);
+    if (!isDirty) {
+      setInfo(barangay);
+    }
+  }, [barangay, isDirty]);
 
   // Operating Hours state
   const [schedule, setSchedule] = useState<OperatingDay[]>(getCachedSchedule);
   const [holidayNotice, setHolidayNotice] = useState<string>(() => {
-    return localStorage.getItem("barangay_holiday_notice") || "The barangay office will be closed on declared public holidays.";
+    return (
+      localStorage.getItem("barangay_holiday_notice") ||
+      "The barangay office will be closed on declared public holidays."
+    );
   });
 
   // Document Services state
-  const [services, setServices] = useState<DocumentService[]>(getCachedDocumentServices);
-  const [editingService, setEditingService] = useState<DocumentService | null>(null);
+  const [services, setServices] = useState<DocumentService[]>(
+    getCachedDocumentServices,
+  );
+  const [editingService, setEditingService] = useState<DocumentService | null>(
+    null,
+  );
   const [addingService, setAddingService] = useState(false);
   const [newServiceName, setNewServiceName] = useState("");
   const [newServiceDays, setNewServiceDays] = useState(3);
@@ -11200,16 +14929,22 @@ function BarangaySettingsPage({
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   // Notification preferences state
-  const [notifPrefs, setNotifPrefs] = useState<NotificationPrefs>(getCachedNotifPrefs);
+  const [notifPrefs, setNotifPrefs] =
+    useState<NotificationPrefs>(getCachedNotifPrefs);
 
   // Security preferences state
-  const [securityPrefs, setSecurityPrefs] = useState<SecurityAccessPrefs>(getCachedSecurityPrefs);
+  const [securityPrefs, setSecurityPrefs] = useState<SecurityAccessPrefs>(
+    getCachedSecurityPrefs,
+  );
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
-  const [passwordStatus, setPasswordStatus] = useState<{ type: "success" | "error"; msg: string } | null>(null);
+  const [passwordStatus, setPasswordStatus] = useState<{
+    type: "success" | "error";
+    msg: string;
+  } | null>(null);
 
   // Database Diagnostics state
   const [dbStatus, setDbStatus] = useState<{
@@ -11257,13 +14992,19 @@ function BarangaySettingsPage({
           address: data.address || defaultBarangayInfo.address,
           description: data.description || defaultBarangayInfo.description,
           weekdayHours: data.weekday_hours || defaultBarangayInfo.weekdayHours,
-          saturdayHours: data.saturday_hours || defaultBarangayInfo.saturdayHours,
+          saturdayHours:
+            data.saturday_hours || defaultBarangayInfo.saturdayHours,
           sundayHours: data.sunday_hours || defaultBarangayInfo.sundayHours,
         };
         setInfo(cloudInfo);
         onBarangayChange(cloudInfo);
         localStorage.setItem("barangay_info", JSON.stringify(cloudInfo));
-        setLastSyncTime(new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }));
+        setLastSyncTime(
+          new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        );
         onToast("Barangay settings refreshed from Supabase database!");
       }
     } catch (err: any) {
@@ -11277,39 +15018,88 @@ function BarangaySettingsPage({
   const handleSaveAll = async () => {
     setIsSaving(true);
     try {
-      // 1. Update Supabase barangay_settings table
-      const { error } = await supabase
-        .from("barangay_settings")
-        .update({
-          name: info.name,
-          city: info.city,
-          district: info.district,
-          captain: info.captain,
-          phone: info.phone,
-          email: info.email,
-          address: info.address,
-          description: info.description,
-          weekday_hours: info.weekdayHours,
-          saturday_hours: info.saturdayHours,
-          sunday_hours: info.sundayHours,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", 1);
+      // 1. Preserve promoted admin emails and active resets inside description
+      let currentDesc = "";
+      try {
+        const { data: dbSettings } = await supabase
+          .from("barangay_settings")
+          .select("description")
+          .eq("id", 1)
+          .maybeSingle();
+        currentDesc = dbSettings?.description || "";
+      } catch {}
+
+      const cleanDesc = cleanBarangayDescription(info.description);
+      const adminRolesMatch = (currentDesc || "").match(
+        /<!--\s*ADMIN_ROLES:\s*(\[.*?\])\s*-->/,
+      );
+      const activeResetsMatch = (currentDesc || "").match(
+        /<!--\s*ACTIVE_RESETS:\s*(\{.*?\})\s*-->/,
+      );
+
+      let fullDesc = cleanDesc;
+      if (adminRolesMatch) {
+        fullDesc += `\n<!-- ADMIN_ROLES: ${adminRolesMatch[1]} -->`;
+      } else {
+        const promoted = getPromotedAdminEmails();
+        if (promoted.length > 0) {
+          fullDesc += `\n<!-- ADMIN_ROLES: ${JSON.stringify(promoted)} -->`;
+        }
+      }
+      if (activeResetsMatch) {
+        fullDesc += `\n<!-- ACTIVE_RESETS: ${activeResetsMatch[1]} -->`;
+      }
+
+      // Derive operating hour summaries directly from the schedule
+      const mon = schedule[0];
+      const sat = schedule[5];
+      const sun = schedule[6];
+      const derivedWeekday = mon?.active
+        ? `${mon.open} to ${mon.close}`
+        : "Closed";
+      const derivedSat = sat?.active ? `${sat.open} to ${sat.close}` : "Closed";
+      const derivedSun = sun?.active ? `${sun.open} to ${sun.close}` : "Closed";
+
+      const updatedInfo: BarangayInfo = {
+        ...info,
+        weekdayHours: derivedWeekday,
+        saturdayHours: derivedSat,
+        sundayHours: derivedSun,
+      };
+
+      // 1. Upsert Supabase barangay_settings table
+      const { error } = await supabase.from("barangay_settings").upsert({
+        id: 1,
+        name: updatedInfo.name,
+        city: updatedInfo.city,
+        district: updatedInfo.district,
+        captain: updatedInfo.captain,
+        phone: updatedInfo.phone,
+        email: updatedInfo.email,
+        address: updatedInfo.address,
+        description: fullDesc,
+        weekday_hours: updatedInfo.weekdayHours,
+        saturday_hours: updatedInfo.saturdayHours,
+        sunday_hours: updatedInfo.sundayHours,
+        updated_at: new Date().toISOString(),
+      });
 
       if (error) {
-        console.warn("Supabase update error:", error);
+        console.warn("Supabase upsert error:", error);
       }
 
       // 2. Persist to local caches
-      localStorage.setItem("barangay_info", JSON.stringify(info));
+      localStorage.setItem("barangay_info", JSON.stringify(updatedInfo));
       saveCachedSchedule(schedule);
       localStorage.setItem("barangay_holiday_notice", holidayNotice);
       saveCachedDocumentServices(services);
       saveCachedNotifPrefs(notifPrefs);
       saveCachedSecurityPrefs(securityPrefs);
 
-      // 3. Update parent state
-      onBarangayChange(info);
+      // 3. Update state
+      setIsDirty(false);
+      setInfo(updatedInfo);
+      onBarangayChange(updatedInfo);
       setLastSyncTime("Just now");
       onToast("Barangay settings saved and synchronized to database!");
     } catch (err: any) {
@@ -11321,30 +15111,21 @@ function BarangaySettingsPage({
 
   // ── Schedule Handlers ──
   const handleToggleDay = (dayIndex: number) => {
+    setIsDirty(true);
     const updated = [...schedule];
     updated[dayIndex].active = !updated[dayIndex].active;
     setSchedule(updated);
     saveCachedSchedule(updated);
 
-    if (dayIndex >= 0 && dayIndex <= 4) {
-      const mon = updated[0];
-      setInfo((prev) => ({
-        ...prev,
-        weekdayHours: mon.active ? `${mon.open} – ${mon.close}` : "Closed",
-      }));
-    } else if (dayIndex === 5) {
-      const sat = updated[5];
-      setInfo((prev) => ({
-        ...prev,
-        saturdayHours: sat.active ? `${sat.open} – ${sat.close}` : "Closed",
-      }));
-    } else if (dayIndex === 6) {
-      const sun = updated[6];
-      setInfo((prev) => ({
-        ...prev,
-        sundayHours: sun.active ? `${sun.open} – ${sun.close}` : "Closed",
-      }));
-    }
+    const mon = updated[0];
+    const sat = updated[5];
+    const sun = updated[6];
+    setInfo((prev) => ({
+      ...prev,
+      weekdayHours: mon?.active ? `${mon.open} to ${mon.close}` : "Closed",
+      saturdayHours: sat?.active ? `${sat.open} to ${sat.close}` : "Closed",
+      sundayHours: sun?.active ? `${sun.open} to ${sun.close}` : "Closed",
+    }));
   };
 
   const handleTimeChange = (
@@ -11352,27 +15133,21 @@ function BarangaySettingsPage({
     field: "open" | "close",
     val: string,
   ) => {
+    setIsDirty(true);
     const updated = [...schedule];
     updated[dayIndex][field] = val;
     setSchedule(updated);
     saveCachedSchedule(updated);
 
-    if (dayIndex >= 0 && dayIndex <= 4) {
-      setInfo((prev) => ({
-        ...prev,
-        weekdayHours: `${updated[0].open} – ${updated[0].close}`,
-      }));
-    } else if (dayIndex === 5) {
-      setInfo((prev) => ({
-        ...prev,
-        saturdayHours: `${updated[5].open} – ${updated[5].close}`,
-      }));
-    } else if (dayIndex === 6) {
-      setInfo((prev) => ({
-        ...prev,
-        sundayHours: `${updated[6].open} – ${updated[6].close}`,
-      }));
-    }
+    const mon = updated[0];
+    const sat = updated[5];
+    const sun = updated[6];
+    setInfo((prev) => ({
+      ...prev,
+      weekdayHours: mon?.active ? `${mon.open} to ${mon.close}` : "Closed",
+      saturdayHours: sat?.active ? `${sat.open} to ${sat.close}` : "Closed",
+      sundayHours: sun?.active ? `${sun.open} to ${sun.close}` : "Closed",
+    }));
   };
 
   // ── Document Services Handlers ──
@@ -11510,8 +15285,12 @@ function BarangaySettingsPage({
     try {
       const [acctRes, annRes, docRes, incRes] = await Promise.all([
         supabase.from("accounts").select("id", { count: "exact", head: true }),
-        supabase.from("announcements").select("id", { count: "exact", head: true }),
-        supabase.from("document_requests").select("id", { count: "exact", head: true }),
+        supabase
+          .from("announcements")
+          .select("id", { count: "exact", head: true }),
+        supabase
+          .from("document_requests")
+          .select("id", { count: "exact", head: true }),
         supabase.from("incidents").select("id", { count: "exact", head: true }),
       ]);
       const latency = Math.round(performance.now() - start);
@@ -11542,7 +15321,8 @@ function BarangaySettingsPage({
           <p className="eyebrow">ADMINISTRATION & SYSTEM CONFIGURATION</p>
           <h1>Barangay settings</h1>
           <p>
-            Configure official barangay identity, service schedule, document catalog, alert rules, and security controls.
+            Configure official barangay identity, service schedule, document
+            catalog, alert rules, and security controls.
           </p>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -11596,7 +15376,9 @@ function BarangaySettingsPage({
                   <div className="preview-details">
                     <h4>{info.name || "Barangay Name"}</h4>
                     <p>
-                      {info.city || "City"} • {info.district || "District"} • Punong Barangay: <strong>{info.captain || "Captain"}</strong>
+                      {info.city || "City"} • {info.district || "District"} •
+                      Punong Barangay:{" "}
+                      <strong>{info.captain || "Captain"}</strong>
                     </p>
                   </div>
                 </div>
@@ -11605,7 +15387,8 @@ function BarangaySettingsPage({
 
               <h3>Barangay profile</h3>
               <p className="settings-desc">
-                Public-facing identity and official contact information visible to residents and municipal stakeholders.
+                Public-facing identity and official contact information visible
+                to residents and municipal stakeholders.
               </p>
 
               <div className="settings-grid">
@@ -11613,7 +15396,10 @@ function BarangaySettingsPage({
                   Barangay name
                   <input
                     value={info.name}
-                    onChange={(e) => setInfo({ ...info, name: e.target.value })}
+                    onChange={(e) => {
+                      setIsDirty(true);
+                      setInfo({ ...info, name: e.target.value });
+                    }}
                     placeholder="e.g. San Isidro"
                   />
                 </label>
@@ -11621,7 +15407,10 @@ function BarangaySettingsPage({
                   City / Municipality
                   <input
                     value={info.city}
-                    onChange={(e) => setInfo({ ...info, city: e.target.value })}
+                    onChange={(e) => {
+                      setIsDirty(true);
+                      setInfo({ ...info, city: e.target.value });
+                    }}
                     placeholder="e.g. Quezon City"
                   />
                 </label>
@@ -11629,9 +15418,10 @@ function BarangaySettingsPage({
                   District / Province
                   <input
                     value={info.district}
-                    onChange={(e) =>
-                      setInfo({ ...info, district: e.target.value })
-                    }
+                    onChange={(e) => {
+                      setIsDirty(true);
+                      setInfo({ ...info, district: e.target.value });
+                    }}
                     placeholder="e.g. 3rd District"
                   />
                 </label>
@@ -11639,9 +15429,10 @@ function BarangaySettingsPage({
                   Punong Barangay (Captain)
                   <input
                     value={info.captain}
-                    onChange={(e) =>
-                      setInfo({ ...info, captain: e.target.value })
-                    }
+                    onChange={(e) => {
+                      setIsDirty(true);
+                      setInfo({ ...info, captain: e.target.value });
+                    }}
                     placeholder="e.g. Kapitan Santos"
                   />
                 </label>
@@ -11649,7 +15440,10 @@ function BarangaySettingsPage({
                   Official contact number
                   <input
                     value={info.phone}
-                    onChange={(e) => setInfo({ ...info, phone: e.target.value })}
+                    onChange={(e) => {
+                      setIsDirty(true);
+                      setInfo({ ...info, phone: e.target.value });
+                    }}
                     placeholder="e.g. (02) 8123-4567"
                   />
                 </label>
@@ -11658,7 +15452,10 @@ function BarangaySettingsPage({
                   <input
                     type="email"
                     value={info.email}
-                    onChange={(e) => setInfo({ ...info, email: e.target.value })}
+                    onChange={(e) => {
+                      setIsDirty(true);
+                      setInfo({ ...info, email: e.target.value });
+                    }}
                     placeholder="e.g. sanisidro@qc.gov.ph"
                   />
                 </label>
@@ -11666,9 +15463,10 @@ function BarangaySettingsPage({
                   Barangay Hall office address
                   <input
                     value={info.address}
-                    onChange={(e) =>
-                      setInfo({ ...info, address: e.target.value })
-                    }
+                    onChange={(e) => {
+                      setIsDirty(true);
+                      setInfo({ ...info, address: e.target.value });
+                    }}
                     placeholder="e.g. 123 Mabini Street, San Isidro, Quezon City"
                   />
                 </label>
@@ -11677,9 +15475,10 @@ function BarangaySettingsPage({
                   <textarea
                     rows={3}
                     value={info.description}
-                    onChange={(e) =>
-                      setInfo({ ...info, description: e.target.value })
-                    }
+                    onChange={(e) => {
+                      setIsDirty(true);
+                      setInfo({ ...info, description: e.target.value });
+                    }}
                     placeholder="Brief description of community values, goals, and jurisdiction..."
                   />
                 </label>
@@ -11703,20 +15502,24 @@ function BarangaySettingsPage({
             <div className="settings-section">
               <h3>Operating hours & public service schedule</h3>
               <p className="settings-desc">
-                Set when the barangay hall is open to serve walk-in residents, document issuances, and community inquiries.
+                Set when the barangay hall is open to serve walk-in residents,
+                document issuances, and community inquiries.
               </p>
 
               <div className="hours-grid">
                 {schedule.map((item, index) => (
                   <div className="hours-row" key={item.day}>
-                    <label className="hours-toggle">
-                      <input
-                        type="checkbox"
-                        checked={item.active}
-                        onChange={() => handleToggleDay(index)}
-                      />
+                    <div
+                      className="hours-toggle"
+                      onClick={() => handleToggleDay(index)}
+                    >
+                      <div
+                        className={`hours-custom-check ${item.active ? "checked" : ""}`}
+                      >
+                        {item.active && <Icon name="check" size={13} />}
+                      </div>
                       <span>{item.day}</span>
-                    </label>
+                    </div>
                     {item.active ? (
                       <>
                         <input
@@ -11725,7 +15528,7 @@ function BarangaySettingsPage({
                           onChange={(e) =>
                             handleTimeChange(index, "open", e.target.value)
                           }
-                          placeholder="e.g. 8:00 AM"
+                          placeholder="8:00 AM"
                         />
                         <span className="time-sep">to</span>
                         <input
@@ -11734,7 +15537,7 @@ function BarangaySettingsPage({
                           onChange={(e) =>
                             handleTimeChange(index, "close", e.target.value)
                           }
-                          placeholder="e.g. 5:00 PM"
+                          placeholder="5:00 PM"
                         />
                       </>
                     ) : (
@@ -11744,50 +15547,15 @@ function BarangaySettingsPage({
                 ))}
               </div>
 
-              <div className="settings-divider" />
-
-              <h4 style={{ fontSize: 13, color: "#164032", marginBottom: 12 }}>
-                Public Directory Summary Strings
-              </h4>
-              <div className="settings-grid">
-                <label className="field">
-                  Weekday hours summary
-                  <input
-                    value={info.weekdayHours}
-                    onChange={(e) =>
-                      setInfo({ ...info, weekdayHours: e.target.value })
-                    }
-                    placeholder="e.g. 8:00 AM – 5:00 PM"
-                  />
-                </label>
-                <label className="field">
-                  Saturday hours summary
-                  <input
-                    value={info.saturdayHours}
-                    onChange={(e) =>
-                      setInfo({ ...info, saturdayHours: e.target.value })
-                    }
-                    placeholder="e.g. 8:00 AM – 12:00 PM"
-                  />
-                </label>
-                <label className="field">
-                  Sunday hours summary
-                  <input
-                    value={info.sundayHours}
-                    onChange={(e) =>
-                      setInfo({ ...info, sundayHours: e.target.value })
-                    }
-                    placeholder="e.g. Closed"
-                  />
-                </label>
-              </div>
-
-              <label className="field full" style={{ marginTop: 14 }}>
+              <label className="field full" style={{ marginTop: 20 }}>
                 Holiday & Special Schedule Notice
                 <textarea
                   rows={2}
                   value={holidayNotice}
-                  onChange={(e) => setHolidayNotice(e.target.value)}
+                  onChange={(e) => {
+                    setIsDirty(true);
+                    setHolidayNotice(e.target.value);
+                  }}
                   placeholder="e.g. The barangay office will be closed on declared national holidays."
                 />
               </label>
@@ -11812,7 +15580,8 @@ function BarangaySettingsPage({
                 <div>
                   <h3>Document services catalog</h3>
                   <p className="settings-desc" style={{ marginBottom: 0 }}>
-                    Manage certificates and permits that residents can apply for online, including turnaround times and fees.
+                    Manage certificates and permits that residents can apply for
+                    online, including turnaround times and fees.
                   </p>
                 </div>
                 <div style={{ display: "flex", gap: 8 }}>
@@ -11837,7 +15606,9 @@ function BarangaySettingsPage({
                   <div
                     key={doc.id}
                     className={
-                      doc.enabled ? "doc-service-card" : "doc-service-card disabled"
+                      doc.enabled
+                        ? "doc-service-card"
+                        : "doc-service-card disabled"
                     }
                   >
                     <div className="doc-service-info">
@@ -11853,7 +15624,10 @@ function BarangaySettingsPage({
                           {doc.fee}
                         </span>
                         <span className="doc-meta">
-                          Turnaround: <strong>{doc.days} day{doc.days !== 1 ? "s" : ""}</strong>
+                          Turnaround:{" "}
+                          <strong>
+                            {doc.days} day{doc.days !== 1 ? "s" : ""}
+                          </strong>
                         </span>
                       </div>
                       <p className="doc-service-meta-text">
@@ -11926,13 +15700,16 @@ function BarangaySettingsPage({
                 <div>
                   <h3>Notification & alert preferences</h3>
                   <p className="settings-desc" style={{ marginBottom: 0 }}>
-                    Configure trigger rules for community broadcasts, document updates, and administrative alerts.
+                    Configure trigger rules for community broadcasts, document
+                    updates, and administrative alerts.
                   </p>
                 </div>
                 <button
                   className="secondary-button"
                   onClick={() =>
-                    onToast("🔔 Notification Test: System alert broadcast successfully delivered!")
+                    onToast(
+                      "🔔 Notification Test: System alert broadcast successfully delivered!",
+                    )
                   }
                 >
                   <Icon name="bell" size={15} /> Send test alert
@@ -12075,7 +15852,8 @@ function BarangaySettingsPage({
             <div className="settings-section">
               <h3>Administrator security & access controls</h3>
               <p className="settings-desc">
-                Manage administrator credentials, resident registration policies, and live database cloud connectivity.
+                Manage administrator credentials, resident registration
+                policies, and live database cloud connectivity.
               </p>
 
               <div
@@ -12206,7 +15984,9 @@ function BarangaySettingsPage({
                 disabled={isUpdatingPassword}
               >
                 <Icon name="shield" size={15} />
-                {isUpdatingPassword ? "Updating Password..." : "Update Password"}
+                {isUpdatingPassword
+                  ? "Updating Password..."
+                  : "Update Password"}
               </button>
 
               <div className="settings-divider" />
@@ -12216,7 +15996,8 @@ function BarangaySettingsPage({
                 {[
                   {
                     key: "adminApprovalRequired" as const,
-                    title: "Require official approval before residents can log in",
+                    title:
+                      "Require official approval before residents can log in",
                     desc: "New resident accounts remain pending until an officer verifies valid residency ID.",
                   },
                   {
@@ -12266,8 +16047,15 @@ function BarangaySettingsPage({
                       <span className="cloud-pulse-dot" />
                       Supabase Cloud Database Diagnostics
                     </h4>
-                    <p style={{ margin: "2px 0 0", fontSize: 11, color: "#6e827a" }}>
-                      Connected to <strong>https://ysfpnicukbrgggdsonio.supabase.co</strong>
+                    <p
+                      style={{
+                        margin: "2px 0 0",
+                        fontSize: 11,
+                        color: "#6e827a",
+                      }}
+                    >
+                      Connected to{" "}
+                      <strong>https://ysfpnicukbrgggdsonio.supabase.co</strong>
                     </p>
                   </div>
                   <button
@@ -12308,7 +16096,8 @@ function BarangaySettingsPage({
                       fontStyle: "italic",
                     }}
                   >
-                    Click "Test Connection" to measure live database latency and verify record counts.
+                    Click "Test Connection" to measure live database latency and
+                    verify record counts.
                   </p>
                 )}
               </div>
@@ -12331,7 +16120,9 @@ function BarangaySettingsPage({
               placeholder="e.g. First Time Jobseeker Certificate"
             />
           </label>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+          <div
+            style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}
+          >
             <label className="field">
               Turnaround (Days)
               <input
@@ -12393,7 +16184,9 @@ function BarangaySettingsPage({
               }
             />
           </label>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+          <div
+            style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}
+          >
             <label className="field">
               Turnaround (Days)
               <input
@@ -12465,7 +16258,8 @@ function BarangaySettingsPage({
             <strong>
               {services.find((s) => s.id === deleteConfirmId)?.name}
             </strong>{" "}
-            from the document catalog? Residents will no longer be able to submit requests for this document.
+            from the document catalog? Residents will no longer be able to
+            submit requests for this document.
           </p>
           <div
             style={{
@@ -12531,7 +16325,13 @@ function IncidentsPage({
     isAdmin ? "blotter" : "hotlines",
   );
   const [blotterTab, setBlotterTab] = useState<
-    "all" | "under-review" | "scheduled" | "mediation" | "resolved" | "dismissed" | "deleted"
+    | "all"
+    | "under-review"
+    | "scheduled"
+    | "mediation"
+    | "resolved"
+    | "dismissed"
+    | "deleted"
   >("all");
   const [search, setSearch] = useState("");
   const [purokFilter, setPurokFilter] = useState("all");
@@ -12541,12 +16341,19 @@ function IncidentsPage({
   const [fileModalOpen, setFileModalOpen] = useState(false);
   const [walkInModalOpen, setWalkInModalOpen] = useState(false);
   const [hotlineModalOpen, setHotlineModalOpen] = useState(false);
-  const [editingHotline, setEditingHotline] = useState<EmergencyHotline | null>(null);
-  const [deleteHotlineItem, setDeleteHotlineItem] = useState<EmergencyHotline | null>(null);
-  const [manageModalItem, setManageModalItem] = useState<IncidentReport | null>(null);
+  const [editingHotline, setEditingHotline] = useState<EmergencyHotline | null>(
+    null,
+  );
+  const [deleteHotlineItem, setDeleteHotlineItem] =
+    useState<EmergencyHotline | null>(null);
+  const [manageModalItem, setManageModalItem] = useState<IncidentReport | null>(
+    null,
+  );
   const [kpSummonItem, setKpSummonItem] = useState<IncidentReport | null>(null);
-  const [deleteConfirmItem, setDeleteConfirmItem] = useState<IncidentReport | null>(null);
-  const [purgeConfirmItem, setPurgeConfirmItem] = useState<IncidentReport | null>(null);
+  const [deleteConfirmItem, setDeleteConfirmItem] =
+    useState<IncidentReport | null>(null);
+  const [purgeConfirmItem, setPurgeConfirmItem] =
+    useState<IncidentReport | null>(null);
 
   // Resident file incident form state
   const [form, setForm] = useState({
@@ -12650,8 +16457,11 @@ function IncidentsPage({
       status: item.status,
       hearingDate: item.hearingDate || "",
       hearingStage: item.hearingStage || "1st Patawag (Notice of Hearing)",
-      hearingVenue: item.hearingVenue || "Lupon Tagapamayapa Hall, 2nd Floor Barangay Hall",
-      assignedOfficer: item.assignedOfficer || "Hon. Roberto Gomez (Punong Brgy / Lupon Chair)",
+      hearingVenue:
+        item.hearingVenue || "Lupon Tagapamayapa Hall, 2nd Floor Barangay Hall",
+      assignedOfficer:
+        item.assignedOfficer ||
+        "Hon. Roberto Gomez (Punong Brgy / Lupon Chair)",
       officerNotes: item.officerNotes || "",
       respondentName: item.respondentName || "",
       respondentAddress: item.respondentAddress || "",
@@ -12791,11 +16601,19 @@ function IncidentsPage({
   const activeIncidents = incidents.filter((i) => i.status !== "Deleted");
   const deletedIncidents = incidents.filter((i) => i.status === "Deleted");
 
-  const pendingCount = incidents.filter((i) => i.status === "Under Review").length;
-  const scheduledCount = incidents.filter((i) => i.status === "Scheduled Hearing").length;
-  const mediationCount = incidents.filter((i) => i.status === "In Mediation").length;
+  const pendingCount = incidents.filter(
+    (i) => i.status === "Under Review",
+  ).length;
+  const scheduledCount = incidents.filter(
+    (i) => i.status === "Scheduled Hearing",
+  ).length;
+  const mediationCount = incidents.filter(
+    (i) => i.status === "In Mediation",
+  ).length;
   const resolvedCount = incidents.filter((i) => i.status === "Resolved").length;
-  const dismissedCount = incidents.filter((i) => i.status === "Dismissed").length;
+  const dismissedCount = incidents.filter(
+    (i) => i.status === "Dismissed",
+  ).length;
   const deletedCount = deletedIncidents.length;
 
   // Filtered lists for admin vs resident
@@ -12803,21 +16621,23 @@ function IncidentsPage({
     blotterTab === "all"
       ? activeIncidents
       : blotterTab === "under-review"
-      ? incidents.filter((i) => i.status === "Under Review")
-      : blotterTab === "scheduled"
-      ? incidents.filter((i) => i.status === "Scheduled Hearing")
-      : blotterTab === "mediation"
-      ? incidents.filter((i) => i.status === "In Mediation")
-      : blotterTab === "resolved"
-      ? incidents.filter((i) => i.status === "Resolved")
-      : blotterTab === "dismissed"
-      ? incidents.filter((i) => i.status === "Dismissed")
-      : deletedIncidents;
+        ? incidents.filter((i) => i.status === "Under Review")
+        : blotterTab === "scheduled"
+          ? incidents.filter((i) => i.status === "Scheduled Hearing")
+          : blotterTab === "mediation"
+            ? incidents.filter((i) => i.status === "In Mediation")
+            : blotterTab === "resolved"
+              ? incidents.filter((i) => i.status === "Resolved")
+              : blotterTab === "dismissed"
+                ? incidents.filter((i) => i.status === "Dismissed")
+                : deletedIncidents;
 
   const displayIncidents = isAdmin
     ? adminBaseList.filter((item) => {
-        if (purokFilter !== "all" && !item.purok.includes(purokFilter)) return false;
-        if (categoryFilter !== "all" && item.category !== categoryFilter) return false;
+        if (purokFilter !== "all" && !item.purok.includes(purokFilter))
+          return false;
+        if (categoryFilter !== "all" && item.category !== categoryFilter)
+          return false;
         if (search.trim()) {
           const q = search.toLowerCase();
           return (
@@ -12826,15 +16646,19 @@ function IncidentsPage({
             item.category.toLowerCase().includes(q) ||
             item.purok.toLowerCase().includes(q) ||
             item.complainantName.toLowerCase().includes(q) ||
-            (item.respondentName && item.respondentName.toLowerCase().includes(q))
+            (item.respondentName &&
+              item.respondentName.toLowerCase().includes(q))
           );
         }
         return true;
       })
     : incidents
-        .filter((i) => i.status !== "Deleted" && i.complainantEmail === userEmail)
+        .filter(
+          (i) => i.status !== "Deleted" && i.complainantEmail === userEmail,
+        )
         .filter((item) => {
-          if (categoryFilter !== "all" && item.category !== categoryFilter) return false;
+          if (categoryFilter !== "all" && item.category !== categoryFilter)
+            return false;
           if (search.trim()) {
             const q = search.toLowerCase();
             return (
@@ -12895,7 +16719,10 @@ function IncidentsPage({
         >
           <Icon name="phone" size={14} />
           <span>Emergency Hotlines</span>
-          <span className="tab-counter" style={{ background: "#e2e8e5", color: "#374f45" }}>
+          <span
+            className="tab-counter"
+            style={{ background: "#e2e8e5", color: "#374f45" }}
+          >
             {hotlines.length}
           </span>
         </button>
@@ -13015,50 +16842,122 @@ function IncidentsPage({
               }}
             >
               <div className="rail-card" style={{ padding: "14px 18px" }}>
-                <span style={{ fontSize: "11px", color: "#64748b", fontWeight: 700 }}>
+                <span
+                  style={{
+                    fontSize: "11px",
+                    color: "#64748b",
+                    fontWeight: 700,
+                  }}
+                >
                   TOTAL ACTIVE CASES
                 </span>
-                <h3 style={{ fontSize: "22px", margin: "4px 0 0", color: "#1e293b" }}>
+                <h3
+                  style={{
+                    fontSize: "22px",
+                    margin: "4px 0 0",
+                    color: "#1e293b",
+                  }}
+                >
                   {activeIncidents.length}
                 </h3>
               </div>
               <div className="rail-card" style={{ padding: "14px 18px" }}>
-                <span style={{ fontSize: "11px", color: "#b45309", fontWeight: 700 }}>
+                <span
+                  style={{
+                    fontSize: "11px",
+                    color: "#b45309",
+                    fontWeight: 700,
+                  }}
+                >
                   PENDING REVIEW
                 </span>
-                <h3 style={{ fontSize: "22px", margin: "4px 0 0", color: "#b45309" }}>
+                <h3
+                  style={{
+                    fontSize: "22px",
+                    margin: "4px 0 0",
+                    color: "#b45309",
+                  }}
+                >
                   {pendingCount}
                 </h3>
               </div>
               <div className="rail-card" style={{ padding: "14px 18px" }}>
-                <span style={{ fontSize: "11px", color: "#1d4ed8", fontWeight: 700 }}>
+                <span
+                  style={{
+                    fontSize: "11px",
+                    color: "#1d4ed8",
+                    fontWeight: 700,
+                  }}
+                >
                   SCHEDULED (PATAWAG)
                 </span>
-                <h3 style={{ fontSize: "22px", margin: "4px 0 0", color: "#1d4ed8" }}>
+                <h3
+                  style={{
+                    fontSize: "22px",
+                    margin: "4px 0 0",
+                    color: "#1d4ed8",
+                  }}
+                >
                   {scheduledCount}
                 </h3>
               </div>
               <div className="rail-card" style={{ padding: "14px 18px" }}>
-                <span style={{ fontSize: "11px", color: "#7e22ce", fontWeight: 700 }}>
+                <span
+                  style={{
+                    fontSize: "11px",
+                    color: "#7e22ce",
+                    fontWeight: 700,
+                  }}
+                >
                   IN MEDIATION
                 </span>
-                <h3 style={{ fontSize: "22px", margin: "4px 0 0", color: "#7e22ce" }}>
+                <h3
+                  style={{
+                    fontSize: "22px",
+                    margin: "4px 0 0",
+                    color: "#7e22ce",
+                  }}
+                >
                   {mediationCount}
                 </h3>
               </div>
               <div className="rail-card" style={{ padding: "14px 18px" }}>
-                <span style={{ fontSize: "11px", color: "#15803d", fontWeight: 700 }}>
+                <span
+                  style={{
+                    fontSize: "11px",
+                    color: "#15803d",
+                    fontWeight: 700,
+                  }}
+                >
                   RESOLVED AMICABLY
                 </span>
-                <h3 style={{ fontSize: "22px", margin: "4px 0 0", color: "#15803d" }}>
+                <h3
+                  style={{
+                    fontSize: "22px",
+                    margin: "4px 0 0",
+                    color: "#15803d",
+                  }}
+                >
                   {resolvedCount}
                 </h3>
               </div>
               <div className="rail-card" style={{ padding: "14px 18px" }}>
-                <span style={{ fontSize: "11px", color: "#be123c", fontWeight: 700 }}>
+                <span
+                  style={{
+                    fontSize: "11px",
+                    color: "#be123c",
+                    fontWeight: 700,
+                  }}
+                >
                   ARCHIVED / DELETED
                 </span>
-                <h3 style={{ fontSize: "22px", margin: "4px 0 0", color: "#be123c" }}>
+                <h3
+                  style={{
+                    fontSize: "22px",
+                    margin: "4px 0 0",
+                    color: "#be123c",
+                  }}
+                >
                   {deletedCount}
                 </h3>
               </div>
@@ -13083,7 +16982,10 @@ function IncidentsPage({
               >
                 <Icon name="clock" size={15} />
                 <span>Under Review</span>
-                <span className="tab-counter" style={{ background: "#fef08a", color: "#854d0e" }}>
+                <span
+                  className="tab-counter"
+                  style={{ background: "#fef08a", color: "#854d0e" }}
+                >
                   {pendingCount}
                 </span>
               </button>
@@ -13094,7 +16996,10 @@ function IncidentsPage({
               >
                 <Icon name="calendar" size={15} />
                 <span>Scheduled Hearings</span>
-                <span className="tab-counter" style={{ background: "#dbeafe", color: "#1e40af" }}>
+                <span
+                  className="tab-counter"
+                  style={{ background: "#dbeafe", color: "#1e40af" }}
+                >
                   {scheduledCount}
                 </span>
               </button>
@@ -13105,7 +17010,10 @@ function IncidentsPage({
               >
                 <Icon name="message" size={15} />
                 <span>In Mediation</span>
-                <span className="tab-counter" style={{ background: "#f3e8ff", color: "#6b21a8" }}>
+                <span
+                  className="tab-counter"
+                  style={{ background: "#f3e8ff", color: "#6b21a8" }}
+                >
                   {mediationCount}
                 </span>
               </button>
@@ -13116,7 +17024,10 @@ function IncidentsPage({
               >
                 <Icon name="check" size={15} />
                 <span>Resolved Amicably</span>
-                <span className="tab-counter" style={{ background: "#dcfce7", color: "#166534" }}>
+                <span
+                  className="tab-counter"
+                  style={{ background: "#dcfce7", color: "#166534" }}
+                >
                   {resolvedCount}
                 </span>
               </button>
@@ -13136,7 +17047,10 @@ function IncidentsPage({
               >
                 <Icon name="trash" size={15} />
                 <span>Archived / Deleted</span>
-                <span className="tab-counter" style={{ background: "#fee2e2", color: "#991b1b" }}>
+                <span
+                  className="tab-counter"
+                  style={{ background: "#fee2e2", color: "#991b1b" }}
+                >
                   {deletedCount}
                 </span>
               </button>
@@ -13145,8 +17059,14 @@ function IncidentsPage({
 
           {/* Search & Filter Toolbar */}
           <div className="table-card" style={{ marginBottom: "16px" }}>
-            <div className="table-tools" style={{ flexWrap: "wrap", gap: "10px", alignItems: "center" }}>
-              <label className="search-box" style={{ flex: "1 1 220px", maxWidth: "400px" }}>
+            <div
+              className="table-tools"
+              style={{ flexWrap: "wrap", gap: "10px", alignItems: "center" }}
+            >
+              <label
+                className="search-box"
+                style={{ flex: "1 1 220px", maxWidth: "400px" }}
+              >
                 <Icon name="search" size={16} />
                 <input
                   value={search}
@@ -13155,8 +17075,23 @@ function IncidentsPage({
                 />
               </label>
 
-              <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
-                <label style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "11px", color: "#50655d" }}>
+              <div
+                style={{
+                  display: "flex",
+                  gap: "8px",
+                  alignItems: "center",
+                  flexWrap: "wrap",
+                }}
+              >
+                <label
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "5px",
+                    fontSize: "11px",
+                    color: "#50655d",
+                  }}
+                >
                   <Icon name="filter" size={13} />
                   <span>Category:</span>
                   <select
@@ -13178,7 +17113,9 @@ function IncidentsPage({
                     <option value="Theft / Security">Theft / Security</option>
                     <option value="Sanitation">Sanitation</option>
                     <option value="Emergency / Medical">Medical</option>
-                    <option value="Physical Altercation">Physical Altercation</option>
+                    <option value="Physical Altercation">
+                      Physical Altercation
+                    </option>
                     <option value="Boundary Dispute">Boundary Dispute</option>
                     <option value="Domestic Concern">Domestic Concern</option>
                     <option value="Other">Other</option>
@@ -13186,7 +17123,15 @@ function IncidentsPage({
                 </label>
 
                 {isAdmin && (
-                  <label style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "11px", color: "#50655d" }}>
+                  <label
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "5px",
+                      fontSize: "11px",
+                      color: "#50655d",
+                    }}
+                  >
                     <span>Purok:</span>
                     <select
                       value={purokFilter}
@@ -13211,7 +17156,13 @@ function IncidentsPage({
                   </label>
                 )}
 
-                <span style={{ fontSize: "11px", color: "#7a8e85", marginLeft: "auto" }}>
+                <span
+                  style={{
+                    fontSize: "11px",
+                    color: "#7a8e85",
+                    marginLeft: "auto",
+                  }}
+                >
                   Showing {displayIncidents.length} records
                 </span>
               </div>
@@ -13304,15 +17255,25 @@ function IncidentsPage({
                 </div>
 
                 {displayIncidents.length === 0 ? (
-                  <div className="empty-state" style={{ minHeight: "220px", padding: "40px 20px" }}>
+                  <div
+                    className="empty-state"
+                    style={{ minHeight: "220px", padding: "40px 20px" }}
+                  >
                     <Icon name="shield" size={32} />
                     {blotterTab === "deleted" ? (
                       <div>
                         <h3 style={{ margin: "10px 0 4px", color: "#163e32" }}>
                           No archived or deleted cases
                         </h3>
-                        <p style={{ margin: 0, fontSize: "12px", color: "#6a7d75" }}>
-                          Blotter records deleted by administrators are moved here for audit compliance and can be restored anytime.
+                        <p
+                          style={{
+                            margin: 0,
+                            fontSize: "12px",
+                            color: "#6a7d75",
+                          }}
+                        >
+                          Blotter records deleted by administrators are moved
+                          here for audit compliance and can be restored anytime.
                         </p>
                       </div>
                     ) : blotterTab === "under-review" ? (
@@ -13320,7 +17281,13 @@ function IncidentsPage({
                         <h3 style={{ margin: "10px 0 4px", color: "#163e32" }}>
                           All blotters assessed! 🎉
                         </h3>
-                        <p style={{ margin: 0, fontSize: "12px", color: "#6a7d75" }}>
+                        <p
+                          style={{
+                            margin: 0,
+                            fontSize: "12px",
+                            color: "#6a7d75",
+                          }}
+                        >
                           No pending incident reports awaiting desk review.
                         </p>
                       </div>
@@ -13329,7 +17296,13 @@ function IncidentsPage({
                         <h3 style={{ margin: "10px 0 4px", color: "#163e32" }}>
                           No blotter records match criteria
                         </h3>
-                        <p style={{ margin: 0, fontSize: "12px", color: "#6a7d75" }}>
+                        <p
+                          style={{
+                            margin: 0,
+                            fontSize: "12px",
+                            color: "#6a7d75",
+                          }}
+                        >
                           Try adjusting your search terms or filters.
                         </p>
                       </div>
@@ -13341,13 +17314,20 @@ function IncidentsPage({
                       className="table-row"
                       key={item.id}
                       style={{
-                        gridTemplateColumns: "1.2fr 1.6fr 1.3fr 1.1fr 1fr 1.2fr",
+                        gridTemplateColumns:
+                          "1.2fr 1.6fr 1.3fr 1.1fr 1fr 1.2fr",
                         alignItems: "center",
                       }}
                     >
                       {/* Column 1: ID & Priority */}
                       <span>
-                        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "6px",
+                          }}
+                        >
                           <span className="incident-id">{item.id}</span>
                           {item.isUrgent && (
                             <span className="urgent-badge" title="Urgent case">
@@ -13359,16 +17339,24 @@ function IncidentsPage({
 
                       {/* Column 2: Complainant vs Respondent */}
                       <span>
-                        <div style={{ display: "flex", flexDirection: "column" }}>
-                          <strong style={{ fontSize: "12px", color: "#1a3028" }}>
+                        <div
+                          style={{ display: "flex", flexDirection: "column" }}
+                        >
+                          <strong
+                            style={{ fontSize: "12px", color: "#1a3028" }}
+                          >
                             {item.complainantName}
                           </strong>
                           {item.respondentName ? (
-                            <small style={{ fontSize: "10.5px", color: "#b91c1c" }}>
+                            <small
+                              style={{ fontSize: "10.5px", color: "#b91c1c" }}
+                            >
                               vs. {item.respondentName}
                             </small>
                           ) : (
-                            <small style={{ fontSize: "10px", color: "#798b84" }}>
+                            <small
+                              style={{ fontSize: "10px", color: "#798b84" }}
+                            >
                               {item.complainantEmail}
                             </small>
                           )}
@@ -13377,8 +17365,16 @@ function IncidentsPage({
 
                       {/* Column 3: Category & Location */}
                       <span>
-                        <div style={{ display: "flex", flexDirection: "column" }}>
-                          <span style={{ fontSize: "11.5px", fontWeight: 600, color: "#1f3b31" }}>
+                        <div
+                          style={{ display: "flex", flexDirection: "column" }}
+                        >
+                          <span
+                            style={{
+                              fontSize: "11.5px",
+                              fontWeight: 600,
+                              color: "#1f3b31",
+                            }}
+                          >
                             {item.category}
                           </span>
                           <small style={{ color: "#798b84", fontSize: "10px" }}>
@@ -13408,7 +17404,13 @@ function IncidentsPage({
                       </span>
 
                       {/* Column 6: Actions */}
-                      <span style={{ display: "flex", gap: "6px", justifyContent: "flex-end" }}>
+                      <span
+                        style={{
+                          display: "flex",
+                          gap: "6px",
+                          justifyContent: "flex-end",
+                        }}
+                      >
                         {blotterTab === "deleted" ? (
                           <>
                             <button
@@ -13492,14 +17494,28 @@ function IncidentsPage({
                   setForm({ ...form, category: e.target.value as any })
                 }
               >
-                <option value="Dispute / Noise">Dispute / Noise Disturbance</option>
-                <option value="Street Hazard">Street Hazard / Infrastructure</option>
-                <option value="Theft / Security">Theft / Security Concern</option>
+                <option value="Dispute / Noise">
+                  Dispute / Noise Disturbance
+                </option>
+                <option value="Street Hazard">
+                  Street Hazard / Infrastructure
+                </option>
+                <option value="Theft / Security">
+                  Theft / Security Concern
+                </option>
                 <option value="Sanitation">Sanitation / Waste Dumping</option>
-                <option value="Emergency / Medical">Medical Emergency Incident</option>
-                <option value="Physical Altercation">Physical Altercation / Harassment</option>
-                <option value="Boundary Dispute">Boundary Dispute / Property Encroachment</option>
-                <option value="Domestic Concern">Domestic Concern / Family Matter</option>
+                <option value="Emergency / Medical">
+                  Medical Emergency Incident
+                </option>
+                <option value="Physical Altercation">
+                  Physical Altercation / Harassment
+                </option>
+                <option value="Boundary Dispute">
+                  Boundary Dispute / Property Encroachment
+                </option>
+                <option value="Domestic Concern">
+                  Domestic Concern / Family Matter
+                </option>
                 <option value="Other">Other Community Concern</option>
               </select>
             </label>
@@ -13510,11 +17526,19 @@ function IncidentsPage({
                 value={form.purok}
                 onChange={(e) => setForm({ ...form, purok: e.target.value })}
               >
-                <option value="Purok 1 (Sampaguita Rd.)">Purok 1 (Sampaguita Rd.)</option>
-                <option value="Purok 2 (Mabini St.)">Purok 2 (Mabini St.)</option>
+                <option value="Purok 1 (Sampaguita Rd.)">
+                  Purok 1 (Sampaguita Rd.)
+                </option>
+                <option value="Purok 2 (Mabini St.)">
+                  Purok 2 (Mabini St.)
+                </option>
                 <option value="Purok 3 (Narra St.)">Purok 3 (Narra St.)</option>
-                <option value="Purok 4 (Rizal Ave.)">Purok 4 (Rizal Ave.)</option>
-                <option value="Purok 5 (Covered Court Area)">Purok 5 (Covered Court Area)</option>
+                <option value="Purok 4 (Rizal Ave.)">
+                  Purok 4 (Rizal Ave.)
+                </option>
+                <option value="Purok 5 (Covered Court Area)">
+                  Purok 5 (Covered Court Area)
+                </option>
               </select>
             </label>
           </div>
@@ -13551,7 +17575,8 @@ function IncidentsPage({
               onChange={(e) => setForm({ ...form, isUrgent: e.target.checked })}
               style={{ accentColor: "#c81e1e" }}
             />
-            Mark as urgent / ongoing safety concern requiring immediate tanod response
+            Mark as urgent / ongoing safety concern requiring immediate tanod
+            response
           </label>
 
           <div className="modal-actions">
@@ -13586,11 +17611,28 @@ function IncidentsPage({
               marginBottom: "14px",
             }}
           >
-            Record an official complaint received in person at the Barangay San Isidro Hall.
+            Record an official complaint received in person at the Barangay San
+            Isidro Hall.
           </p>
 
-          <div style={{ background: "#f8faf9", border: "1px solid #e1ebe6", borderRadius: "10px", padding: "12px", marginBottom: "14px" }}>
-            <span style={{ fontSize: "10px", fontWeight: 800, textTransform: "uppercase", color: "#176b4d", letterSpacing: "0.5px" }}>
+          <div
+            style={{
+              background: "#f8faf9",
+              border: "1px solid #e1ebe6",
+              borderRadius: "10px",
+              padding: "12px",
+              marginBottom: "14px",
+            }}
+          >
+            <span
+              style={{
+                fontSize: "10px",
+                fontWeight: 800,
+                textTransform: "uppercase",
+                color: "#176b4d",
+                letterSpacing: "0.5px",
+              }}
+            >
               Parties to the Dispute (Mga Panig)
             </span>
             <div className="form-grid" style={{ marginTop: "8px" }}>
@@ -13665,14 +17707,28 @@ function IncidentsPage({
                   })
                 }
               >
-                <option value="Dispute / Noise">Dispute / Noise Disturbance</option>
-                <option value="Street Hazard">Street Hazard / Infrastructure</option>
-                <option value="Theft / Security">Theft / Security Concern</option>
+                <option value="Dispute / Noise">
+                  Dispute / Noise Disturbance
+                </option>
+                <option value="Street Hazard">
+                  Street Hazard / Infrastructure
+                </option>
+                <option value="Theft / Security">
+                  Theft / Security Concern
+                </option>
                 <option value="Sanitation">Sanitation / Waste Dumping</option>
-                <option value="Emergency / Medical">Medical Emergency Incident</option>
-                <option value="Physical Altercation">Physical Altercation / Harassment</option>
-                <option value="Boundary Dispute">Boundary Dispute / Encroachment</option>
-                <option value="Domestic Concern">Domestic Concern / Family Issue</option>
+                <option value="Emergency / Medical">
+                  Medical Emergency Incident
+                </option>
+                <option value="Physical Altercation">
+                  Physical Altercation / Harassment
+                </option>
+                <option value="Boundary Dispute">
+                  Boundary Dispute / Encroachment
+                </option>
+                <option value="Domestic Concern">
+                  Domestic Concern / Family Issue
+                </option>
                 <option value="Other">Other Community Concern</option>
               </select>
             </label>
@@ -13682,14 +17738,25 @@ function IncidentsPage({
               <select
                 value={walkInForm.complainantPurok}
                 onChange={(e) =>
-                  setWalkInForm({ ...walkInForm, complainantPurok: e.target.value })
+                  setWalkInForm({
+                    ...walkInForm,
+                    complainantPurok: e.target.value,
+                  })
                 }
               >
-                <option value="Purok 1 (Sampaguita Rd.)">Purok 1 (Sampaguita Rd.)</option>
-                <option value="Purok 2 (Mabini St.)">Purok 2 (Mabini St.)</option>
+                <option value="Purok 1 (Sampaguita Rd.)">
+                  Purok 1 (Sampaguita Rd.)
+                </option>
+                <option value="Purok 2 (Mabini St.)">
+                  Purok 2 (Mabini St.)
+                </option>
                 <option value="Purok 3 (Narra St.)">Purok 3 (Narra St.)</option>
-                <option value="Purok 4 (Rizal Ave.)">Purok 4 (Rizal Ave.)</option>
-                <option value="Purok 5 (Covered Court Area)">Purok 5 (Covered Court Area)</option>
+                <option value="Purok 4 (Rizal Ave.)">
+                  Purok 4 (Rizal Ave.)
+                </option>
+                <option value="Purok 5 (Covered Court Area)">
+                  Purok 5 (Covered Court Area)
+                </option>
               </select>
             </label>
           </div>
@@ -13728,7 +17795,8 @@ function IncidentsPage({
               }
               style={{ accentColor: "#c81e1e" }}
             />
-            Mark as urgent / requires immediate tanod patrol dispatch or safety escort
+            Mark as urgent / requires immediate tanod patrol dispatch or safety
+            escort
           </label>
 
           <div className="modal-actions">
@@ -13870,9 +17938,7 @@ function IncidentsPage({
             </button>
             <button
               className="primary-button"
-              disabled={
-                !hotlineForm.name.trim() || !hotlineForm.number.trim()
-              }
+              disabled={!hotlineForm.name.trim() || !hotlineForm.number.trim()}
               onClick={handleSaveHotline}
             >
               {editingHotline ? "Save Changes" : "Add to Directory"}
@@ -13889,11 +17955,16 @@ function IncidentsPage({
           maxWidth="640px"
         >
           {/* Dispute Hero Summary */}
-          <div className="resident-manage-card" style={{ marginBottom: "14px" }}>
+          <div
+            className="resident-manage-card"
+            style={{ marginBottom: "14px" }}
+          >
             <div className="resident-profile-hero">
               <div className="resident-hero-left">
                 <Avatar
-                  initials={manageModalItem.complainantName.slice(0, 2).toUpperCase()}
+                  initials={manageModalItem.complainantName
+                    .slice(0, 2)
+                    .toUpperCase()}
                   tone={manageModalItem.isUrgent ? "amber" : "blue"}
                 />
                 <div className="resident-hero-info">
@@ -13903,8 +17974,17 @@ function IncidentsPage({
                   </p>
                 </div>
               </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: "6px", alignItems: "flex-end" }}>
-                <b className={`status ${manageModalItem.status.toLowerCase().replace(/\s+/g, "-")}`}>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "6px",
+                  alignItems: "flex-end",
+                }}
+              >
+                <b
+                  className={`status ${manageModalItem.status.toLowerCase().replace(/\s+/g, "-")}`}
+                >
                   {manageModalItem.status.toUpperCase()}
                 </b>
                 {manageModalItem.isUrgent && (
@@ -13916,12 +17996,40 @@ function IncidentsPage({
             </div>
 
             {/* Respondent Card if recorded */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginTop: "10px" }}>
-              <div style={{ background: "#f8faf9", borderRadius: "8px", padding: "9px 12px", border: "1px solid #e2ebe6" }}>
-                <span style={{ fontSize: "10px", fontWeight: 700, color: "#166534", textTransform: "uppercase" }}>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: "10px",
+                marginTop: "10px",
+              }}
+            >
+              <div
+                style={{
+                  background: "#f8faf9",
+                  borderRadius: "8px",
+                  padding: "9px 12px",
+                  border: "1px solid #e2ebe6",
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: "10px",
+                    fontWeight: 700,
+                    color: "#166534",
+                    textTransform: "uppercase",
+                  }}
+                >
                   May-sumbong (Complainant)
                 </span>
-                <p style={{ margin: "2px 0 0", fontSize: "12px", fontWeight: 700, color: "#1a3028" }}>
+                <p
+                  style={{
+                    margin: "2px 0 0",
+                    fontSize: "12px",
+                    fontWeight: 700,
+                    color: "#1a3028",
+                  }}
+                >
                   {manageModalItem.complainantName}
                 </p>
                 <small style={{ color: "#6a7e76", fontSize: "10px" }}>
@@ -13929,11 +18037,32 @@ function IncidentsPage({
                 </small>
               </div>
 
-              <div style={{ background: "#fdf8f8", borderRadius: "8px", padding: "9px 12px", border: "1px solid #fbd5d5" }}>
-                <span style={{ fontSize: "10px", fontWeight: 700, color: "#991b1b", textTransform: "uppercase" }}>
+              <div
+                style={{
+                  background: "#fdf8f8",
+                  borderRadius: "8px",
+                  padding: "9px 12px",
+                  border: "1px solid #fbd5d5",
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: "10px",
+                    fontWeight: 700,
+                    color: "#991b1b",
+                    textTransform: "uppercase",
+                  }}
+                >
                   Ipinagsusumbong (Respondent)
                 </span>
-                <p style={{ margin: "2px 0 0", fontSize: "12px", fontWeight: 700, color: "#991b1b" }}>
+                <p
+                  style={{
+                    margin: "2px 0 0",
+                    fontSize: "12px",
+                    fontWeight: 700,
+                    color: "#991b1b",
+                  }}
+                >
                   {adminForm.respondentName || "(Not specified)"}
                 </p>
                 <small style={{ color: "#772b2b", fontSize: "10px" }}>
@@ -13952,7 +18081,13 @@ function IncidentsPage({
                 border: "1px solid #e5ebe8",
               }}
             >
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  marginBottom: "4px",
+                }}
+              >
                 <span
                   style={{
                     fontSize: "10px",
@@ -13963,7 +18098,13 @@ function IncidentsPage({
                 >
                   Sworn Narrative / Complaint Statement:
                 </span>
-                <span style={{ fontSize: "10.5px", color: "#176b4d", fontWeight: 600 }}>
+                <span
+                  style={{
+                    fontSize: "10.5px",
+                    color: "#176b4d",
+                    fontWeight: 600,
+                  }}
+                >
                   {manageModalItem.category} · {manageModalItem.date}
                 </span>
               </div>
@@ -13993,11 +18134,21 @@ function IncidentsPage({
                   })
                 }
               >
-                <option value="Under Review">Under Review (Desk Assessment)</option>
-                <option value="Scheduled Hearing">Scheduled Hearing (Patawag Issued)</option>
-                <option value="In Mediation">In Mediation (Lupon Session in Progress)</option>
-                <option value="Resolved">Resolved Amicably (Kasunduan Signed)</option>
-                <option value="Dismissed">Dismissed / Endorsed to PNP / Court</option>
+                <option value="Under Review">
+                  Under Review (Desk Assessment)
+                </option>
+                <option value="Scheduled Hearing">
+                  Scheduled Hearing (Patawag Issued)
+                </option>
+                <option value="In Mediation">
+                  In Mediation (Lupon Session in Progress)
+                </option>
+                <option value="Resolved">
+                  Resolved Amicably (Kasunduan Signed)
+                </option>
+                <option value="Dismissed">
+                  Dismissed / Endorsed to PNP / Court
+                </option>
               </select>
             </label>
 
@@ -14013,10 +18164,31 @@ function IncidentsPage({
             </label>
           </div>
 
-          {(adminForm.status === "Scheduled Hearing" || adminForm.status === "In Mediation") && (
-            <div style={{ background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: "10px", padding: "14px", marginBottom: "14px" }}>
-              <span style={{ fontSize: "11px", fontWeight: 800, color: "#1e40af", textTransform: "uppercase", letterSpacing: "0.5px", display: "flex", alignItems: "center", gap: "6px" }}>
-                <Icon name="calendar" size={14} /> Lupon Tagapamayapa Hearing Scheduler
+          {(adminForm.status === "Scheduled Hearing" ||
+            adminForm.status === "In Mediation") && (
+            <div
+              style={{
+                background: "#eff6ff",
+                border: "1px solid #bfdbfe",
+                borderRadius: "10px",
+                padding: "14px",
+                marginBottom: "14px",
+              }}
+            >
+              <span
+                style={{
+                  fontSize: "11px",
+                  fontWeight: 800,
+                  color: "#1e40af",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.5px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                }}
+              >
+                <Icon name="calendar" size={14} /> Lupon Tagapamayapa Hearing
+                Scheduler
               </span>
 
               <div className="form-grid" style={{ marginTop: "10px" }}>
@@ -14025,13 +18197,24 @@ function IncidentsPage({
                   <select
                     value={adminForm.hearingStage}
                     onChange={(e) =>
-                      setAdminForm({ ...adminForm, hearingStage: e.target.value })
+                      setAdminForm({
+                        ...adminForm,
+                        hearingStage: e.target.value,
+                      })
                     }
                   >
-                    <option value="1st Patawag (Notice of Hearing)">1st Patawag (Notice of Hearing)</option>
-                    <option value="2nd Patawag (Follow-up Notice)">2nd Patawag (Follow-up Notice)</option>
-                    <option value="3rd & Final Notice">3rd & Final Notice</option>
-                    <option value="Conciliation / Pangkat Session">Conciliation / Pangkat Session</option>
+                    <option value="1st Patawag (Notice of Hearing)">
+                      1st Patawag (Notice of Hearing)
+                    </option>
+                    <option value="2nd Patawag (Follow-up Notice)">
+                      2nd Patawag (Follow-up Notice)
+                    </option>
+                    <option value="3rd & Final Notice">
+                      3rd & Final Notice
+                    </option>
+                    <option value="Conciliation / Pangkat Session">
+                      Conciliation / Pangkat Session
+                    </option>
                   </select>
                 </label>
 
@@ -14040,7 +18223,10 @@ function IncidentsPage({
                   <input
                     value={adminForm.hearingDate}
                     onChange={(e) =>
-                      setAdminForm({ ...adminForm, hearingDate: e.target.value })
+                      setAdminForm({
+                        ...adminForm,
+                        hearingDate: e.target.value,
+                      })
                     }
                     placeholder="e.g. June 25, 2025 · 2:00 PM"
                   />
@@ -14053,7 +18239,10 @@ function IncidentsPage({
                   <input
                     value={adminForm.hearingVenue}
                     onChange={(e) =>
-                      setAdminForm({ ...adminForm, hearingVenue: e.target.value })
+                      setAdminForm({
+                        ...adminForm,
+                        hearingVenue: e.target.value,
+                      })
                     }
                     placeholder="e.g. Lupon Tagapamayapa Hall, 2nd Flr"
                   />
@@ -14064,7 +18253,10 @@ function IncidentsPage({
                   <input
                     value={adminForm.assignedOfficer}
                     onChange={(e) =>
-                      setAdminForm({ ...adminForm, assignedOfficer: e.target.value })
+                      setAdminForm({
+                        ...adminForm,
+                        assignedOfficer: e.target.value,
+                      })
                     }
                     placeholder="e.g. Hon. Roberto Gomez (Punong Brgy)"
                   />
@@ -14088,7 +18280,13 @@ function IncidentsPage({
 
           <div
             className="modal-actions"
-            style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px" }}
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              flexWrap: "wrap",
+              gap: "10px",
+            }}
           >
             <div style={{ display: "flex", gap: "8px" }}>
               <button
@@ -14103,11 +18301,18 @@ function IncidentsPage({
                 onClick={() => {
                   setKpSummonItem({
                     ...manageModalItem,
-                    respondentName: adminForm.respondentName || manageModalItem.respondentName,
-                    hearingDate: adminForm.hearingDate || manageModalItem.hearingDate,
-                    hearingStage: adminForm.hearingStage || manageModalItem.hearingStage,
-                    hearingVenue: adminForm.hearingVenue || manageModalItem.hearingVenue,
-                    assignedOfficer: adminForm.assignedOfficer || manageModalItem.assignedOfficer,
+                    respondentName:
+                      adminForm.respondentName ||
+                      manageModalItem.respondentName,
+                    hearingDate:
+                      adminForm.hearingDate || manageModalItem.hearingDate,
+                    hearingStage:
+                      adminForm.hearingStage || manageModalItem.hearingStage,
+                    hearingVenue:
+                      adminForm.hearingVenue || manageModalItem.hearingVenue,
+                    assignedOfficer:
+                      adminForm.assignedOfficer ||
+                      manageModalItem.assignedOfficer,
                   });
                 }}
                 style={{ padding: "8px 14px", fontSize: "11.5px" }}
@@ -14153,12 +18358,18 @@ function IncidentsPage({
 
             <div className="kp-case-box">
               <div>
-                <span className="kp-party-title">May-sumbong (Complainant)</span>
-                <div className="kp-party-name">{kpSummonItem.complainantName}</div>
+                <span className="kp-party-title">
+                  May-sumbong (Complainant)
+                </span>
+                <div className="kp-party-name">
+                  {kpSummonItem.complainantName}
+                </div>
                 <div className="kp-party-sub">{kpSummonItem.purok}</div>
               </div>
               <div>
-                <span className="kp-party-title">Ipinagsusumbong (Respondent)</span>
+                <span className="kp-party-title">
+                  Ipinagsusumbong (Respondent)
+                </span>
                 <div className="kp-party-name">
                   {kpSummonItem.respondentName || "(Name to be served)"}
                 </div>
@@ -14171,13 +18382,14 @@ function IncidentsPage({
             <p className="kp-body-paragraph">
               <strong>KAY (TO):</strong>{" "}
               <u>{kpSummonItem.respondentName || "IPINAGSUSUMBONG"}</u>, na
-              naninirahan sa {kpSummonItem.respondentAddress || kpSummonItem.purok}.
+              naninirahan sa{" "}
+              {kpSummonItem.respondentAddress || kpSummonItem.purok}.
             </p>
 
             <p className="kp-body-paragraph">
               Kayo ay tinatawagan at inuutusan na humarap sa akin nang personal,
-              kasama ang inyong mga saksi kung mayroon, para sa opisyal na pagdinig
-              ng reklamo na inihain laban sa inyo ukol sa usaping:{" "}
+              kasama ang inyong mga saksi kung mayroon, para sa opisyal na
+              pagdinig ng reklamo na inihain laban sa inyo ukol sa usaping:{" "}
               <strong>"{kpSummonItem.category}"</strong>.
             </p>
 
@@ -14188,7 +18400,8 @@ function IncidentsPage({
               </p>
               <p>
                 <strong>📍 Pook ng Pagpupulong (Venue):</strong>{" "}
-                {kpSummonItem.hearingVenue || "Lupon Tagapamayapa Hall, 2nd Floor, Barangay San Isidro Hall"}
+                {kpSummonItem.hearingVenue ||
+                  "Lupon Tagapamayapa Hall, 2nd Floor, Barangay San Isidro Hall"}
               </p>
               <p>
                 <strong>⚖️ Yugto ng Patawag:</strong>{" "}
@@ -14196,18 +18409,23 @@ function IncidentsPage({
               </p>
             </div>
 
-            <p className="kp-body-paragraph" style={{ fontSize: "11.5px", color: "#6e1d1d" }}>
-              <strong>BABALA NG BATAS (WARNING):</strong> Ang sinumang tumanggi o
-              mabigong humarap nang walang makatwirang dahilan matapos mapagsilbihan
-              ng patawag na ito ay maaaring mawalan ng karapatang maghain ng
-              kontra-reklamo at ang naturang usapin ay maaaring iendorso sa Hukuman
-              kalakip ang kaukulang <em>Certificate to File Action (CFA)</em> alinsunod
-              sa Seksiyon 515 ng Republic Act No. 7160 (Local Government Code).
+            <p
+              className="kp-body-paragraph"
+              style={{ fontSize: "11.5px", color: "#6e1d1d" }}
+            >
+              <strong>BABALA NG BATAS (WARNING):</strong> Ang sinumang tumanggi
+              o mabigong humarap nang walang makatwirang dahilan matapos
+              mapagsilbihan ng patawag na ito ay maaaring mawalan ng karapatang
+              maghain ng kontra-reklamo at ang naturang usapin ay maaaring
+              iendorso sa Hukuman kalakip ang kaukulang{" "}
+              <em>Certificate to File Action (CFA)</em> alinsunod sa Seksiyon
+              515 ng Republic Act No. 7160 (Local Government Code).
             </p>
 
             <div style={{ textAlign: "center", margin: "20px 0 10px" }}>
               <span className="kp-seal-badge">
-                <Icon name="shield" size={13} /> Opisyal na Tatak ng Barangay San Isidro
+                <Icon name="shield" size={13} /> Opisyal na Tatak ng Barangay
+                San Isidro
               </span>
             </div>
 
@@ -14229,17 +18447,21 @@ function IncidentsPage({
             </div>
           </div>
 
-          <div className="modal-actions" style={{ display: "flex", justifyContent: "space-between", marginTop: "16px" }}>
+          <div
+            className="modal-actions"
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              marginTop: "16px",
+            }}
+          >
             <button
               className="row-action"
               onClick={() => setKpSummonItem(null)}
             >
               Close
             </button>
-            <button
-              className="primary-button"
-              onClick={() => window.print()}
-            >
+            <button className="primary-button" onClick={() => window.print()}>
               <Icon name="document" size={14} /> Print Official Notice (Patawag)
             </button>
           </div>
@@ -14260,10 +18482,21 @@ function IncidentsPage({
               Archive Blotter Case {deleteConfirmItem.id}?
             </h3>
             <p className="danger-modal-desc">
-              Moving blotter <strong>{deleteConfirmItem.id}</strong> (Complainant: {deleteConfirmItem.complainantName}) to the <strong>Archived / Deleted Cases</strong> tab will hide it from active resolution workflows. You can review or restore it anytime, or permanently purge it from the system.
+              Moving blotter <strong>{deleteConfirmItem.id}</strong>{" "}
+              (Complainant: {deleteConfirmItem.complainantName}) to the{" "}
+              <strong>Archived / Deleted Cases</strong> tab will hide it from
+              active resolution workflows. You can review or restore it anytime,
+              or permanently purge it from the system.
             </p>
 
-            <div style={{ display: "flex", gap: "10px", justifyContent: "center", marginTop: "10px" }}>
+            <div
+              style={{
+                display: "flex",
+                gap: "10px",
+                justifyContent: "center",
+                marginTop: "10px",
+              }}
+            >
               <button
                 className="row-action"
                 onClick={() => setDeleteConfirmItem(null)}
@@ -14272,7 +18505,11 @@ function IncidentsPage({
               </button>
               <button
                 className="btn-sm-action danger"
-                style={{ padding: "9px 20px", fontSize: "12px", fontWeight: "700" }}
+                style={{
+                  padding: "9px 20px",
+                  fontSize: "12px",
+                  fontWeight: "700",
+                }}
                 onClick={handleConfirmSoftDelete}
               >
                 Confirm Move to Archive
@@ -14289,17 +18526,30 @@ function IncidentsPage({
           close={() => setPurgeConfirmItem(null)}
         >
           <div className="danger-modal-box">
-            <div className="danger-modal-icon" style={{ background: "#450a0a", color: "#f87171" }}>
+            <div
+              className="danger-modal-icon"
+              style={{ background: "#450a0a", color: "#f87171" }}
+            >
               <Icon name="trash" size={24} />
             </div>
             <h3 className="danger-modal-title" style={{ color: "#7f1d1d" }}>
               Permanently Purge Case {purgeConfirmItem.id}?
             </h3>
             <p className="danger-modal-desc">
-              This action will permanently delete blotter record <strong>{purgeConfirmItem.id}</strong> filed by {purgeConfirmItem.complainantName} from the Supabase cloud database. <strong>This action cannot be undone.</strong>
+              This action will permanently delete blotter record{" "}
+              <strong>{purgeConfirmItem.id}</strong> filed by{" "}
+              {purgeConfirmItem.complainantName} from the Supabase cloud
+              database. <strong>This action cannot be undone.</strong>
             </p>
 
-            <div style={{ display: "flex", gap: "10px", justifyContent: "center", marginTop: "10px" }}>
+            <div
+              style={{
+                display: "flex",
+                gap: "10px",
+                justifyContent: "center",
+                marginTop: "10px",
+              }}
+            >
               <button
                 className="row-action"
                 onClick={() => setPurgeConfirmItem(null)}
@@ -14308,7 +18558,13 @@ function IncidentsPage({
               </button>
               <button
                 className="btn-sm-action danger"
-                style={{ padding: "9px 20px", fontSize: "12px", fontWeight: "700", background: "#7f1d1d", borderColor: "#7f1d1d" }}
+                style={{
+                  padding: "9px 20px",
+                  fontSize: "12px",
+                  fontWeight: "700",
+                  background: "#7f1d1d",
+                  borderColor: "#7f1d1d",
+                }}
                 onClick={handleConfirmPurge}
               >
                 Permanently Purge
@@ -14332,10 +18588,20 @@ function IncidentsPage({
               Delete {deleteHotlineItem.name}?
             </h3>
             <p className="danger-modal-desc">
-              Are you sure you want to remove <strong>{deleteHotlineItem.name}</strong> ({deleteHotlineItem.number}) from the public emergency hotline directory? Residents will no longer see this contact number.
+              Are you sure you want to remove{" "}
+              <strong>{deleteHotlineItem.name}</strong> (
+              {deleteHotlineItem.number}) from the public emergency hotline
+              directory? Residents will no longer see this contact number.
             </p>
 
-            <div style={{ display: "flex", gap: "10px", justifyContent: "center", marginTop: "10px" }}>
+            <div
+              style={{
+                display: "flex",
+                gap: "10px",
+                justifyContent: "center",
+                marginTop: "10px",
+              }}
+            >
               <button
                 className="row-action"
                 onClick={() => setDeleteHotlineItem(null)}
@@ -14344,7 +18610,11 @@ function IncidentsPage({
               </button>
               <button
                 className="btn-sm-action danger"
-                style={{ padding: "9px 20px", fontSize: "12px", fontWeight: "700" }}
+                style={{
+                  padding: "9px 20px",
+                  fontSize: "12px",
+                  fontWeight: "700",
+                }}
                 onClick={handleConfirmDeleteHotline}
               >
                 Confirm Delete Hotline
@@ -14356,6 +18626,3 @@ function IncidentsPage({
     </div>
   );
 }
-
-
-
