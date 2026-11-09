@@ -1286,7 +1286,21 @@ export function cleanBarangayDescription(desc?: string): string {
   return desc
     .replace(/<!--\s*ADMIN_ROLES:\s*\[.*?\]\s*-->/g, "")
     .replace(/<!--\s*ACTIVE_RESETS:\s*\{.*?\}\s*-->/g, "")
+    .replace(/<!--\s*SCHEDULE:\s*\[.*?\]\s*-->/g, "")
     .trim();
+}
+
+export function parseScheduleFromDesc(desc?: string): OperatingDay[] | null {
+  if (!desc) return null;
+  const match = desc.match(/<!--\s*SCHEDULE:\s*(\[.*?\])\s*-->/);
+  if (!match) return null;
+  try {
+    const parsed = JSON.parse(match[1]);
+    if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    return null;
+  } catch {
+    return null;
+  }
 }
 
 export function parseActiveResetsFromDesc(
@@ -1924,7 +1938,14 @@ function UserProfileModal({
         return;
       }
 
-      // 3. Password successfully updated
+      // 3. Password successfully updated — also clear any active temp-password reset
+      //    so the admin-issued temporary password can no longer be used to log in.
+      try {
+        await syncActiveReset(user.email.trim().toLowerCase(), null);
+      } catch {
+        // non-fatal: temp-password entry will expire naturally
+      }
+
       setPasswordSuccess("Password changed successfully! 🔒");
       setCurrentPassword("");
       setNewPassword("");
@@ -2964,6 +2985,18 @@ export default function App() {
             sundayHours:
               dbSettings.sunday_hours || defaultBarangayInfo.sundayHours,
           };
+
+          // Sync operating schedule from DB description to local state
+          const remoteSchedule = parseScheduleFromDesc(dbSettings.description);
+          if (remoteSchedule) {
+            saveCachedSchedule(remoteSchedule);
+            // Dispatch a custom event so BarangaySettingsPage can re-read it
+            window.dispatchEvent(
+              new CustomEvent("barangay_schedule_updated", {
+                detail: remoteSchedule,
+              }),
+            );
+          }
 
           setBarangay((prev) => {
             if (
@@ -12005,6 +12038,7 @@ function ResidentsPage({
   // Load and listen to real-time events
   useEffect(() => {
     fetchResidents();
+    reloadPwResetRequests();
 
     const channel = supabase
       .channel("residents_page_channel")
@@ -12017,8 +12051,21 @@ function ResidentsPage({
       )
       .subscribe();
 
+    // Real-time subscription for password reset requests
+    const pwResetChannel = supabase
+      .channel("pw_reset_requests_channel")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "password_reset_requests" },
+        () => {
+          reloadPwResetRequests();
+        },
+      )
+      .subscribe();
+
     return () => {
       channel.unsubscribe();
+      pwResetChannel.unsubscribe();
     };
   }, []);
 
@@ -14913,6 +14960,23 @@ function BarangaySettingsPage({
     );
   });
 
+  // Listen for schedule updates pushed from other devices via realtime → custom event
+  useEffect(() => {
+    const handleRemoteSchedule = (e: Event) => {
+      const remote = (e as CustomEvent<OperatingDay[]>).detail;
+      if (Array.isArray(remote) && remote.length > 0 && !isDirty) {
+        setSchedule(remote);
+      }
+    };
+    window.addEventListener("barangay_schedule_updated", handleRemoteSchedule);
+    return () => {
+      window.removeEventListener(
+        "barangay_schedule_updated",
+        handleRemoteSchedule,
+      );
+    };
+  }, [isDirty]);
+
   // Document Services state
   const [services, setServices] = useState<DocumentService[]>(
     getCachedDocumentServices,
@@ -15049,6 +15113,8 @@ function BarangaySettingsPage({
       if (activeResetsMatch) {
         fullDesc += `\n<!-- ACTIVE_RESETS: ${activeResetsMatch[1]} -->`;
       }
+      // Always embed the full 7-day schedule so other devices can read it via realtime
+      fullDesc += `\n<!-- SCHEDULE: ${JSON.stringify(schedule)} -->`;
 
       // Derive operating hour summaries directly from the schedule
       const mon = schedule[0];
