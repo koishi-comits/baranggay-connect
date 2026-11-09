@@ -605,6 +605,39 @@ const initialAnnouncements: Announcement[] = [
   },
 ];
 
+export function getDeletedAnnouncementKeys(): string[] {
+  try {
+    const cached = localStorage.getItem("brgy_deleted_announcement_keys");
+    if (cached) return JSON.parse(cached);
+  } catch {}
+  return [];
+}
+
+export function markAnnouncementDeleted(id: number | string, title?: string) {
+  try {
+    const keys = getDeletedAnnouncementKeys();
+    const newKeys = [
+      ...keys,
+      String(id),
+      (title || "").toLowerCase().trim(),
+    ].filter(Boolean);
+    localStorage.setItem(
+      "brgy_deleted_announcement_keys",
+      JSON.stringify(Array.from(new Set(newKeys))),
+    );
+  } catch {}
+}
+
+export function isAnnouncementDeleted(
+  id: number | string,
+  title?: string,
+): boolean {
+  const keys = getDeletedAnnouncementKeys();
+  if (keys.includes(String(id))) return true;
+  if (title && keys.includes(title.toLowerCase().trim())) return true;
+  return false;
+}
+
 const ANNOUNCEMENT_TAGS = [
   "Community Advisory",
   "Health & Wellness",
@@ -977,6 +1010,7 @@ export type Msg = {
   text: string;
   time: string;
   timestamp?: number;
+  dbId?: number;
 };
 
 export const initialThreads: Record<string, Msg[]> = {
@@ -2500,8 +2534,20 @@ export default function App() {
   const [postTag, setPostTag] = useState("Community Advisory");
   const [postAccent, setPostAccent] = useState("");
   const [postAccentDate, setPostAccentDate] = useState("");
-  const [announcements, setAnnouncements] =
-    useState<Announcement[]>(initialAnnouncements);
+  const [announcements, setAnnouncements] = useState<Announcement[]>(() => {
+    try {
+      const cached = localStorage.getItem("brgy_announcements_cache");
+      if (cached) {
+        const list = JSON.parse(cached);
+        if (Array.isArray(list)) {
+          return list.filter((a) => !isAnnouncementDeleted(a.id, a.title));
+        }
+      }
+    } catch {}
+    return initialAnnouncements.filter(
+      (a) => !isAnnouncementDeleted(a.id, a.title),
+    );
+  });
   // Announcement management state
   const [editingAnnouncement, setEditingAnnouncement] =
     useState<Announcement | null>(null);
@@ -2908,6 +2954,7 @@ export default function App() {
               text: row.text,
               time: `${dateStr} · ${timeStr}`,
               timestamp: isNaN(d.getTime()) ? Date.now() : d.getTime(),
+              dbId: row.id,
             });
           });
 
@@ -3051,42 +3098,71 @@ export default function App() {
           .select("*")
           .order("created_at", { ascending: false });
         if (dbAnnouncements && dbAnnouncements.length > 0) {
-          setAnnouncements(dbAnnouncements.map(parseDbAnnouncement));
-        } else {
-          // If Supabase table is empty, seed it with the default announcements
+          const parsed = dbAnnouncements
+            .map(parseDbAnnouncement)
+            .filter((a) => !isAnnouncementDeleted(a.id, a.title));
+          setAnnouncements(parsed);
           try {
-            const { data: seeded } = await supabase
-              .from("announcements")
-              .insert([
-                {
-                  author: "Barangay San Isidro",
-                  initials: "SI",
-                  tag: "Community Advisory",
-                  title: "Scheduled Water Interruption",
-                  body: "Please be advised that there will be a scheduled water interruption on June 18, from 8:00 AM to 3:00 PM due to maintenance works along Mabini Street. We encourage everyone to store enough water in advance.",
-                  accent:
-                    "[IMG:https://images.unsplash.com/photo-1541888946425-d0fbb186f5f7?auto=format&fit=crop&w=1200&q=80]Water service advisory",
-                  accent_text: "[PINNED] June 18 · 8:00 AM – 3:00 PM",
-                  reactions: 48,
-                },
-                {
-                  author: "Barangay Health Center",
-                  initials: "HC",
-                  tag: "Health & Wellness",
-                  title: "Free Medical and Dental Mission",
-                  body: "Our health center is inviting all residents to a free medical and dental mission this Saturday. Services include basic check-ups, blood pressure monitoring, and dental consultation.",
-                  accent:
-                    "[IMG:https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=1200&q=80]Barangay Covered Court",
-                  accent_text: "June 21 · 8:00 AM – 12:00 PM",
-                  reactions: 76,
-                },
-              ])
-              .select();
-            if (seeded && seeded.length > 0) {
-              setAnnouncements(seeded.map(parseDbAnnouncement));
+            localStorage.setItem(
+              "brgy_announcements_cache",
+              JSON.stringify(parsed),
+            );
+            localStorage.setItem("brgy_announcements_seeded", "true");
+          } catch {}
+        } else {
+          // If Supabase table is empty, only seed if not previously seeded and no deletions
+          const alreadySeeded = localStorage.getItem("brgy_announcements_seeded");
+          const deletedKeys = getDeletedAnnouncementKeys();
+          if (!alreadySeeded && deletedKeys.length === 0) {
+            try {
+              const { data: seeded } = await supabase
+                .from("announcements")
+                .insert([
+                  {
+                    author: "Barangay San Isidro",
+                    initials: "SI",
+                    tag: "Community Advisory",
+                    title: "Scheduled Water Interruption",
+                    body: "Please be advised that there will be a scheduled water interruption on June 18, from 8:00 AM to 3:00 PM due to maintenance works along Mabini Street. We encourage everyone to store enough water in advance.",
+                    accent:
+                      "[IMG:https://images.unsplash.com/photo-1541888946425-d0fbb186f5f7?auto=format&fit=crop&w=1200&q=80]Water service advisory",
+                    accent_text: "[PINNED] June 18 · 8:00 AM – 3:00 PM",
+                    reactions: 48,
+                  },
+                  {
+                    author: "Barangay Health Center",
+                    initials: "HC",
+                    tag: "Health & Wellness",
+                    title: "Free Medical and Dental Mission",
+                    body: "Our health center is inviting all residents to a free medical and dental mission this Saturday. Services include basic check-ups, blood pressure monitoring, and dental consultation.",
+                    accent:
+                      "[IMG:https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=1200&q=80]Barangay Covered Court",
+                    accent_text: "June 21 · 8:00 AM – 12:00 PM",
+                    reactions: 76,
+                  },
+                ])
+                .select();
+              if (seeded && seeded.length > 0) {
+                const parsed = seeded
+                  .map(parseDbAnnouncement)
+                  .filter((a) => !isAnnouncementDeleted(a.id, a.title));
+                setAnnouncements(parsed);
+                try {
+                  localStorage.setItem("brgy_announcements_seeded", "true");
+                  localStorage.setItem(
+                    "brgy_announcements_cache",
+                    JSON.stringify(parsed),
+                  );
+                } catch {}
+              }
+            } catch (seedErr) {
+              console.error("Failed to seed initial announcements", seedErr);
             }
-          } catch (seedErr) {
-            console.error("Failed to seed initial announcements", seedErr);
+          } else {
+            setAnnouncements([]);
+            try {
+              localStorage.setItem("brgy_announcements_cache", "[]");
+            } catch {}
           }
         }
 
@@ -3286,7 +3362,16 @@ export default function App() {
             .select("*")
             .order("created_at", { ascending: false });
           if (dbAnnouncements) {
-            setAnnouncements(dbAnnouncements.map(parseDbAnnouncement));
+            const parsed = dbAnnouncements
+              .map(parseDbAnnouncement)
+              .filter((a) => !isAnnouncementDeleted(a.id, a.title));
+            setAnnouncements(parsed);
+            try {
+              localStorage.setItem(
+                "brgy_announcements_cache",
+                JSON.stringify(parsed),
+              );
+            } catch {}
           }
         },
       )
@@ -3679,13 +3764,42 @@ export default function App() {
   async function confirmDeleteAnnouncement() {
     if (!deleteAnnouncementItem) return;
     const id = deleteAnnouncementItem.id;
-    setAnnouncements((prev) => prev.filter((a) => a.id !== id));
+    const title = deleteAnnouncementItem.title;
+
+    // 1. Mark permanently deleted locally so it never reappears
+    markAnnouncementDeleted(id, title);
+
+    // 2. Filter local state immediately
+    setAnnouncements((prev) => {
+      const updated = prev.filter(
+        (a) =>
+          a.id !== id &&
+          (!title ||
+            a.title.toLowerCase().trim() !== title.toLowerCase().trim()),
+      );
+      try {
+        localStorage.setItem(
+          "brgy_announcements_cache",
+          JSON.stringify(updated),
+        );
+      } catch {}
+      return updated;
+    });
+
     if (viewAnnouncementItem?.id === id) setViewAnnouncementItem(null);
     setDeleteAnnouncementItem(null);
     setAnnouncementMoreMenu(null);
     showToast("Announcement deleted.");
+
+    // 3. Delete from Supabase by ID and by title
     try {
       await supabase.from("announcements").delete().eq("id", id);
+      if (title) {
+        await supabase
+          .from("announcements")
+          .delete()
+          .ilike("title", title.trim());
+      }
     } catch (e) {
       console.error("Failed to delete announcement", e);
     }
@@ -3879,6 +3993,69 @@ export default function App() {
     showToast("Comment deleted.");
   }
 
+  async function deleteMessage(
+    email: string,
+    dbId: number | undefined,
+    timestamp: number | undefined,
+  ) {
+    const cleanEmail = email.toLowerCase().trim();
+    const msgToDelete = (threads[cleanEmail] ?? []).find(
+      (m) =>
+        (dbId !== undefined && m.dbId === dbId) ||
+        (timestamp !== undefined && m.timestamp === timestamp),
+    );
+
+    // Optimistic remove from local state
+    setThreads((prev) => {
+      const updated = {
+        ...prev,
+        [cleanEmail]: (prev[cleanEmail] ?? []).filter((m) =>
+          dbId !== undefined ? m.dbId !== dbId : m.timestamp !== timestamp,
+        ),
+      };
+      saveCachedThreads(updated);
+      return updated;
+    });
+
+    showToast("Message deleted.");
+
+    // Delete from Supabase
+    try {
+      if (dbId !== undefined) {
+        await supabase.from("messages").delete().eq("id", dbId);
+      } else if (msgToDelete?.text) {
+        await supabase
+          .from("messages")
+          .delete()
+          .eq("resident_email", cleanEmail)
+          .eq("text", msgToDelete.text.trim());
+      }
+    } catch (err) {
+      console.warn("Supabase message delete error:", err);
+    }
+  }
+
+  async function clearThread(email: string) {
+    const cleanEmail = email.toLowerCase().trim();
+    setThreads((prev) => {
+      const updated = {
+        ...prev,
+        [cleanEmail]: [],
+      };
+      saveCachedThreads(updated);
+      return updated;
+    });
+    showToast("Conversation cleared.");
+    try {
+      await supabase
+        .from("messages")
+        .delete()
+        .eq("resident_email", cleanEmail);
+    } catch (err) {
+      console.warn("Supabase clear messages error:", err);
+    }
+  }
+
   async function sendMessage(
     email: string,
     text: string,
@@ -3890,7 +4067,8 @@ export default function App() {
       now.toLocaleDateString("en-US", { month: "short", day: "numeric" }) +
       " · " +
       now.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
-    const msg: Msg = { from, text, time: timeStr, timestamp: Date.now() };
+    const msgTimestamp = Date.now();
+    const msg: Msg = { from, text, time: timeStr, timestamp: msgTimestamp };
 
     // 1. Update local state immediately for instant feedback
     setThreads((prev) => {
@@ -3904,13 +4082,28 @@ export default function App() {
 
     // 2. Sync to Supabase messages table for cross-browser live chat
     try {
-      await supabase.from("messages").insert([
-        {
-          resident_email: cleanEmail,
-          sender: from,
-          text: text.trim(),
-        },
-      ]);
+      const { data: insertedMsg } = await supabase
+        .from("messages")
+        .insert([
+          {
+            resident_email: cleanEmail,
+            sender: from,
+            text: text.trim(),
+          },
+        ])
+        .select("id");
+      if (insertedMsg && insertedMsg[0]?.id) {
+        const assignedId = insertedMsg[0].id;
+        setThreads((prev) => {
+          const list = prev[cleanEmail] ?? [];
+          const updatedList = list.map((m) =>
+            m.timestamp === msgTimestamp ? { ...m, dbId: assignedId } : m,
+          );
+          const updated = { ...prev, [cleanEmail]: updatedList };
+          saveCachedThreads(updated);
+          return updated;
+        });
+      }
     } catch (err) {
       console.warn("Supabase messages insert error:", err);
     }
@@ -5359,6 +5552,10 @@ export default function App() {
               activeThread={activeThread}
               onSelectThread={setActiveThread}
               onSend={(email, text) => sendMessage(email, text, "admin")}
+              onDeleteMessage={(email, dbId, ts) =>
+                deleteMessage(email, dbId, ts)
+              }
+              onClearThread={(email) => clearThread(email)}
               allRequests={requests}
               onViewDocRequest={(req) => {
                 setViewingRequest(req);
@@ -5369,6 +5566,10 @@ export default function App() {
               user={user}
               thread={threads[userEmail] ?? []}
               onSend={(text) => sendMessage(userEmail, text, "resident")}
+              onDeleteMessage={(dbId, ts) =>
+                deleteMessage(userEmail, dbId, ts)
+              }
+              onClearThread={() => clearThread(userEmail)}
               presetDraft={presetMessageDraft}
               onClearPresetDraft={() => setPresetMessageDraft("")}
               myRequests={requests.filter(
@@ -11048,6 +11249,8 @@ function AdminMessagesPage({
   activeThread,
   onSelectThread,
   onSend,
+  onDeleteMessage,
+  onClearThread,
   allRequests,
   onViewDocRequest,
 }: {
@@ -11055,6 +11258,12 @@ function AdminMessagesPage({
   activeThread: string | null;
   onSelectThread: (email: string) => void;
   onSend: (email: string, text: string) => void;
+  onDeleteMessage: (
+    email: string,
+    dbId: number | undefined,
+    timestamp: number | undefined,
+  ) => void;
+  onClearThread: (email: string) => void;
   allRequests: DocumentRequest[];
   onViewDocRequest: (req: DocumentRequest) => void;
 }) {
@@ -11113,7 +11322,7 @@ function AdminMessagesPage({
   }
 
   return (
-    <div className="page inner-page">
+    <div className="page inner-page messages-page">
       <section className="page-heading">
         <div>
           <p className="eyebrow">ADMINISTRATION</p>
@@ -11198,6 +11407,27 @@ function AdminMessagesPage({
                   request{activeRequests.length > 1 ? "s" : ""}
                 </button>
               )}
+              <button
+                className="ghost-button"
+                style={{
+                  fontSize: 12,
+                  padding: "4px 10px",
+                  color: "#dc2626",
+                  borderColor: "#fecaca",
+                }}
+                onClick={() => {
+                  if (
+                    window.confirm(
+                      `Are you sure you want to clear all messages with ${activeResidentMeta?.name || activeThread}?`,
+                    )
+                  ) {
+                    onClearThread(activeThread);
+                  }
+                }}
+                title="Clear all messages in this conversation"
+              >
+                <Icon name="trash" size={13} /> Clear
+              </button>
             </div>
 
             <div className="chat-messages" ref={chatRef}>
@@ -11215,7 +11445,18 @@ function AdminMessagesPage({
                       <Avatar initials={residentInitials} tone="amber" />
                     )}
                     <div className="chat-bubble-content">
-                      <div className="chat-bubble">{msg.text}</div>
+                      <div className="chat-bubble">
+                        {msg.text}
+                        <button
+                          className="msg-delete-btn"
+                          title="Delete message"
+                          onClick={() =>
+                            onDeleteMessage(activeThread, msg.dbId, msg.timestamp)
+                          }
+                        >
+                          <Icon name="trash" size={11} />
+                        </button>
+                      </div>
                       <small className="chat-time">{msg.time}</small>
                     </div>
                   </div>
@@ -11276,6 +11517,8 @@ function ResidentMessagesPage({
   user,
   thread,
   onSend,
+  onDeleteMessage,
+  onClearThread,
   presetDraft,
   onClearPresetDraft,
   myRequests,
@@ -11283,6 +11526,11 @@ function ResidentMessagesPage({
   user: { id: string; name: string; email: string };
   thread: Msg[];
   onSend: (text: string) => void;
+  onDeleteMessage: (
+    dbId: number | undefined,
+    timestamp: number | undefined,
+  ) => void;
+  onClearThread: () => void;
   presetDraft?: string;
   onClearPresetDraft?: () => void;
   myRequests: DocumentRequest[];
@@ -11319,7 +11567,7 @@ function ResidentMessagesPage({
   }
 
   return (
-    <div className="page inner-page">
+    <div className="page inner-page messages-page">
       <section className="page-heading">
         <div>
           <p className="eyebrow">BARANGAY SERVICES</p>
@@ -11345,10 +11593,33 @@ function ResidentMessagesPage({
         <div className="chat-pane full">
           <div className="chat-header">
             <Avatar initials="SI" tone="blue" />
-            <div>
+            <div style={{ flex: 1 }}>
               <strong>Barangay San Isidro Office</strong>
               <small>Administrator · Official channel · Mon–Fri 8AM–5PM</small>
             </div>
+            {thread.length > 0 && (
+              <button
+                className="ghost-button"
+                style={{
+                  fontSize: 12,
+                  padding: "4px 10px",
+                  color: "#dc2626",
+                  borderColor: "#fecaca",
+                }}
+                onClick={() => {
+                  if (
+                    window.confirm(
+                      "Are you sure you want to clear your message history with the barangay office?",
+                    )
+                  ) {
+                    onClearThread();
+                  }
+                }}
+                title="Clear your message history"
+              >
+                <Icon name="trash" size={13} /> Clear chat
+              </button>
+            )}
           </div>
 
           <div className="chat-messages" ref={chatRef}>
@@ -11371,7 +11642,20 @@ function ResidentMessagesPage({
                 >
                   {!isMe && <Avatar initials="SI" tone="blue" />}
                   <div className="chat-bubble-content">
-                    <div className="chat-bubble">{msg.text}</div>
+                    <div className="chat-bubble">
+                      {msg.text}
+                      {isMe && (
+                        <button
+                          className="msg-delete-btn"
+                          title="Delete message"
+                          onClick={() =>
+                            onDeleteMessage(msg.dbId, msg.timestamp)
+                          }
+                        >
+                          <Icon name="trash" size={11} />
+                        </button>
+                      )}
+                    </div>
                     <small className="chat-time">{msg.time}</small>
                   </div>
                 </div>
