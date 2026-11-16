@@ -900,6 +900,7 @@ export type RequestStatus =
   | "Approved"
   | "Ready for Pickup"
   | "Released"
+  | "Received"
   | "Declined";
 export type PaymentStatus = "Unpaid" | "Paid at Counter" | "Waived";
 
@@ -1283,11 +1284,15 @@ export function parseDbDocRequest(row: any): DocumentRequest {
     fee: meta.fee || "₱ 50",
     paymentStatus:
       (meta.paymentStatus as PaymentStatus) ||
-      (row.status === "Released" ? "Paid at Counter" : "Unpaid"),
+      (row.status === "Released" || row.status === "Received"
+        ? "Paid at Counter"
+        : "Unpaid"),
     status:
-      row.status === "Ready for Pickup" || row.status === "Released"
-        ? "Approved"
-        : (row.status as RequestStatus) || "Pending",
+      row.status === "Released" || row.status === "Received"
+        ? "Received"
+        : row.status === "Ready for Pickup"
+          ? "Approved"
+          : (row.status as RequestStatus) || "Pending",
     dateFiled:
       row.date ||
       (row.created_at
@@ -4331,10 +4336,7 @@ export default function App() {
         (r) => r.residentEmail === userEmail || r.residentId === user.id,
       );
       const readyDoc = myDocs.find(
-        (r) =>
-          r.status === "Approved" ||
-          r.status === "Ready for Pickup" ||
-          r.status === "Released",
+        (r) => r.status === "Approved" || r.status === "Ready for Pickup",
       );
       if (readyDoc) {
         list.push({
@@ -5462,6 +5464,7 @@ export default function App() {
               )}
               onRequest={() => setRequestOpen(true)}
               onDeleteRequest={handleDeleteDocumentRequest}
+              onUpdateRequest={handleUpdateRequest}
               onToast={showToast}
               onOpenChat={(doc) => {
                 setPresetMessageDraft(
@@ -7378,6 +7381,23 @@ export default function App() {
               `Good day po! Follow-up inquiry regarding my ${req.docType} (Tracking No. ${req.trackingNo}).`,
             );
             setActive("messages");
+          }}
+          onMarkReceived={(req: DocumentRequest) => {
+            handleUpdateRequest(req.id, {
+              status: "Received",
+              releasedDate: new Date().toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              }),
+              paymentStatus:
+                req.paymentStatus === "Unpaid"
+                  ? "Paid at Counter"
+                  : req.paymentStatus,
+              updatedAt: new Date().toISOString(),
+            });
+            showToast("Document confirmed as received! 📄✅");
+            setViewingRequest(null);
           }}
         />
       )}
@@ -9985,11 +10005,13 @@ function DocumentDetailsModal({
   close,
   onPrint,
   onOpenChat,
+  onMarkReceived,
 }: {
   request: DocumentRequest;
   close: () => void;
   onPrint?: (req: DocumentRequest) => void;
   onOpenChat?: (req: DocumentRequest) => void;
+  onMarkReceived?: (req: DocumentRequest) => void;
 }) {
   const [copied, setCopied] = useState(false);
 
@@ -10000,30 +10022,39 @@ function DocumentDetailsModal({
   }
 
   const isDeclined = request.status === "Declined";
+  const isReceived =
+    request.status === "Received" || request.status === "Released";
   const isApproved =
-    request.status === "Approved" ||
-    request.status === "Ready for Pickup" ||
-    request.status === "Released";
+    !isReceived &&
+    (request.status === "Approved" || request.status === "Ready for Pickup");
 
-  const currentStep = isDeclined ? 2 : isApproved ? 3 : 2;
+  const currentStep = isDeclined ? 2 : isReceived ? 4 : isApproved ? 3 : 2;
 
-  const progressPercent = isDeclined ? "50%" : isApproved ? "100%" : "50%";
+  const progressPercent = isDeclined
+    ? "50%"
+    : isReceived
+      ? "100%"
+      : isApproved
+        ? "75%"
+        : "50%";
 
   const steps = [
     { num: 1, label: "Filed" },
     { num: 2, label: isDeclined ? "Declined" : "Review" },
-    { num: 3, label: "Approved & Ready for Pickup" },
+    { num: 3, label: "Approved & Ready" },
+    { num: 4, label: "Received" },
   ];
 
   const statusCssMap: Record<string, string> = {
     Pending: "pending",
     Approved: "approved",
     "Ready for Pickup": "approved",
-    Released: "approved",
+    Released: "verified",
+    Received: "verified",
     Declined: "declined",
   };
 
-  const canPrint = isApproved;
+  const canPrint = isApproved || isReceived;
 
   return (
     <Modal title="Document Request Details" close={close} maxWidth={620}>
@@ -10159,16 +10190,67 @@ function DocumentDetailsModal({
         {isApproved && (
           <div
             className="doc-admin-note ready-note"
-            style={{ display: "flex", gap: "10px", alignItems: "center" }}
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              flexWrap: "wrap",
+              gap: "10px",
+            }}
+          >
+            <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+              <Icon name="check" size={20} />
+              <div>
+                <strong>
+                  Approved & Ready for pickup at {request.pickupWindow || "Window 1"}!
+                </strong>
+                <div style={{ fontSize: "11px", marginTop: "2px" }}>
+                  Please present a valid government-issued ID and pay any
+                  applicable fees at the cashier upon claiming.
+                </div>
+              </div>
+            </div>
+            {onMarkReceived && (
+              <button
+                className="primary-button"
+                style={{
+                  padding: "7px 15px",
+                  fontSize: "12px",
+                  background: "#0284c7",
+                  borderColor: "#0284c7",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "5px",
+                }}
+                onClick={() => onMarkReceived(request)}
+                title="Confirm document has been received"
+              >
+                <Icon name="check" size={13} /> Mark as Received
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Claimed / Received completion banner */}
+        {isReceived && (
+          <div
+            className="doc-admin-note ready-note"
+            style={{
+              display: "flex",
+              gap: "10px",
+              alignItems: "center",
+              background: "#f0fdf4",
+              border: "1px solid #bbf7d0",
+            }}
           >
             <Icon name="check" size={20} />
             <div>
-              <strong>
-                Approved & Ready for pickup at {request.pickupWindow || "Window 1"}!
+              <strong style={{ color: "#166534" }}>
+                Document Received & Completed!
               </strong>
-              <div style={{ fontSize: "11px", marginTop: "2px" }}>
-                Please present a valid government-issued ID and pay any
-                applicable fees at the cashier upon claiming.
+              <div style={{ fontSize: "11px", marginTop: "2px", color: "#15803d" }}>
+                This document was claimed and released{" "}
+                {request.releasedDate ? `on ${request.releasedDate}` : ""}.
               </div>
             </div>
           </div>
@@ -10585,6 +10667,8 @@ function ResidentDocumentsPage({
   onPrintCertificate,
   onViewDetails,
   onDeleteRequest,
+  onUpdateRequest,
+  onToast,
 }: {
   user: { id: string; name: string; email: string };
   requests: DocumentRequest[];
@@ -10593,6 +10677,7 @@ function ResidentDocumentsPage({
   onPrintCertificate: (req: DocumentRequest) => void;
   onViewDetails: (req: DocumentRequest) => void;
   onDeleteRequest?: (id: string) => void;
+  onUpdateRequest?: (id: string, updates: Partial<DocumentRequest>) => void;
   onToast?: (msg: string) => void;
 }) {
   const [search, setSearch] = useState("");
@@ -10611,10 +10696,10 @@ function ResidentDocumentsPage({
       filterStatus === "all"
         ? true
         : filterStatus === "Approved"
-          ? r.status === "Approved" ||
-            r.status === "Ready for Pickup" ||
-            r.status === "Released"
-          : r.status === filterStatus;
+          ? r.status === "Approved" || r.status === "Ready for Pickup"
+          : filterStatus === "Received"
+            ? r.status === "Received" || r.status === "Released"
+            : r.status === filterStatus;
     return matchSearch && matchStatus;
   });
 
@@ -10622,7 +10707,8 @@ function ResidentDocumentsPage({
     Pending: "pending",
     Approved: "approved",
     "Ready for Pickup": "approved",
-    Released: "approved",
+    Released: "verified",
+    Received: "verified",
     Declined: "declined",
   };
 
@@ -10643,14 +10729,13 @@ function ResidentDocumentsPage({
 
       {/* Summary KPI cards */}
       <div className="doc-kpi-row">
-        {(["Pending", "Approved", "Declined"] as const).map((s) => {
+        {(["Pending", "Approved", "Received", "Declined"] as const).map((s) => {
           const count = requests.filter((r) => {
             if (s === "Approved") {
-              return (
-                r.status === "Approved" ||
-                r.status === "Ready for Pickup" ||
-                r.status === "Released"
-              );
+              return r.status === "Approved" || r.status === "Ready for Pickup";
+            }
+            if (s === "Received") {
+              return r.status === "Received" || r.status === "Released";
             }
             return r.status === s;
           }).length;
@@ -10727,9 +10812,7 @@ function ResidentDocumentsPage({
                 {r.purpose}
               </span>
               <span>
-                {r.status === "Approved" ||
-                r.status === "Ready for Pickup" ||
-                r.status === "Released" ? (
+                {r.status === "Approved" || r.status === "Ready for Pickup" ? (
                   <div>
                     <b className="status approved">Approved</b>
                     <small
@@ -10744,6 +10827,21 @@ function ResidentDocumentsPage({
                       Ready for pickup ({r.pickupWindow || "Window 1"})
                     </small>
                   </div>
+                ) : r.status === "Received" || r.status === "Released" ? (
+                  <div>
+                    <b className="status verified">Received</b>
+                    <small
+                      style={{
+                        display: "block",
+                        color: "#0369a1",
+                        fontSize: "11px",
+                        marginTop: "2px",
+                        fontWeight: 500,
+                      }}
+                    >
+                      Claimed {r.releasedDate ? `(${r.releasedDate})` : ""}
+                    </small>
+                  </div>
                 ) : (
                   <b
                     className={`status ${statusCssMap[r.status] || r.status.toLowerCase()}`}
@@ -10753,12 +10851,13 @@ function ResidentDocumentsPage({
                 )}
               </span>
               <span style={{ fontSize: "13px" }}>{r.dateFiled}</span>
-              <span style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+              <span style={{ display: "flex", gap: "6px", flexWrap: "wrap", alignItems: "center" }}>
                 <button className="row-action" onClick={() => onViewDetails(r)}>
                   Details
                 </button>
                 {(r.status === "Approved" ||
                   r.status === "Ready for Pickup" ||
+                  r.status === "Received" ||
                   r.status === "Released") && (
                   <button
                     className="row-action"
@@ -10767,6 +10866,36 @@ function ResidentDocumentsPage({
                     Print
                   </button>
                 )}
+                {(r.status === "Approved" || r.status === "Ready for Pickup") &&
+                  onUpdateRequest && (
+                    <button
+                      className="row-action"
+                      style={{
+                        color: "#0284c7",
+                        borderColor: "#bae6fd",
+                        fontWeight: 600,
+                      }}
+                      onClick={() => {
+                        onUpdateRequest(r.id, {
+                          status: "Received",
+                          releasedDate: new Date().toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          }),
+                          paymentStatus:
+                            r.paymentStatus === "Unpaid"
+                              ? "Paid at Counter"
+                              : r.paymentStatus,
+                          updatedAt: new Date().toISOString(),
+                        });
+                        onToast?.("Document confirmed as received! ✅");
+                      }}
+                      title="Confirm you have claimed and received this document"
+                    >
+                      Receive
+                    </button>
+                  )}
                 <button className="row-action" onClick={() => onOpenChat(r)}>
                   Message
                 </button>
@@ -10915,8 +11044,9 @@ function AdminDocumentsPage({
   const statusCssMap: Record<string, string> = {
     Pending: "pending",
     Approved: "approved",
-    "Ready for Pickup": "ready",
+    "Ready for Pickup": "approved",
     Released: "verified",
+    Received: "verified",
     Declined: "declined",
   };
 
@@ -10932,10 +11062,10 @@ function AdminDocumentsPage({
       filterStatus === "all"
         ? true
         : filterStatus === "Approved"
-          ? r.status === "Approved" ||
-            r.status === "Ready for Pickup" ||
-            r.status === "Released"
-          : r.status === filterStatus;
+          ? r.status === "Approved" || r.status === "Ready for Pickup"
+          : filterStatus === "Received"
+            ? r.status === "Received" || r.status === "Released"
+            : r.status === filterStatus;
     return matchSearch && matchStatus;
   });
 
@@ -10989,14 +11119,13 @@ function AdminDocumentsPage({
 
       {/* KPI row */}
       <div className="doc-kpi-row">
-        {(["Pending", "Approved", "Declined"] as const).map((s) => {
+        {(["Pending", "Approved", "Received", "Declined"] as const).map((s) => {
           const count = requests.filter((r) => {
             if (s === "Approved") {
-              return (
-                r.status === "Approved" ||
-                r.status === "Ready for Pickup" ||
-                r.status === "Released"
-              );
+              return r.status === "Approved" || r.status === "Ready for Pickup";
+            }
+            if (s === "Received") {
+              return r.status === "Received" || r.status === "Released";
             }
             return r.status === s;
           }).length;
@@ -11097,9 +11226,7 @@ function AdminDocumentsPage({
                 {r.purpose}
               </span>
               <span>
-                {r.status === "Approved" ||
-                r.status === "Ready for Pickup" ||
-                r.status === "Released" ? (
+                {r.status === "Approved" || r.status === "Ready for Pickup" ? (
                   <div>
                     <b className="status approved">Approved</b>
                     <small
@@ -11112,6 +11239,21 @@ function AdminDocumentsPage({
                       }}
                     >
                       Ready for pickup ({r.pickupWindow || "Window 1"})
+                    </small>
+                  </div>
+                ) : r.status === "Received" || r.status === "Released" ? (
+                  <div>
+                    <b className="status verified">Received</b>
+                    <small
+                      style={{
+                        display: "block",
+                        color: "#0369a1",
+                        fontSize: "11px",
+                        marginTop: "2px",
+                        fontWeight: 500,
+                      }}
+                    >
+                      Claimed {r.releasedDate ? `(${r.releasedDate})` : ""}
                     </small>
                   </div>
                 ) : (
@@ -11157,6 +11299,59 @@ function AdminDocumentsPage({
                       Review
                     </button>
                   </>
+                ) : (r.status === "Approved" || r.status === "Ready for Pickup") ? (
+                  <>
+                    <button
+                      className="primary-button"
+                      style={{
+                        padding: "6px 14px",
+                        fontSize: "12px",
+                        height: "auto",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 4,
+                        background: "#0284c7",
+                        borderColor: "#0284c7",
+                      }}
+                      title="Mark document as received by resident"
+                      onClick={() => {
+                        onUpdateRequest(r.id, {
+                          status: "Received",
+                          releasedDate: new Date().toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          }),
+                          paymentStatus:
+                            r.paymentStatus === "Unpaid"
+                              ? "Paid at Counter"
+                              : r.paymentStatus,
+                          updatedAt: new Date().toISOString(),
+                        });
+                        onToast("Document marked as Received by resident! 📄✅");
+                      }}
+                    >
+                      <Icon name="check" size={13} /> Receive
+                    </button>
+                    <button
+                      className="row-action"
+                      onClick={() => onPrintCertificate(r)}
+                      title="Print document certificate"
+                      style={{ display: "inline-flex", alignItems: "center", gap: 4 }}
+                    >
+                      <Icon name="document" size={12} /> Print
+                    </button>
+                    <button
+                      className="row-action"
+                      onClick={() => {
+                        setSelected(r);
+                        setFeedback(r.adminFeedback || "");
+                        setPickupWindow(r.pickupWindow || "Window 1");
+                      }}
+                    >
+                      Manage
+                    </button>
+                  </>
                 ) : (
                   <>
                     <button
@@ -11169,9 +11364,7 @@ function AdminDocumentsPage({
                     >
                       Manage
                     </button>
-                    {(r.status === "Approved" ||
-                      r.status === "Ready for Pickup" ||
-                      r.status === "Released") && (
+                    {(r.status === "Received" || r.status === "Released") && (
                       <button
                         className="row-action"
                         onClick={() => onPrintCertificate(r)}
@@ -11338,7 +11531,71 @@ function AdminDocumentsPage({
             </div>
           )}
           {(selected.status === "Approved" ||
-            selected.status === "Ready for Pickup" ||
+            selected.status === "Ready for Pickup") && (
+            <div className="modal-actions split-actions">
+              <button
+                className="primary-button"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 5,
+                  background: "#0284c7",
+                  borderColor: "#0284c7",
+                }}
+                onClick={() => {
+                  onUpdateRequest(selected.id, {
+                    status: "Received",
+                    releasedDate: new Date().toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    }),
+                    paymentStatus:
+                      selected.paymentStatus === "Unpaid"
+                        ? "Paid at Counter"
+                        : selected.paymentStatus,
+                    updatedAt: new Date().toISOString(),
+                  });
+                  onToast("Document marked as Received by resident! 📄✅");
+                  setSelected(null);
+                }}
+              >
+                <Icon name="check" size={14} /> Mark as Received
+              </button>
+              <button
+                className="ghost-button"
+                style={{ display: "inline-flex", alignItems: "center", gap: 5 }}
+                onClick={() => onPrintCertificate(selected)}
+              >
+                <Icon name="document" size={14} /> Print Certificate
+              </button>
+              <button
+                className="ghost-button"
+                style={{ display: "inline-flex", alignItems: "center", gap: 5 }}
+                onClick={() => {
+                  onOpenChat(selected.residentEmail);
+                  setSelected(null);
+                }}
+              >
+                <Icon name="message" size={14} /> Message Resident
+              </button>
+              <button
+                className="row-action"
+                onClick={() => {
+                  onUpdateRequest(selected.id, {
+                    pickupWindow,
+                    adminFeedback: feedback.trim() || undefined,
+                    updatedAt: new Date().toISOString(),
+                  });
+                  onToast("Document request details updated.");
+                  setSelected(null);
+                }}
+              >
+                Save Details
+              </button>
+            </div>
+          )}
+          {(selected.status === "Received" ||
             selected.status === "Released") && (
             <div className="modal-actions split-actions">
               <button
@@ -11359,18 +11616,18 @@ function AdminDocumentsPage({
                 <Icon name="message" size={14} /> Message Resident
               </button>
               <button
-                className="primary-button"
+                className="row-action"
                 onClick={() => {
                   onUpdateRequest(selected.id, {
-                    pickupWindow,
-                    adminFeedback: feedback.trim() || undefined,
+                    status: "Approved",
                     updatedAt: new Date().toISOString(),
                   });
-                  onToast("Document request details updated.");
+                  onToast("Status reverted back to Approved.");
                   setSelected(null);
                 }}
+                title="Revert back to Approved if marked as received by mistake"
               >
-                Save Details
+                Revert to Approved
               </button>
             </div>
           )}
@@ -12457,10 +12714,7 @@ function ResidentMessagesPage({
       {/* Pending requests banner */}
       {myRequests
         .filter(
-          (r) =>
-            r.status === "Approved" ||
-            r.status === "Ready for Pickup" ||
-            r.status === "Released",
+          (r) => r.status === "Approved" || r.status === "Ready for Pickup",
         )
         .map((r) => (
           <div key={r.id} className="doc-ready-banner">
