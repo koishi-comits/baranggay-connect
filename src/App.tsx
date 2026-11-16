@@ -1053,6 +1053,27 @@ export function isPromotedAdmin(email?: string, list?: string[]): boolean {
   return adminList.some((adm) => adm.toLowerCase().trim() === e);
 }
 
+export function isRootMasterAdmin(email?: string): boolean {
+  if (!email) return false;
+  const e = email.toLowerCase().trim();
+  return (
+    e === "admin@sanisidro.gov.ph" ||
+    e === "admin@barangay.gov.ph" ||
+    e === "admin@sanisidro.ph" ||
+    e === "admin@gov.ph"
+  );
+}
+
+export function checkIsAdmin(
+  user: { email?: string; role?: string } | null,
+  promotedAdminsList?: string[],
+): boolean {
+  if (!user || !user.email) return false;
+  const email = user.email.toLowerCase().trim();
+  if (isRootMasterAdmin(email)) return true;
+  return isPromotedAdmin(email, promotedAdminsList);
+}
+
 export function parsePromotedAdminsFromDesc(desc?: string): string[] {
   if (!desc) return [];
   const match = desc.match(/<!--\s*ADMIN_ROLES:\s*(\[.*?\])\s*-->/);
@@ -2314,6 +2335,28 @@ export default function App() {
     return [];
   });
   const announcementsChannelRef = useRef<any>(null);
+  const settingsChannelRef = useRef<any>(null);
+
+  function notifyRolesChange(newAdminList: string[]) {
+    try {
+      localStorage.setItem(
+        "brgy_promoted_admins",
+        JSON.stringify(newAdminList),
+      );
+    } catch {}
+    window.dispatchEvent(
+      new CustomEvent("brgy_promoted_admins_updated", {
+        detail: newAdminList,
+      }),
+    );
+    try {
+      settingsChannelRef.current?.send({
+        type: "broadcast",
+        event: "roles_updated",
+        payload: { adminEmails: newAdminList },
+      });
+    } catch {}
+  }
 
   function notifyAnnouncementChange(newList?: Announcement[]) {
     if (newList) {
@@ -2505,7 +2548,8 @@ export default function App() {
       // stays logged in instead of being silently kicked out.
       if (error || !profile) {
         const cachedName = authUser.email || "User";
-        const isAdm = isPromotedAdmin(authUser.email ?? "");
+        const email = (authUser.email ?? "").toLowerCase().trim();
+        const isAdm = isRootMasterAdmin(email) || isPromotedAdmin(email);
         return {
           id: authUser.id,
           email: authUser.email ?? "",
@@ -2527,8 +2571,8 @@ export default function App() {
       }
 
       const name = profile.full_name || authUser.email || "User";
-      const isAdm =
-        profile.role === "admin" || isPromotedAdmin(authUser.email ?? "");
+      const email = (authUser.email ?? "").toLowerCase().trim();
+      const isAdm = isRootMasterAdmin(email) || isPromotedAdmin(email);
       return {
         id: authUser.id,
         email: authUser.email ?? "",
@@ -2539,7 +2583,8 @@ export default function App() {
     } catch {
       // Last-resort fallback: keep the user logged in with minimal info.
       const cachedName = authUser.email || "User";
-      const isAdm = isPromotedAdmin(authUser.email ?? "");
+      const email = (authUser.email ?? "").toLowerCase().trim();
+      const isAdm = isRootMasterAdmin(email) || isPromotedAdmin(email);
       return {
         id: authUser.id,
         email: authUser.email ?? "",
@@ -3141,6 +3186,21 @@ export default function App() {
 
     const settingsChannel = supabase
       .channel("settings_sync_channel")
+      .on("broadcast", { event: "roles_updated" }, (payload: any) => {
+        if (
+          payload?.payload?.adminEmails &&
+          Array.isArray(payload.payload.adminEmails)
+        ) {
+          const list = payload.payload.adminEmails.map((e: string) =>
+            String(e).toLowerCase().trim(),
+          );
+          setPromotedAdmins(list);
+          try {
+            localStorage.setItem("brgy_promoted_admins", JSON.stringify(list));
+          } catch {}
+        }
+        fetchLiveSettingsAndRoles();
+      })
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "barangay_settings" },
@@ -3149,6 +3209,7 @@ export default function App() {
         },
       )
       .subscribe();
+    settingsChannelRef.current = settingsChannel;
 
     // Heartbeat for cross-browser multi-device instant sync (every 1.5s)
     const liveHeartbeat = setInterval(() => {
@@ -4169,23 +4230,57 @@ export default function App() {
     onAction?: () => void;
   };
 
-  const isAdmin =
-    user?.role === "admin" ||
-    (!!user?.email && isPromotedAdmin(user.email, promotedAdmins));
+  const isAdmin = checkIsAdmin(user, promotedAdmins);
   const userEmail = user?.email || "";
 
-  // Dynamic role synchronization: automatically upgrade session if promoted to admin externally
+  // Dynamic role synchronization: automatically grant privileges when promoted, or revoke/retrieve privileges when demoted
   useEffect(() => {
-    if (user?.email) {
-      const hasAdminRights = isPromotedAdmin(user.email, promotedAdmins);
-      if (hasAdminRights && user.role !== "admin") {
-        setUser((prev) => (prev ? { ...prev, role: "admin" } : null));
-        setToast(
-          "👑 Your account was granted Barangay Administrator privileges!",
-        );
-      }
+    if (!user?.email) return;
+
+    const email = user.email.toLowerCase().trim();
+    const isRoot = isRootMasterAdmin(email);
+    const hasAdminRights = isRoot || isPromotedAdmin(email, promotedAdmins);
+
+    if (hasAdminRights && user.role !== "admin") {
+      setUser((prev) => {
+        if (!prev) return null;
+        const updated = { ...prev, role: "admin" as const };
+        try {
+          localStorage.setItem(
+            "brgy_auth_session",
+            JSON.stringify({ user: updated, timestamp: Date.now() }),
+          );
+        } catch {}
+        return updated;
+      });
+      showToast("👑 Your account was granted Barangay Administrator privileges!");
+    } else if (!hasAdminRights && user.role === "admin" && !isRoot) {
+      setUser((prev) => {
+        if (!prev) return null;
+        const updated = { ...prev, role: "resident" as const };
+        try {
+          localStorage.setItem(
+            "brgy_auth_session",
+            JSON.stringify({ user: updated, timestamp: Date.now() }),
+          );
+        } catch {}
+        return updated;
+      });
+      showToast(
+        "Your administrator privileges have been revoked. Switched to Resident view.",
+      );
+      setActive((currentTab) => {
+        if (
+          currentTab === "users" ||
+          currentTab === "settings" ||
+          currentTab === "incidents"
+        ) {
+          return "announcements";
+        }
+        return currentTab;
+      });
     }
-  }, [promotedAdmins, user?.email]);
+  }, [promotedAdmins, user?.email, user?.role]);
 
   const activeNotifications: LiveNotification[] = useMemo(() => {
     if (!user) return [];
@@ -5603,7 +5698,13 @@ export default function App() {
             onPendingChange={setPendingResidents}
             onToast={showToast}
             currentUser={user}
-            onPromotedAdminsChange={setPromotedAdmins}
+            onPromotedAdminsChange={(newList) => {
+              setPromotedAdmins(newList);
+              notifyRolesChange(newList);
+            }}
+            onUserRoleChange={(newRole) => {
+              setUser((prev) => (prev ? { ...prev, role: newRole } : null));
+            }}
           />
         )}
         {active === "settings" && isAdmin && (
@@ -7587,10 +7688,12 @@ function LoginView({
         return;
       }
       const name = profile.full_name || data.user.email || "User";
+      const finalEmail = (data.user.email ?? cleanEmail).toLowerCase().trim();
+      const isAdm = isRootMasterAdmin(finalEmail) || isPromotedAdmin(finalEmail);
       const accountObj: Account = {
         id: data.user.id,
         email: data.user.email ?? "",
-        role: profile.role as "admin" | "resident",
+        role: isAdm ? "admin" : "resident",
         name,
         initials: getInitials(name),
       };
@@ -12557,12 +12660,14 @@ function ResidentsPage({
   onToast,
   currentUser,
   onPromotedAdminsChange,
+  onUserRoleChange,
 }: {
   pendingCount: number;
   onPendingChange: (count: number) => void;
   onToast: (msg: string) => void;
   currentUser?: Account | null;
   onPromotedAdminsChange?: (emails: string[]) => void;
+  onUserRoleChange?: (newRole: "admin" | "resident") => void;
 }) {
   const [residents, setResidents] = useState<ResidentRecord[]>(() => {
     try {
@@ -13336,90 +13441,118 @@ function ResidentsPage({
   }
 
   async function handlePromoteToAdmin(residentId: string) {
-    // Find the email of the resident being promoted
     const targetResident = residents.find((r) => r.id === residentId);
+    const targetEmail = (
+      targetResident?.email ||
+      (selected?.id === residentId ? selected.email : "")
+    )
+      ?.toLowerCase()
+      .trim();
+
     try {
-      const { error } = await supabase
+      await supabase
         .from("accounts")
         .update({ role: "admin" })
         .eq("id", residentId);
-      if (error) throw error;
-      setResidents((prev) =>
-        prev.map((r) => (r.id === residentId ? { ...r, role: "admin" } : r)),
-      );
-      if (selected?.id === residentId) {
-        setSelected((prev) => (prev ? { ...prev, role: "admin" } : null));
+
+      if (targetEmail) {
+        await supabase
+          .from("accounts")
+          .update({ role: "admin" })
+          .eq("email", targetEmail);
       }
-      // Also update barangay_settings so the promoted user's browser detects the role
-      // change via the promotedAdmins state even before their next login
-      if (targetResident?.email) {
-        const newList = await syncPromotedAdminEmail(
-          targetResident.email,
-          true,
-        );
-        onPromotedAdminsChange?.(newList);
-      }
-      onToast("Resident promoted to Administrator! 👑");
     } catch (err: any) {
-      console.error("Promote error:", err);
-      setResidents((prev) =>
-        prev.map((r) => (r.id === residentId ? { ...r, role: "admin" } : r)),
-      );
-      if (selected?.id === residentId) {
-        setSelected((prev) => (prev ? { ...prev, role: "admin" } : null));
-      }
-      // Still try to sync via settings even if accounts update failed
-      if (targetResident?.email) {
-        const newList = await syncPromotedAdminEmail(
-          targetResident.email,
-          true,
-        );
-        onPromotedAdminsChange?.(newList);
-      }
-      onToast("Resident promoted to Administrator.");
+      console.warn("Promote error:", err);
     }
+
+    setResidents((prev) => {
+      const updated = prev.map((r) =>
+        r.id === residentId ? { ...r, role: "admin" as const } : r,
+      );
+      try {
+        localStorage.setItem("brgy_residents_cache", JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+
+    if (selected?.id === residentId) {
+      setSelected((prev) => (prev ? { ...prev, role: "admin" } : null));
+    }
+
+    if (targetEmail) {
+      const newList = await syncPromotedAdminEmail(targetEmail, true);
+      onPromotedAdminsChange?.(newList);
+    }
+
+    if (
+      currentUser &&
+      (String(currentUser.id) === String(residentId) ||
+        currentUser.email?.toLowerCase().trim() === targetEmail)
+    ) {
+      onUserRoleChange?.("admin");
+    }
+
+    onToast("Resident promoted to Administrator! 👑");
   }
 
   async function handleDemoteToResident(residentId: string) {
     const targetResident = residents.find((r) => r.id === residentId);
+    const targetEmail = (
+      targetResident?.email ||
+      (selected?.id === residentId ? selected.email : "")
+    )
+      ?.toLowerCase()
+      .trim();
+
+    if (isRootMasterAdmin(targetEmail)) {
+      onToast("Master Administrator account cannot be demoted.");
+      return;
+    }
+
     try {
-      const { error } = await supabase
+      await supabase
         .from("accounts")
         .update({ role: "resident" })
         .eq("id", residentId);
-      if (error) throw error;
-      setResidents((prev) =>
-        prev.map((r) => (r.id === residentId ? { ...r, role: "resident" } : r)),
-      );
-      if (selected?.id === residentId) {
-        setSelected((prev) => (prev ? { ...prev, role: "resident" } : null));
+
+      if (targetEmail) {
+        await supabase
+          .from("accounts")
+          .update({ role: "resident" })
+          .eq("email", targetEmail);
       }
-      // Remove from promoted admins list in barangay_settings
-      if (targetResident?.email) {
-        const newList = await syncPromotedAdminEmail(
-          targetResident.email,
-          false,
-        );
-        onPromotedAdminsChange?.(newList);
-      }
-      onToast("Admin privileges revoked. Account demoted to Resident.");
     } catch (err: any) {
-      console.error("Demote error:", err);
-      setResidents((prev) =>
-        prev.map((r) => (r.id === residentId ? { ...r, role: "resident" } : r)),
-      );
-      if (selected?.id === residentId) {
-        setSelected((prev) => (prev ? { ...prev, role: "resident" } : null));
-      }
-      if (targetResident?.email) {
-        const newList = await syncPromotedAdminEmail(
-          targetResident.email,
-          false,
-        );
-        onPromotedAdminsChange?.(newList);
-      }
-      onToast("Account demoted to Resident.");
+      console.warn("Demote error:", err);
     }
+
+    setResidents((prev) => {
+      const updated = prev.map((r) =>
+        r.id === residentId ? { ...r, role: "resident" as const } : r,
+      );
+      try {
+        localStorage.setItem("brgy_residents_cache", JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+
+    if (selected?.id === residentId) {
+      setSelected((prev) => (prev ? { ...prev, role: "resident" } : null));
+    }
+
+    if (targetEmail) {
+      const newList = await syncPromotedAdminEmail(targetEmail, false);
+      onPromotedAdminsChange?.(newList);
+    }
+
+    if (
+      currentUser &&
+      (String(currentUser.id) === String(residentId) ||
+        currentUser.email?.toLowerCase().trim() === targetEmail)
+    ) {
+      onUserRoleChange?.("resident");
+    }
+
+    onToast("Admin privileges revoked. Account demoted to Resident.");
   }
 
   async function handleReactivate(residentId: string) {
@@ -14986,7 +15119,8 @@ function ResidentsPage({
                           >
                             <Icon name="shield" size={14} /> Promote to Admin
                           </button>
-                        ) : selected.role === "admin" ? (
+                        ) : selected.role === "admin" &&
+                          !isRootMasterAdmin(selected.email) ? (
                           <button
                             className="btn-sm-action warning"
                             style={{
