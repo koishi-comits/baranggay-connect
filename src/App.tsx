@@ -2381,8 +2381,6 @@ export default function App() {
       });
     } catch {}
   }
-  const [printingRequest, setPrintingRequest] =
-    useState<DocumentRequest | null>(null);
   const [viewingRequest, setViewingRequest] = useState<DocumentRequest | null>(
     null,
   );
@@ -3768,71 +3766,6 @@ export default function App() {
     }
   }
 
-  function handlePrintAnnouncement(post: Announcement) {
-    const printWindow = window.open("", "_blank");
-    if (!printWindow) {
-      showToast("Please allow popups to print official bulletin.");
-      return;
-    }
-    const html = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>Official Barangay Advisory - ${post.title}</title>
-          <style>
-            body { font-family: 'Times New Roman', serif; padding: 40px; color: #111; max-width: 800px; margin: auto; }
-            .header { text-align: center; border-bottom: 3px double #333; padding-bottom: 16px; margin-bottom: 24px; }
-            .header h4 { margin: 0; font-size: 13px; font-weight: normal; text-transform: uppercase; letter-spacing: 1px; }
-            .header h2 { margin: 6px 0; font-size: 22px; text-transform: uppercase; }
-            .header h3 { margin: 0; font-size: 15px; color: #444; }
-            .badge { display: inline-block; background: #eee; padding: 4px 12px; font-size: 12px; font-weight: bold; text-transform: uppercase; margin-bottom: 15px; border-radius: 4px; }
-            h1 { font-size: 24px; margin-top: 10px; color: #0c3829; }
-            .meta { background: #f9f9f9; border-left: 4px solid #0c3829; padding: 12px 16px; margin: 20px 0; font-size: 14px; }
-            .meta strong { display: inline-block; width: 100px; }
-            .body { font-size: 16px; line-height: 1.8; margin: 25px 0; white-space: pre-wrap; }
-            .footer { margin-top: 60px; display: flex; justify-content: space-between; }
-            .signature-block { text-align: center; width: 220px; }
-            .signature-line { border-top: 1px solid #000; margin-top: 50px; padding-top: 5px; font-weight: bold; }
-            @media print {
-              body { padding: 20px; }
-            }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <h4>Republic of the Philippines · City Government</h4>
-            <h2>${barangay.name || "Barangay San Isidro"}</h2>
-            <h3>Office of the Punong Barangay</h3>
-            <p style="margin: 4px 0 0; font-size: 12px; color: #555;">${barangay.address} · Hotline: ${barangay.phone}</p>
-          </div>
-          <div class="badge">${post.tag}</div>
-          <h1>${post.title}</h1>
-          <div class="meta">
-            <div><strong>Date / Time:</strong> ${post.accentText}</div>
-            <div><strong>Venue:</strong> ${post.accent}</div>
-            <div><strong>Issued By:</strong> ${post.author}</div>
-            <div><strong>Posted On:</strong> ${post.time}</div>
-          </div>
-          <div class="body">${post.body}</div>
-          <div class="footer">
-            <div class="signature-block">
-              <div>Attested by:</div>
-              <div class="signature-line">Barangay Secretary</div>
-            </div>
-            <div class="signature-block">
-              <div>Approved by:</div>
-              <div class="signature-line">${barangay.captain || "Hon. Roberto Gomez"}<br><small>Punong Barangay</small></div>
-            </div>
-          </div>
-          <script>
-            window.onload = function() { window.print(); }
-          </script>
-        </body>
-      </html>
-    `;
-    printWindow.document.write(html);
-    printWindow.document.close();
-  }
 
   function handleAddComment(postId: number) {
     if (!commentInput.trim()) return;
@@ -5167,16 +5100,6 @@ export default function App() {
                                       announcement
                                     </button>
                                     <button
-                                      className="dropdown-item"
-                                      onClick={() => {
-                                        handlePrintAnnouncement(post);
-                                        setAnnouncementMoreMenu(null);
-                                      }}
-                                    >
-                                      <Icon name="document" size={14} /> Print
-                                      bulletin
-                                    </button>
-                                    <button
                                       className="dropdown-item danger"
                                       onClick={() => {
                                         setDeleteAnnouncementItem(post);
@@ -5452,7 +5375,6 @@ export default function App() {
                 setActiveThread(email);
                 setActive("messages");
               }}
-              onPrintCertificate={(req) => setPrintingRequest(req)}
               onViewDetails={(req) => setViewingRequest(req)}
             />
           ) : (
@@ -5472,7 +5394,6 @@ export default function App() {
                 );
                 setActive("messages");
               }}
-              onPrintCertificate={(req) => setPrintingRequest(req)}
               onViewDetails={(req) => setViewingRequest(req)}
             />
           ))}
@@ -6960,13 +6881,6 @@ export default function App() {
                 <Icon name="send" size={13} /> Share
               </button>
 
-              <button
-                className="post-action-btn"
-                onClick={() => handlePrintAnnouncement(viewAnnouncementItem)}
-              >
-                <Icon name="document" size={13} /> Print Notice
-              </button>
-
               {isAdmin && (
                 <div
                   style={{ marginLeft: "auto", display: "flex", gap: "6px" }}
@@ -7360,21 +7274,10 @@ export default function App() {
         </Modal>
       )}
 
-      {printingRequest && (
-        <CertificateModal
-          request={printingRequest}
-          close={() => setPrintingRequest(null)}
-        />
-      )}
-
       {viewingRequest && (
         <DocumentDetailsModal
           request={viewingRequest}
           close={() => setViewingRequest(null)}
-          onPrint={(req: DocumentRequest) => {
-            setViewingRequest(null);
-            setPrintingRequest(req);
-          }}
           onOpenChat={(req: DocumentRequest) => {
             setViewingRequest(null);
             setPresetMessageDraft(
@@ -10003,13 +9906,11 @@ function CalendarView({
 function DocumentDetailsModal({
   request,
   close,
-  onPrint,
   onOpenChat,
   onMarkReceived,
 }: {
   request: DocumentRequest;
   close: () => void;
-  onPrint?: (req: DocumentRequest) => void;
   onOpenChat?: (req: DocumentRequest) => void;
   onMarkReceived?: (req: DocumentRequest) => void;
 }) {
@@ -10053,8 +9954,6 @@ function DocumentDetailsModal({
     Received: "verified",
     Declined: "declined",
   };
-
-  const canPrint = isApproved || isReceived;
 
   return (
     <Modal title="Document Request Details" close={close} maxWidth={620}>
@@ -10391,267 +10290,9 @@ function DocumentDetailsModal({
           </div>
 
           <div style={{ display: "flex", gap: "8px" }}>
-            {canPrint && onPrint && (
-              <button
-                type="button"
-                className="primary-button"
-                style={{ display: "flex", alignItems: "center", gap: "6px" }}
-                onClick={() => onPrint(request)}
-              >
-                <Icon name="document" size={16} /> Print / Preview Certificate
-              </button>
-            )}
             <button type="button" className="secondary-button" onClick={close}>
               Close
             </button>
-          </div>
-        </div>
-      </div>
-    </Modal>
-  );
-}
-
-function CertificateModal({
-  request,
-  close,
-}: {
-  request: DocumentRequest;
-  close: () => void;
-}) {
-  const handlePrint = () => {
-    window.print();
-  };
-
-  const today = new Date();
-  const dayStr = today.getDate().toString();
-  const monthStr = today.toLocaleString("en-US", { month: "long" });
-  const yearStr = today.getFullYear().toString();
-
-  let certTitle = "BARANGAY CLEARANCE";
-  let bodyContent = (
-    <>
-      <p className="cert-body">
-        This is to certify that{" "}
-        <strong>{request.residentName.toUpperCase()}</strong>, of legal age,
-        Filipino citizen, and a bona fide resident of{" "}
-        <strong>{request.residentAddress}</strong>, {request.purok}, Barangay
-        San Isidro, City of Pasig, is known to be a person of good moral
-        character and a law-abiding member of the community.
-      </p>
-      <p className="cert-body">
-        This further certifies that according to the records on file in this
-        office, the subject individual has <strong>NO DEROGATORY RECORD</strong>{" "}
-        nor any pending administrative or criminal complaint filed against them
-        as of this date.
-      </p>
-      <p className="cert-body">
-        This clearance is being issued upon the request of the interested party
-        for the purpose of: <strong>{request.purpose.toUpperCase()}</strong>,
-        and for whatever legal purpose it may serve.
-      </p>
-    </>
-  );
-
-  const docLower = request.docType.toLowerCase();
-  if (docLower.includes("indigency")) {
-    certTitle = "CERTIFICATE OF INDIGENCY";
-    bodyContent = (
-      <>
-        <p className="cert-body">
-          This is to certify that{" "}
-          <strong>{request.residentName.toUpperCase()}</strong>, of legal age,
-          Filipino, and residing at <strong>{request.residentAddress}</strong>,{" "}
-          {request.purok}, Barangay San Isidro, belongs to the{" "}
-          <strong>indigent / low-income families</strong> of this barangay.
-        </p>
-        <p className="cert-body">
-          This certification is issued upon the request of the above-named
-          person for the purpose of availing:{" "}
-          <strong>{request.purpose.toUpperCase()}</strong> (e.g., Financial,
-          Medical, Educational, or Legal Assistance from government or private
-          entities).
-        </p>
-      </>
-    );
-  } else if (docLower.includes("residency")) {
-    certTitle = "CERTIFICATE OF RESIDENCY";
-    bodyContent = (
-      <>
-        <p className="cert-body">
-          This is to certify that{" "}
-          <strong>{request.residentName.toUpperCase()}</strong>, of legal age,
-          Filipino, is an established and bona fide resident of{" "}
-          <strong>{request.residentAddress}</strong>, {request.purok}, Barangay
-          San Isidro, City of Pasig.
-        </p>
-        <p className="cert-body">
-          Records in this office confirm that the subject individual has
-          maintained domicile and residence within the territorial jurisdiction
-          of this barangay in good standing.
-        </p>
-        <p className="cert-body">
-          This certification is issued upon request of the interested party for
-          the purpose of: <strong>{request.purpose.toUpperCase()}</strong>.
-        </p>
-      </>
-    );
-  } else if (docLower.includes("business")) {
-    certTitle = "BARANGAY BUSINESS CLEARANCE";
-    bodyContent = (
-      <>
-        <p className="cert-body">
-          This is to certify that the business enterprise registered under the
-          ownership / management of{" "}
-          <strong>{request.residentName.toUpperCase()}</strong>, located at{" "}
-          <strong>{request.residentAddress}</strong>, {request.purok}, Barangay
-          San Isidro, has complied with the requirements and ordinances of this
-          Barangay.
-        </p>
-        <p className="cert-body">
-          This Business Clearance is granted for the purpose of:{" "}
-          <strong>{request.purpose.toUpperCase()}</strong>, subject to renewal
-          in accordance with applicable municipal laws.
-        </p>
-      </>
-    );
-  } else if (docLower.includes("moral")) {
-    certTitle = "CERTIFICATE OF GOOD MORAL CHARACTER";
-    bodyContent = (
-      <>
-        <p className="cert-body">
-          This is to certify that{" "}
-          <strong>{request.residentName.toUpperCase()}</strong>, residing at{" "}
-          <strong>{request.residentAddress}</strong>, {request.purok}, Barangay
-          San Isidro, is known to this office to be a person of good moral
-          character, exemplary conduct, and peace-loving citizen.
-        </p>
-        <p className="cert-body">
-          This certification is issued upon their request for the purpose of:{" "}
-          <strong>{request.purpose.toUpperCase()}</strong>.
-        </p>
-      </>
-    );
-  }
-
-  return (
-    <Modal
-      title={`Official Certificate Preview — ${request.trackingNo}`}
-      close={close}
-      maxWidth={760}
-    >
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "16px",
-          flexWrap: "wrap",
-          gap: "10px",
-        }}
-      >
-        <div>
-          <span
-            className="status approved"
-            style={{
-              fontWeight: 700,
-              fontSize: "12px",
-              padding: "4px 10px",
-              borderRadius: "12px",
-            }}
-          >
-            Official Electronic Copy
-          </span>
-          <span
-            style={{ fontSize: "12px", color: "#64748b", marginLeft: "10px" }}
-          >
-            Control No: <strong>{request.controlNo}</strong>
-          </span>
-        </div>
-        <div style={{ display: "flex", gap: "8px" }}>
-          <button
-            className="primary-button"
-            onClick={handlePrint}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-              padding: "8px 16px",
-            }}
-          >
-            <Icon name="check" size={16} /> Print / Save PDF
-          </button>
-          <button className="ghost-button" onClick={close}>
-            Close
-          </button>
-        </div>
-      </div>
-
-      <div className="certificate-preview-shell">
-        <div className="certificate-paper">
-          <div className="certificate-watermark" />
-
-          {/* Official Letterhead */}
-          <div className="cert-header">
-            <h4>Republic of the Philippines</h4>
-            <h4>Province of Metro Manila · City of Pasig</h4>
-            <h2>BARANGAY SAN ISIDRO</h2>
-            <p>Office of the Punong Barangay</p>
-          </div>
-
-          {/* Certificate Title */}
-          <div className="cert-title-block">
-            <h1>{certTitle}</h1>
-            <div className="cert-control-num">
-              CONTROL NO: {request.controlNo} · TRACKING: {request.trackingNo}
-            </div>
-          </div>
-
-          <div className="cert-salutation">TO WHOM IT MAY CONCERN:</div>
-
-          {bodyContent}
-
-          <p className="cert-closing">
-            ISSUED this <strong>{dayStr}</strong> day of{" "}
-            <strong>
-              {monthStr} {yearStr}
-            </strong>{" "}
-            at Barangay San Isidro Hall, Pasig City, Metro Manila, Philippines.
-          </p>
-
-          {/* Official Signatures */}
-          <div className="cert-signatures">
-            <div className="cert-sig-box">
-              <div className="cert-sig-line" />
-              <strong>HON. ROBERTO V. GOMEZ</strong>
-              <small>Punong Barangay</small>
-            </div>
-            <div className="cert-sig-box">
-              <div className="cert-sig-line" />
-              <strong>TERESA S. ALCANTARA</strong>
-              <small>Barangay Secretary</small>
-            </div>
-          </div>
-
-          {/* Footer Metadata */}
-          <div className="cert-footer-meta">
-            <div>
-              <div>
-                OR No.:{" "}
-                <strong>OR-{request.trackingNo.replace("BRGY-", "")}</strong>
-              </div>
-              <div>
-                Fee: <strong>{request.fee}</strong> ({request.paymentStatus})
-              </div>
-              <div>
-                Issued:{" "}
-                <strong>
-                  {monthStr} {dayStr}, {yearStr}
-                </strong>
-              </div>
-            </div>
-            <div className="cert-official-seal-stamp">
-              ★ OFFICIAL BARANGAY SEAL ★
-            </div>
           </div>
         </div>
       </div>
@@ -10664,7 +10305,6 @@ function ResidentDocumentsPage({
   requests,
   onRequest,
   onOpenChat,
-  onPrintCertificate,
   onViewDetails,
   onDeleteRequest,
   onUpdateRequest,
@@ -10674,7 +10314,6 @@ function ResidentDocumentsPage({
   requests: DocumentRequest[];
   onRequest: () => void;
   onOpenChat: (doc: DocumentRequest) => void;
-  onPrintCertificate: (req: DocumentRequest) => void;
   onViewDetails: (req: DocumentRequest) => void;
   onDeleteRequest?: (id: string) => void;
   onUpdateRequest?: (id: string, updates: Partial<DocumentRequest>) => void;
@@ -10855,17 +10494,6 @@ function ResidentDocumentsPage({
                 <button className="row-action" onClick={() => onViewDetails(r)}>
                   Details
                 </button>
-                {(r.status === "Approved" ||
-                  r.status === "Ready for Pickup" ||
-                  r.status === "Received" ||
-                  r.status === "Released") && (
-                  <button
-                    className="row-action"
-                    onClick={() => onPrintCertificate(r)}
-                  >
-                    Print
-                  </button>
-                )}
                 {(r.status === "Approved" || r.status === "Ready for Pickup") &&
                   onUpdateRequest && (
                     <button
@@ -11021,7 +10649,6 @@ function AdminDocumentsPage({
   onUpdateRequest,
   onToast,
   onOpenChat,
-  onPrintCertificate,
   onViewDetails,
   onDeleteRequest,
 }: {
@@ -11029,7 +10656,6 @@ function AdminDocumentsPage({
   onUpdateRequest: (id: string, updates: Partial<DocumentRequest>) => void;
   onToast: (msg: string) => void;
   onOpenChat: (email: string) => void;
-  onPrintCertificate: (req: DocumentRequest) => void;
   onViewDetails: (req: DocumentRequest) => void;
   onDeleteRequest?: (id: string) => void;
 }) {
@@ -11335,14 +10961,6 @@ function AdminDocumentsPage({
                     </button>
                     <button
                       className="row-action"
-                      onClick={() => onPrintCertificate(r)}
-                      title="Print document certificate"
-                      style={{ display: "inline-flex", alignItems: "center", gap: 4 }}
-                    >
-                      <Icon name="document" size={12} /> Print
-                    </button>
-                    <button
-                      className="row-action"
                       onClick={() => {
                         setSelected(r);
                         setFeedback(r.adminFeedback || "");
@@ -11364,16 +10982,6 @@ function AdminDocumentsPage({
                     >
                       Manage
                     </button>
-                    {(r.status === "Received" || r.status === "Released") && (
-                      <button
-                        className="row-action"
-                        onClick={() => onPrintCertificate(r)}
-                        title="Print document certificate"
-                        style={{ display: "inline-flex", alignItems: "center", gap: 4 }}
-                      >
-                        <Icon name="document" size={12} /> Print
-                      </button>
-                    )}
                   </>
                 )}
                 {onDeleteRequest && (
@@ -11565,13 +11173,6 @@ function AdminDocumentsPage({
               <button
                 className="ghost-button"
                 style={{ display: "inline-flex", alignItems: "center", gap: 5 }}
-                onClick={() => onPrintCertificate(selected)}
-              >
-                <Icon name="document" size={14} /> Print Certificate
-              </button>
-              <button
-                className="ghost-button"
-                style={{ display: "inline-flex", alignItems: "center", gap: 5 }}
                 onClick={() => {
                   onOpenChat(selected.residentEmail);
                   setSelected(null);
@@ -11598,13 +11199,6 @@ function AdminDocumentsPage({
           {(selected.status === "Received" ||
             selected.status === "Released") && (
             <div className="modal-actions split-actions">
-              <button
-                className="ghost-button"
-                style={{ display: "inline-flex", alignItems: "center", gap: 5 }}
-                onClick={() => onPrintCertificate(selected)}
-              >
-                <Icon name="document" size={14} /> Print Certificate
-              </button>
               <button
                 className="ghost-button"
                 style={{ display: "inline-flex", alignItems: "center", gap: 5 }}
@@ -19100,7 +18694,7 @@ function IncidentsPage({
                             <button
                               className="btn-sm-action secondary"
                               onClick={() => setKpSummonItem(item)}
-                              title="Generate & print official KP Form 9 Summon"
+                              title="View official KP Form 9 Summon"
                               style={{ padding: "6px 8px" }}
                             >
                               <Icon name="document" size={12} />
@@ -20109,7 +19703,7 @@ function IncidentsPage({
             className="modal-actions"
             style={{
               display: "flex",
-              justifyContent: "space-between",
+              justifyContent: "flex-end",
               marginTop: "16px",
             }}
           >
@@ -20118,9 +19712,6 @@ function IncidentsPage({
               onClick={() => setKpSummonItem(null)}
             >
               Close
-            </button>
-            <button className="primary-button" onClick={() => window.print()}>
-              <Icon name="document" size={14} /> Print Official Notice (Patawag)
             </button>
           </div>
         </Modal>
