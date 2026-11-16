@@ -998,10 +998,7 @@ export function cleanLegacyPlaceholderCaches() {
           const filtered = list.filter(
             (e: any) => ![1, 2, 3].includes(Number(e.id)),
           );
-          localStorage.setItem(
-            "brgy_events_cache",
-            JSON.stringify(filtered),
-          );
+          localStorage.setItem("brgy_events_cache", JSON.stringify(filtered));
         }
       } catch {}
     }
@@ -1287,7 +1284,10 @@ export function parseDbDocRequest(row: any): DocumentRequest {
     paymentStatus:
       (meta.paymentStatus as PaymentStatus) ||
       (row.status === "Released" ? "Paid at Counter" : "Unpaid"),
-    status: (row.status as RequestStatus) || "Pending",
+    status:
+      row.status === "Ready for Pickup" || row.status === "Released"
+        ? "Approved"
+        : (row.status as RequestStatus) || "Pending",
     dateFiled:
       row.date ||
       (row.created_at
@@ -3538,10 +3538,7 @@ export default function App() {
       if (inserted && !error) {
         const parsed = parseDbAnnouncement(inserted);
         setAnnouncements((prev) => {
-          const next = [
-            parsed,
-            ...prev.filter((a) => a.id !== parsed.id),
-          ];
+          const next = [parsed, ...prev.filter((a) => a.id !== parsed.id)];
           notifyAnnouncementChange(next);
           return next;
         });
@@ -3940,10 +3937,7 @@ export default function App() {
 
     // 4. Delete all messages for this email in Supabase
     try {
-      await supabase
-        .from("messages")
-        .delete()
-        .eq("resident_email", cleanEmail);
+      await supabase.from("messages").delete().eq("resident_email", cleanEmail);
     } catch (err) {
       console.warn("Supabase delete thread messages error:", err);
     }
@@ -4253,7 +4247,9 @@ export default function App() {
         } catch {}
         return updated;
       });
-      showToast("👑 Your account was granted Barangay Administrator privileges!");
+      showToast(
+        "👑 Your account was granted Barangay Administrator privileges!",
+      );
     } else if (!hasAdminRights && user.role === "admin" && !isRoot) {
       setUser((prev) => {
         if (!prev) return null;
@@ -4334,25 +4330,19 @@ export default function App() {
       const myDocs = requests.filter(
         (r) => r.residentEmail === userEmail || r.residentId === user.id,
       );
-      const readyDoc = myDocs.find((r) => r.status === "Ready for Pickup");
+      const readyDoc = myDocs.find(
+        (r) =>
+          r.status === "Approved" ||
+          r.status === "Ready for Pickup" ||
+          r.status === "Released",
+      );
       if (readyDoc) {
         list.push({
           id: `doc-ready-${readyDoc.id}`,
-          title: "Document Ready for Pickup!",
-          body: `Your ${readyDoc.docType} (${readyDoc.trackingNo}) is signed and ready at ${readyDoc.pickupWindow || "Window 2"}.`,
+          title: "Document Approved & Ready for Pickup!",
+          body: `Your ${readyDoc.docType} (${readyDoc.trackingNo}) is approved and ready for pickup at ${readyDoc.pickupWindow || "Window 1"}.`,
           time: "Claim now",
           icon: "check",
-          targetTab: "documents",
-        });
-      }
-      const approvedDoc = myDocs.find((r) => r.status === "Approved");
-      if (approvedDoc && !readyDoc) {
-        list.push({
-          id: `doc-approved-${approvedDoc.id}`,
-          title: "Document Request Approved",
-          body: `Your ${approvedDoc.docType} was approved by the Barangay Office.`,
-          time: approvedDoc.dateFiled,
-          icon: "document",
           targetTab: "documents",
         });
       }
@@ -4517,7 +4507,8 @@ export default function App() {
                         (r) =>
                           (r.residentEmail === userEmail ||
                             r.residentId === user?.id) &&
-                          r.status === "Ready for Pickup",
+                          (r.status === "Approved" ||
+                            r.status === "Ready for Pickup"),
                       ).length > 0 && (
                         <b className="count">
                           {
@@ -4525,7 +4516,8 @@ export default function App() {
                               (r) =>
                                 (r.residentEmail === userEmail ||
                                   r.residentId === user?.id) &&
-                                r.status === "Ready for Pickup",
+                                (r.status === "Approved" ||
+                                  r.status === "Ready for Pickup"),
                             ).length
                           }
                         </b>
@@ -5505,9 +5497,7 @@ export default function App() {
               user={user}
               thread={threads[userEmail] ?? []}
               onSend={(text) => sendMessage(userEmail, text, "resident")}
-              onDeleteMessage={(dbId, ts) =>
-                deleteMessage(userEmail, dbId, ts)
-              }
+              onDeleteMessage={(dbId, ts) => deleteMessage(userEmail, dbId, ts)}
               onClearThread={() => clearThread(userEmail)}
               presetDraft={presetMessageDraft}
               onClearPresetDraft={() => setPresetMessageDraft("")}
@@ -7689,7 +7679,8 @@ function LoginView({
       }
       const name = profile.full_name || data.user.email || "User";
       const finalEmail = (data.user.email ?? cleanEmail).toLowerCase().trim();
-      const isAdm = isRootMasterAdmin(finalEmail) || isPromotedAdmin(finalEmail);
+      const isAdm =
+        isRootMasterAdmin(finalEmail) || isPromotedAdmin(finalEmail);
       const accountObj: Account = {
         id: data.user.id,
         email: data.user.email ?? "",
@@ -8665,7 +8656,8 @@ function CalendarView({
   const [searchQuery, setSearchQuery] = useState("");
   const [formOpen, setFormOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<CommunityEvent | null>(null);
-  const [deleteEventTarget, setDeleteEventTarget] = useState<CommunityEvent | null>(null);
+  const [deleteEventTarget, setDeleteEventTarget] =
+    useState<CommunityEvent | null>(null);
 
   const [form, setForm] = useState({
     title: "",
@@ -9890,7 +9882,9 @@ function CalendarView({
           title="Delete Calendar Event"
           close={() => setDeleteEventTarget(null)}
         >
-          <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "14px" }}
+          >
             <div
               style={{
                 display: "flex",
@@ -9927,14 +9921,31 @@ function CalendarView({
                 >
                   Remove Event
                 </h4>
-                <p style={{ margin: 0, fontSize: "12.5px", color: "#b91c1c", lineHeight: 1.4 }}>
-                  Are you sure you want to remove <strong>"{deleteEventTarget.title}"</strong> from the community calendar?
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: "12.5px",
+                    color: "#b91c1c",
+                    lineHeight: 1.4,
+                  }}
+                >
+                  Are you sure you want to remove{" "}
+                  <strong>"{deleteEventTarget.title}"</strong> from the
+                  community calendar?
                 </p>
               </div>
             </div>
 
-            <p style={{ margin: 0, fontSize: "12px", color: "#64748b", lineHeight: 1.5 }}>
-              This action cannot be undone. Residents will no longer see this scheduled event in their calendar.
+            <p
+              style={{
+                margin: 0,
+                fontSize: "12px",
+                color: "#64748b",
+                lineHeight: 1.5,
+              }}
+            >
+              This action cannot be undone. Residents will no longer see this
+              scheduled event in their calendar.
             </p>
 
             <div className="modal-actions" style={{ marginTop: "8px" }}>
@@ -9950,8 +9961,10 @@ function CalendarView({
                 className="danger-button"
                 onClick={() => {
                   onDeleteEvent(deleteEventTarget.id);
-                  if (viewingEvent?.id === deleteEventTarget.id) setViewingEvent(null);
-                  if (editingEvent?.id === deleteEventTarget.id) setFormOpen(false);
+                  if (viewingEvent?.id === deleteEventTarget.id)
+                    setViewingEvent(null);
+                  if (editingEvent?.id === deleteEventTarget.id)
+                    setFormOpen(false);
                   setDeleteEventTarget(null);
                 }}
               >
@@ -9986,47 +9999,31 @@ function DocumentDetailsModal({
     setTimeout(() => setCopied(false), 2000);
   }
 
-  const statusStepMap: Record<string, number> = {
-    Pending: 2,
-    Approved: 3,
-    "Ready for Pickup": 4,
-    Released: 5,
-    Declined: 2,
-  };
-
-  const currentStep = statusStepMap[request.status] || 1;
   const isDeclined = request.status === "Declined";
+  const isApproved =
+    request.status === "Approved" ||
+    request.status === "Ready for Pickup" ||
+    request.status === "Released";
 
-  const progressPercent = isDeclined
-    ? "25%"
-    : request.status === "Pending"
-      ? "25%"
-      : request.status === "Approved"
-        ? "50%"
-        : request.status === "Ready for Pickup"
-          ? "75%"
-          : "100%";
+  const currentStep = isDeclined ? 2 : isApproved ? 3 : 2;
+
+  const progressPercent = isDeclined ? "50%" : isApproved ? "100%" : "50%";
 
   const steps = [
     { num: 1, label: "Filed" },
     { num: 2, label: isDeclined ? "Declined" : "Review" },
-    { num: 3, label: "Approved" },
-    { num: 4, label: "Ready for Pickup" },
-    { num: 5, label: "Released" },
+    { num: 3, label: "Approved & Ready for Pickup" },
   ];
 
   const statusCssMap: Record<string, string> = {
     Pending: "pending",
     Approved: "approved",
-    "Ready for Pickup": "ready",
-    Released: "verified",
+    "Ready for Pickup": "approved",
+    Released: "approved",
     Declined: "declined",
   };
 
-  const canPrint =
-    request.status === "Approved" ||
-    request.status === "Ready for Pickup" ||
-    request.status === "Released";
+  const canPrint = isApproved;
 
   return (
     <Modal title="Document Request Details" close={close} maxWidth={620}>
@@ -10159,7 +10156,7 @@ function DocumentDetailsModal({
         </div>
 
         {/* Ready for pickup notification banner */}
-        {request.status === "Ready for Pickup" && (
+        {isApproved && (
           <div
             className="doc-admin-note ready-note"
             style={{ display: "flex", gap: "10px", alignItems: "center" }}
@@ -10167,7 +10164,7 @@ function DocumentDetailsModal({
             <Icon name="check" size={20} />
             <div>
               <strong>
-                Ready for pickup at {request.pickupWindow || "Window 1"}!
+                Approved & Ready for pickup at {request.pickupWindow || "Window 1"}!
               </strong>
               <div style={{ fontSize: "11px", marginTop: "2px" }}>
                 Please present a valid government-issued ID and pay any
@@ -10600,7 +10597,8 @@ function ResidentDocumentsPage({
 }) {
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
-  const [deleteDocTarget, setDeleteDocTarget] = useState<DocumentRequest | null>(null);
+  const [deleteDocTarget, setDeleteDocTarget] =
+    useState<DocumentRequest | null>(null);
 
   const filtered = requests.filter((r) => {
     const q = search.toLowerCase();
@@ -10609,15 +10607,22 @@ function ResidentDocumentsPage({
       r.docType.toLowerCase().includes(q) ||
       r.purpose.toLowerCase().includes(q) ||
       r.trackingNo.toLowerCase().includes(q);
-    const matchStatus = filterStatus === "all" || r.status === filterStatus;
+    const matchStatus =
+      filterStatus === "all"
+        ? true
+        : filterStatus === "Approved"
+          ? r.status === "Approved" ||
+            r.status === "Ready for Pickup" ||
+            r.status === "Released"
+          : r.status === filterStatus;
     return matchSearch && matchStatus;
   });
 
   const statusCssMap: Record<string, string> = {
     Pending: "pending",
     Approved: "approved",
-    "Ready for Pickup": "ready",
-    Released: "verified",
+    "Ready for Pickup": "approved",
+    Released: "approved",
     Declined: "declined",
   };
 
@@ -10638,26 +10643,31 @@ function ResidentDocumentsPage({
 
       {/* Summary KPI cards */}
       <div className="doc-kpi-row">
-        {(
-          [
-            "Pending",
-            "Approved",
-            "Ready for Pickup",
-            "Released",
-          ] as RequestStatus[]
-        ).map((s) => (
-          <button
-            key={s}
-            className={`doc-kpi-card${filterStatus === s ? " active" : ""}`}
-            onClick={() => setFilterStatus(filterStatus === s ? "all" : s)}
-          >
-            <span className={`doc-kpi-dot ${statusCssMap[s]}`} />
-            <span className="doc-kpi-label">{s}</span>
-            <span className="doc-kpi-count">
-              {requests.filter((r) => r.status === s).length}
-            </span>
-          </button>
-        ))}
+        {(["Pending", "Approved", "Declined"] as const).map((s) => {
+          const count = requests.filter((r) => {
+            if (s === "Approved") {
+              return (
+                r.status === "Approved" ||
+                r.status === "Ready for Pickup" ||
+                r.status === "Released"
+              );
+            }
+            return r.status === s;
+          }).length;
+          return (
+            <button
+              key={s}
+              className={`doc-kpi-card${filterStatus === s ? " active" : ""}`}
+              onClick={() => setFilterStatus(filterStatus === s ? "all" : s)}
+            >
+              <span className={`doc-kpi-dot ${statusCssMap[s] || "approved"}`} />
+              <span className="doc-kpi-label">
+                {s === "Approved" ? "Approved" : s}
+              </span>
+              <span className="doc-kpi-count">{count}</span>
+            </button>
+          );
+        })}
       </div>
 
       <section className="table-card request-table">
@@ -10717,11 +10727,30 @@ function ResidentDocumentsPage({
                 {r.purpose}
               </span>
               <span>
-                <b
-                  className={`status ${statusCssMap[r.status] || r.status.toLowerCase()}`}
-                >
-                  {r.status}
-                </b>
+                {r.status === "Approved" ||
+                r.status === "Ready for Pickup" ||
+                r.status === "Released" ? (
+                  <div>
+                    <b className="status approved">Approved</b>
+                    <small
+                      style={{
+                        display: "block",
+                        color: "#166534",
+                        fontSize: "11px",
+                        marginTop: "2px",
+                        fontWeight: 600,
+                      }}
+                    >
+                      Ready for pickup ({r.pickupWindow || "Window 1"})
+                    </small>
+                  </div>
+                ) : (
+                  <b
+                    className={`status ${statusCssMap[r.status] || r.status.toLowerCase()}`}
+                  >
+                    {r.status}
+                  </b>
+                )}
               </span>
               <span style={{ fontSize: "13px" }}>{r.dateFiled}</span>
               <span style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
@@ -10763,7 +10792,9 @@ function ResidentDocumentsPage({
           title="Remove Document Request"
           close={() => setDeleteDocTarget(null)}
         >
-          <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "14px" }}
+          >
             <div
               style={{
                 display: "flex",
@@ -10790,17 +10821,42 @@ function ResidentDocumentsPage({
                 <Icon name="trash" size={20} />
               </div>
               <div>
-                <h4 style={{ margin: "0 0 4px", fontSize: "14px", color: "#991b1b", fontWeight: 700 }}>
+                <h4
+                  style={{
+                    margin: "0 0 4px",
+                    fontSize: "14px",
+                    color: "#991b1b",
+                    fontWeight: 700,
+                  }}
+                >
                   Cancel Request?
                 </h4>
-                <p style={{ margin: 0, fontSize: "12.5px", color: "#b91c1c", lineHeight: 1.4 }}>
-                  Are you sure you want to remove your document request for <strong>{deleteDocTarget.docType}</strong> ({deleteDocTarget.trackingNo})?
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: "12.5px",
+                    color: "#b91c1c",
+                    lineHeight: 1.4,
+                  }}
+                >
+                  Are you sure you want to remove your document request for{" "}
+                  <strong>{deleteDocTarget.docType}</strong> (
+                  {deleteDocTarget.trackingNo})?
                 </p>
               </div>
             </div>
 
-            <p style={{ margin: 0, fontSize: "12px", color: "#64748b", lineHeight: 1.5 }}>
-              This request will be removed from your tracking history. If you still need this certificate, you will have to submit a new application.
+            <p
+              style={{
+                margin: 0,
+                fontSize: "12px",
+                color: "#64748b",
+                lineHeight: 1.5,
+              }}
+            >
+              This request will be removed from your tracking history. If you
+              still need this certificate, you will have to submit a new
+              application.
             </p>
 
             <div className="modal-actions" style={{ marginTop: "8px" }}>
@@ -10853,7 +10909,8 @@ function AdminDocumentsPage({
   const [selected, setSelected] = useState<DocumentRequest | null>(null);
   const [feedback, setFeedback] = useState("");
   const [pickupWindow, setPickupWindow] = useState("Window 1");
-  const [deleteDocTarget, setDeleteDocTarget] = useState<DocumentRequest | null>(null);
+  const [deleteDocTarget, setDeleteDocTarget] =
+    useState<DocumentRequest | null>(null);
 
   const statusCssMap: Record<string, string> = {
     Pending: "pending",
@@ -10871,7 +10928,14 @@ function AdminDocumentsPage({
       r.docType.toLowerCase().includes(q) ||
       r.purpose.toLowerCase().includes(q) ||
       r.trackingNo.toLowerCase().includes(q);
-    const matchStatus = filterStatus === "all" || r.status === filterStatus;
+    const matchStatus =
+      filterStatus === "all"
+        ? true
+        : filterStatus === "Approved"
+          ? r.status === "Approved" ||
+            r.status === "Ready for Pickup" ||
+            r.status === "Released"
+          : r.status === filterStatus;
     return matchSearch && matchStatus;
   });
 
@@ -10879,21 +10943,19 @@ function AdminDocumentsPage({
 
   function decide(newStatus: RequestStatus) {
     if (!selected) return;
+    const finalStatus = newStatus === "Declined" ? "Declined" : "Approved";
+    const finalWindow = pickupWindow || selected.pickupWindow || "Window 1";
     const updates: Partial<DocumentRequest> = {
-      status: newStatus,
+      status: finalStatus,
       adminFeedback: feedback.trim() || undefined,
+      pickupWindow: finalWindow,
       updatedAt: new Date().toISOString(),
     };
-    if (newStatus === "Ready for Pickup") updates.pickupWindow = pickupWindow;
-    if (newStatus === "Released")
-      updates.releasedDate = new Date().toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      });
     onUpdateRequest(selected.id, updates);
     onToast(
-      `Request ${newStatus === "Declined" ? "declined" : 'updated to "' + newStatus + '"'}. Resident notified.`,
+      finalStatus === "Declined"
+        ? "Request declined. Resident notified."
+        : `Request approved & ready for pickup at ${finalWindow}! Resident notified. 📋✅`,
     );
     setSelected(null);
     setFeedback("");
@@ -10927,27 +10989,32 @@ function AdminDocumentsPage({
 
       {/* KPI row */}
       <div className="doc-kpi-row">
-        {(
-          [
-            "Pending",
-            "Approved",
-            "Ready for Pickup",
-            "Released",
-            "Declined",
-          ] as RequestStatus[]
-        ).map((s) => (
-          <button
-            key={s}
-            className={`doc-kpi-card${filterStatus === s ? " active" : ""}`}
-            onClick={() => setFilterStatus(filterStatus === s ? "all" : s)}
-          >
-            <span className={`doc-kpi-dot ${statusCssMap[s]}`} />
-            <span className="doc-kpi-label">{s}</span>
-            <span className="doc-kpi-count">
-              {requests.filter((r) => r.status === s).length}
-            </span>
-          </button>
-        ))}
+        {(["Pending", "Approved", "Declined"] as const).map((s) => {
+          const count = requests.filter((r) => {
+            if (s === "Approved") {
+              return (
+                r.status === "Approved" ||
+                r.status === "Ready for Pickup" ||
+                r.status === "Released"
+              );
+            }
+            return r.status === s;
+          }).length;
+
+          return (
+            <button
+              key={s}
+              className={`doc-kpi-card${filterStatus === s ? " active" : ""}`}
+              onClick={() => setFilterStatus(filterStatus === s ? "all" : s)}
+            >
+              <span className={`doc-kpi-dot ${statusCssMap[s] || "approved"}`} />
+              <span className="doc-kpi-label">
+                {s === "Approved" ? "Approved" : s}
+              </span>
+              <span className="doc-kpi-count">{count}</span>
+            </button>
+          );
+        })}
       </div>
 
       <section className="table-card request-table">
@@ -11030,26 +11097,92 @@ function AdminDocumentsPage({
                 {r.purpose}
               </span>
               <span>
-                <b
-                  className={`status ${statusCssMap[r.status] || r.status.toLowerCase()}`}
-                >
-                  {r.status}
-                </b>
+                {r.status === "Approved" ||
+                r.status === "Ready for Pickup" ||
+                r.status === "Released" ? (
+                  <div>
+                    <b className="status approved">Approved</b>
+                    <small
+                      style={{
+                        display: "block",
+                        color: "#166534",
+                        fontSize: "11px",
+                        marginTop: "2px",
+                        fontWeight: 600,
+                      }}
+                    >
+                      Ready for pickup ({r.pickupWindow || "Window 1"})
+                    </small>
+                  </div>
+                ) : (
+                  <b
+                    className={`status ${statusCssMap[r.status] || r.status.toLowerCase()}`}
+                  >
+                    {r.status}
+                  </b>
+                )}
               </span>
               <span style={{ fontSize: 12, color: "#798b84" }}>
                 {r.dateFiled}
               </span>
-              <span style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                <button
-                  className="row-action"
-                  onClick={() => {
-                    setSelected(r);
-                    setFeedback(r.adminFeedback || "");
-                    setPickupWindow(r.pickupWindow || "Window 1");
-                  }}
-                >
-                  {r.status === "Pending" ? "Review" : "Manage"}
-                </button>
+              <span style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
+                {r.status === "Pending" ? (
+                  <>
+                    <button
+                      className="primary-button"
+                      style={{ padding: "6px 14px", fontSize: "12px", height: "auto", display: "inline-flex", alignItems: "center", gap: 4 }}
+                      title="Instantly approve request and mark ready for pickup"
+                      onClick={() => {
+                        const win = r.pickupWindow || "Window 1";
+                        onUpdateRequest(r.id, {
+                          status: "Approved",
+                          pickupWindow: win,
+                          updatedAt: new Date().toISOString(),
+                        });
+                        onToast(
+                          `Request approved & ready for pickup at ${win}! 📋✅`,
+                        );
+                      }}
+                    >
+                      <Icon name="check" size={13} /> Approve
+                    </button>
+                    <button
+                      className="row-action"
+                      onClick={() => {
+                        setSelected(r);
+                        setFeedback(r.adminFeedback || "");
+                        setPickupWindow(r.pickupWindow || "Window 1");
+                      }}
+                    >
+                      Review
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      className="row-action"
+                      onClick={() => {
+                        setSelected(r);
+                        setFeedback(r.adminFeedback || "");
+                        setPickupWindow(r.pickupWindow || "Window 1");
+                      }}
+                    >
+                      Manage
+                    </button>
+                    {(r.status === "Approved" ||
+                      r.status === "Ready for Pickup" ||
+                      r.status === "Released") && (
+                      <button
+                        className="row-action"
+                        onClick={() => onPrintCertificate(r)}
+                        title="Print document certificate"
+                        style={{ display: "inline-flex", alignItems: "center", gap: 4 }}
+                      >
+                        <Icon name="document" size={12} /> Print
+                      </button>
+                    )}
+                  </>
+                )}
                 {onDeleteRequest && (
                   <button
                     className="row-action"
@@ -11134,8 +11267,7 @@ function AdminDocumentsPage({
             )}
           </dl>
 
-          {(selected.status === "Approved" ||
-            selected.status === "Ready for Pickup") && (
+          {selected.status !== "Declined" && (
             <label className="field">
               Pickup window
               <select
@@ -11171,8 +11303,8 @@ function AdminDocumentsPage({
             }}
           >
             {[
+              "Document is approved and ready for pickup at Window 1.",
               "Please present a valid government ID upon claiming.",
-              "Document is ready for pickup at Window 1.",
               "Additional requirement: Proof of residency needed.",
               "Please pay the processing fee at the cashier.",
             ].map((canned) => (
@@ -11198,80 +11330,77 @@ function AdminDocumentsPage({
               </button>
               <button
                 className="primary-button"
+                style={{ display: "inline-flex", alignItems: "center", gap: 5 }}
                 onClick={() => decide("Approved")}
               >
-                Approve
+                <Icon name="check" size={14} /> Approve & Ready for Pickup
               </button>
             </div>
           )}
-          {selected.status === "Approved" && (
+          {(selected.status === "Approved" ||
+            selected.status === "Ready for Pickup" ||
+            selected.status === "Released") && (
             <div className="modal-actions split-actions">
               <button
                 className="ghost-button"
+                style={{ display: "inline-flex", alignItems: "center", gap: 5 }}
+                onClick={() => onPrintCertificate(selected)}
+              >
+                <Icon name="document" size={14} /> Print Certificate
+              </button>
+              <button
+                className="ghost-button"
+                style={{ display: "inline-flex", alignItems: "center", gap: 5 }}
                 onClick={() => {
                   onOpenChat(selected.residentEmail);
                   setSelected(null);
                 }}
               >
-                Message Resident
+                <Icon name="message" size={14} /> Message Resident
               </button>
               <button
                 className="primary-button"
-                onClick={() => decide("Ready for Pickup")}
-              >
-                Mark Ready for Pickup
-              </button>
-            </div>
-          )}
-          {selected.status === "Ready for Pickup" && (
-            <div className="modal-actions split-actions">
-              <button
-                className="ghost-button"
-                onClick={() => onPrintCertificate(selected)}
-              >
-                Print Certificate
-              </button>
-              <button
-                className="primary-button"
-                onClick={() => decide("Released")}
-              >
-                Mark as Released
-              </button>
-            </div>
-          )}
-          {selected.status === "Released" && (
-            <div className="modal-actions split-actions">
-              <button
-                className="ghost-button"
-                onClick={() => onPrintCertificate(selected)}
-              >
-                Print Certificate
-              </button>
-              <button
-                className="primary-button full"
                 onClick={() => {
+                  onUpdateRequest(selected.id, {
+                    pickupWindow,
+                    adminFeedback: feedback.trim() || undefined,
+                    updatedAt: new Date().toISOString(),
+                  });
+                  onToast("Document request details updated.");
                   setSelected(null);
-                  onToast("Feedback saved.");
                 }}
               >
-                Save Feedback
+                Save Details
               </button>
             </div>
           )}
           {selected.status === "Declined" && (
-            <button
-              className="primary-button full"
-              onClick={() => {
-                onUpdateRequest(selected.id, {
-                  status: "Pending",
-                  adminFeedback: "",
-                });
-                onToast("Request reopened.");
-                setSelected(null);
-              }}
-            >
-              Reopen Request
-            </button>
+            <div className="modal-actions split-actions">
+              <button
+                className="ghost-button"
+                style={{ display: "inline-flex", alignItems: "center", gap: 5 }}
+                onClick={() => {
+                  onOpenChat(selected.residentEmail);
+                  setSelected(null);
+                }}
+              >
+                <Icon name="message" size={14} /> Message Resident
+              </button>
+              <button
+                className="primary-button"
+                onClick={() => {
+                  onUpdateRequest(selected.id, {
+                    status: "Pending",
+                    adminFeedback: "",
+                    updatedAt: new Date().toISOString(),
+                  });
+                  onToast("Request reopened to Pending.");
+                  setSelected(null);
+                }}
+              >
+                Reopen to Pending
+              </button>
+            </div>
           )}
 
           {onDeleteRequest && (
@@ -11303,7 +11432,9 @@ function AdminDocumentsPage({
           title="Delete Document Request"
           close={() => setDeleteDocTarget(null)}
         >
-          <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "14px" }}
+          >
             <div
               style={{
                 display: "flex",
@@ -11330,17 +11461,41 @@ function AdminDocumentsPage({
                 <Icon name="trash" size={20} />
               </div>
               <div>
-                <h4 style={{ margin: "0 0 4px", fontSize: "14px", color: "#991b1b", fontWeight: 700 }}>
+                <h4
+                  style={{
+                    margin: "0 0 4px",
+                    fontSize: "14px",
+                    color: "#991b1b",
+                    fontWeight: 700,
+                  }}
+                >
                   Permanently Delete Request?
                 </h4>
-                <p style={{ margin: 0, fontSize: "12.5px", color: "#b91c1c", lineHeight: 1.4 }}>
-                  Delete document request <strong>{deleteDocTarget.trackingNo}</strong> for <strong>{deleteDocTarget.residentName}</strong>?
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: "12.5px",
+                    color: "#b91c1c",
+                    lineHeight: 1.4,
+                  }}
+                >
+                  Delete document request{" "}
+                  <strong>{deleteDocTarget.trackingNo}</strong> for{" "}
+                  <strong>{deleteDocTarget.residentName}</strong>?
                 </p>
               </div>
             </div>
 
-            <p style={{ margin: 0, fontSize: "12px", color: "#64748b", lineHeight: 1.5 }}>
-              This record will be permanently deleted from the document requests database and Supabase.
+            <p
+              style={{
+                margin: 0,
+                fontSize: "12px",
+                color: "#64748b",
+                lineHeight: 1.5,
+              }}
+            >
+              This record will be permanently deleted from the document requests
+              database and Supabase.
             </p>
 
             <div className="modal-actions" style={{ marginTop: "8px" }}>
@@ -11419,18 +11574,20 @@ function AdminMessagesPage({
   const [threadToDelete, setThreadToDelete] = useState<string | null>(null);
   const chatRef = useRef<HTMLDivElement>(null);
 
-  const [loadedResidents, setLoadedResidents] = useState<ResidentRecord[]>(() => {
-    if (registeredResidents && registeredResidents.length > 0)
-      return registeredResidents;
-    try {
-      const cached = localStorage.getItem("brgy_residents_cache");
-      if (cached) {
-        const parsed = JSON.parse(cached);
-        if (Array.isArray(parsed)) return parsed;
-      }
-    } catch {}
-    return [];
-  });
+  const [loadedResidents, setLoadedResidents] = useState<ResidentRecord[]>(
+    () => {
+      if (registeredResidents && registeredResidents.length > 0)
+        return registeredResidents;
+      try {
+        const cached = localStorage.getItem("brgy_residents_cache");
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (Array.isArray(parsed)) return parsed;
+        }
+      } catch {}
+      return [];
+    },
+  );
 
   useEffect(() => {
     if (registeredResidents && registeredResidents.length > 0) {
@@ -11656,9 +11813,7 @@ function AdminMessagesPage({
                     textTransform: "uppercase",
                     letterSpacing: "0.5px",
                     borderTop:
-                      sortedResidents.length > 0
-                        ? "1px solid #e5e7eb"
-                        : "none",
+                      sortedResidents.length > 0 ? "1px solid #e5e7eb" : "none",
                   }}
                 >
                   Start New Conversation ({filteredAvailable.length})
@@ -11911,7 +12066,8 @@ function AdminMessagesPage({
                         lineHeight: 1.4,
                       }}
                     >
-                      Choose a registered resident below or use the search bar above to begin messaging.
+                      Choose a registered resident below or use the search bar
+                      above to begin messaging.
                     </p>
                   </div>
 
@@ -11997,7 +12153,8 @@ function AdminMessagesPage({
                         textAlign: "center",
                       }}
                     >
-                      No registered residents found in database. New resident signups will appear here.
+                      No registered residents found in database. New resident
+                      signups will appear here.
                     </p>
                   )}
                 </div>
@@ -12094,8 +12251,8 @@ function AdminMessagesPage({
                       lineHeight: 1.4,
                     }}
                   >
-                    No messages yet. Send a message or choose a quick reply below
-                    to begin this conversation.
+                    No messages yet. Send a message or choose a quick reply
+                    below to begin this conversation.
                   </p>
                 </div>
               ) : (
@@ -12202,7 +12359,8 @@ function AdminMessagesPage({
               <strong>
                 {resolveResidentMeta(threadToDelete).name || threadToDelete}
               </strong>
-              ? This will remove it from your messages list and permanently delete all chat history.
+              ? This will remove it from your messages list and permanently
+              delete all chat history.
             </p>
             <div
               style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}
@@ -12298,12 +12456,17 @@ function ResidentMessagesPage({
 
       {/* Pending requests banner */}
       {myRequests
-        .filter((r) => r.status === "Ready for Pickup")
+        .filter(
+          (r) =>
+            r.status === "Approved" ||
+            r.status === "Ready for Pickup" ||
+            r.status === "Released",
+        )
         .map((r) => (
           <div key={r.id} className="doc-ready-banner">
             <Icon name="document" size={16} />
             <span>
-              Your <strong>{r.docType}</strong> is ready for pickup at{" "}
+              Your <strong>{r.docType}</strong> is approved and ready for pickup at{" "}
               {r.pickupWindow || "Window 1"}!
             </span>
           </div>
@@ -12684,7 +12847,8 @@ function ResidentsPage({
     "approved" | "pending" | "rejected" | "suspended" | "deleted" | "pwresets"
   >("approved");
 
-  const [activeSessions, setActiveSessions] = useState<Record<string, ActiveSessionEntry>>(getActiveSessions);
+  const [activeSessions, setActiveSessions] =
+    useState<Record<string, ActiveSessionEntry>>(getActiveSessions);
 
   function checkIsOnline(residentId: string, residentEmail: string): boolean {
     const idLower = String(residentId || "").toLowerCase();
@@ -13111,13 +13275,16 @@ function ResidentsPage({
           const isCurrent =
             currentUser &&
             (String(currentUser.id) === String(row.id) ||
-              currentUser.email?.toLowerCase() === (row.email || "").toLowerCase());
+              currentUser.email?.toLowerCase() ===
+                (row.email || "").toLowerCase());
           const isOnline =
             finalStatus === "deleted" ||
             finalStatus === "suspended" ||
             finalStatus === "banned"
               ? false
-              : Boolean(isCurrent || checkIsOnline(String(row.id), row.email || ""));
+              : Boolean(
+                  isCurrent || checkIsOnline(String(row.id), row.email || ""),
+                );
 
           return {
             id: String(row.id),
@@ -14016,7 +14183,9 @@ function ResidentsPage({
     );
   });
 
-  const onlineCount = approvedList.filter((r) => checkIsOnline(r.id, r.email)).length;
+  const onlineCount = approvedList.filter((r) =>
+    checkIsOnline(r.id, r.email),
+  ).length;
 
   return (
     <div className="page inner-page">
@@ -14577,27 +14746,32 @@ function ResidentsPage({
                               : "Deleted"}
                   </b>
 
-                  {tab === "approved" && (() => {
-                    const isRowOnline = checkIsOnline(resident.id, resident.email);
-                    const isSelf =
-                      currentUser &&
-                      (String(currentUser.id) === String(resident.id) ||
-                        currentUser.email?.toLowerCase() === resident.email?.toLowerCase());
-                    return (
-                      <span
-                        className={`presence-badge ${isRowOnline ? "online" : "offline"}`}
-                      >
+                  {tab === "approved" &&
+                    (() => {
+                      const isRowOnline = checkIsOnline(
+                        resident.id,
+                        resident.email,
+                      );
+                      const isSelf =
+                        currentUser &&
+                        (String(currentUser.id) === String(resident.id) ||
+                          currentUser.email?.toLowerCase() ===
+                            resident.email?.toLowerCase());
+                      return (
                         <span
-                          className={`presence-dot ${isRowOnline ? "online" : "offline"}`}
-                        />
-                        {isSelf
-                          ? "Online (You)"
-                          : isRowOnline
-                            ? "Online"
-                            : "Offline"}
-                      </span>
-                    );
-                  })()}
+                          className={`presence-badge ${isRowOnline ? "online" : "offline"}`}
+                        >
+                          <span
+                            className={`presence-dot ${isRowOnline ? "online" : "offline"}`}
+                          />
+                          {isSelf
+                            ? "Online (You)"
+                            : isRowOnline
+                              ? "Online"
+                              : "Offline"}
+                        </span>
+                      );
+                    })()}
                 </div>
               </div>
 
