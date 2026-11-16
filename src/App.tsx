@@ -481,129 +481,9 @@ function parseDbAnnouncement(a: any): Announcement {
   };
 }
 
-const initialComments: Record<number, AnnouncementComment[]> = {
-  1: [
-    {
-      id: "c-101",
-      announcementId: 1,
-      userName: "Maria Santos",
-      userRole: "resident",
-      userInitials: "MS",
-      text: "Kasama po ba ang Purok 3 sa mawawalan ng tubig sa June 18? Salamat po!",
-      time: "1 hour ago",
-      timestamp: Date.now() - 3600000,
-    },
-    {
-      id: "c-102",
-      announcementId: 1,
-      userName: "Barangay San Isidro",
-      userRole: "admin",
-      userInitials: "SI",
-      text: "Opo Maria, kasama ang buong Mabini St. hanggang boundary ng Purok 3 and 4. Mag-ipon po tayo ng tubig bago mag-8:00 AM.",
-      time: "45 mins ago",
-      timestamp: Date.now() - 2700000,
-    },
-  ],
-  2: [
-    {
-      id: "c-201",
-      announcementId: 2,
-      userName: "Juan Dela Cruz",
-      userRole: "resident",
-      userInitials: "JD",
-      text: "Ano pong requirements para sa free dental extraction? Kailangan po ba ng barangay clearance?",
-      time: "Yesterday",
-      timestamp: Date.now() - 86400000,
-    },
-    {
-      id: "c-202",
-      announcementId: 2,
-      userName: "Barangay Health Center",
-      userRole: "admin",
-      userInitials: "HC",
-      text: "Valid ID lang po with proof of residency (e.g. Meralco bill or Brgy ID). Libre po ang serbisyo at mga gamot.",
-      time: "Yesterday",
-      timestamp: Date.now() - 80000000,
-    },
-  ],
-  5: [
-    {
-      id: "c-501",
-      announcementId: 5,
-      userName: "Maria Santos",
-      userRole: "resident",
-      userInitials: "MS",
-      text: "Kasama po ba ang Purok 3 sa mawawalan ng tubig sa June 18? Salamat po!",
-      time: "1 hour ago",
-      timestamp: Date.now() - 3600000,
-    },
-    {
-      id: "c-502",
-      announcementId: 5,
-      userName: "Barangay San Isidro",
-      userRole: "admin",
-      userInitials: "SI",
-      text: "Opo Maria, kasama ang buong Mabini St. hanggang boundary ng Purok 3 and 4. Mag-ipon po tayo ng tubig bago mag-8:00 AM.",
-      time: "45 mins ago",
-      timestamp: Date.now() - 2700000,
-    },
-  ],
-  6: [
-    {
-      id: "c-601",
-      announcementId: 6,
-      userName: "Juan Dela Cruz",
-      userRole: "resident",
-      userInitials: "JD",
-      text: "Ano pong requirements para sa free dental extraction? Kailangan po ba ng barangay clearance?",
-      time: "Yesterday",
-      timestamp: Date.now() - 86400000,
-    },
-    {
-      id: "c-602",
-      announcementId: 6,
-      userName: "Barangay Health Center",
-      userRole: "admin",
-      userInitials: "HC",
-      text: "Valid ID lang po with proof of residency (e.g. Meralco bill or Brgy ID). Libre po ang serbisyo at mga gamot.",
-      time: "Yesterday",
-      timestamp: Date.now() - 80000000,
-    },
-  ],
-};
+const initialComments: Record<number, AnnouncementComment[]> = {};
 
-const initialAnnouncements: Announcement[] = [
-  {
-    id: 1,
-    author: "Barangay San Isidro",
-    initials: "SI",
-    time: "2 hours ago",
-    tag: "Community Advisory",
-    title: "Scheduled Water Interruption",
-    body: "Please be advised that there will be a scheduled water interruption on June 18, from 8:00 AM to 3:00 PM due to maintenance works along Mabini Street. We encourage everyone to store enough water in advance.",
-    accent: "Water service advisory",
-    accentText: "June 18 · 8:00 AM – 3:00 PM",
-    reactions: 48,
-    pinned: true,
-    imageUrl:
-      "https://images.unsplash.com/photo-1541888946425-d0fbb186f5f7?auto=format&fit=crop&w=1200&q=80",
-  },
-  {
-    id: 2,
-    author: "Barangay Health Center",
-    initials: "HC",
-    time: "Yesterday at 4:30 PM",
-    tag: "Health & Wellness",
-    title: "Free Medical and Dental Mission",
-    body: "Our health center is inviting all residents to a free medical and dental mission this Saturday. Services include basic check-ups, blood pressure monitoring, and dental consultation.",
-    accent: "Barangay Covered Court",
-    accentText: "June 21 · 8:00 AM – 12:00 PM",
-    reactions: 76,
-    pinned: false,
-    imageUrl:
-      "https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=1200&q=80",
-  },
-];
+const initialAnnouncements: Announcement[] = [];
 
 export function getDeletedAnnouncementKeys(): string[] {
   try {
@@ -664,68 +544,7 @@ type CommunityEvent = {
   created_at?: string;
 };
 
-const initialEvents: CommunityEvent[] = [
-  {
-    id: 1,
-    title: "Senior Citizens Meeting",
-    day: 5,
-    date: "2026-10-05",
-    time: "9:00 AM",
-    location: "Barangay Hall",
-    type: "meeting",
-    description:
-      "Monthly assembly, welfare allowance updates, and wellness consultation for seniors.",
-    organizer: "Office for Senior Citizens Affairs (OSCA)",
-  },
-  {
-    id: 2,
-    title: "Clean-up Drive",
-    day: 12,
-    date: "2026-10-12",
-    time: "6:00 AM",
-    location: "Main Road & Creek",
-    type: "community",
-    description:
-      "Community bayanihan clean-up and dengue prevention drive. Gloves and trash bags provided.",
-    organizer: "Barangay Clean & Green Committee",
-  },
-  {
-    id: 3,
-    title: "Water Interruption Advisory",
-    day: 18,
-    date: "2026-10-18",
-    time: "8:00 AM – 4:00 PM",
-    location: "Mabini Street Area",
-    type: "advisory",
-    description:
-      "Scheduled water pipe repair and maintenance works by the water utility. Residents are advised to store water.",
-    organizer: "Barangay Infrastructure Desk",
-  },
-  {
-    id: 4,
-    title: "Free Medical and Dental Mission",
-    day: 21,
-    date: "2026-10-21",
-    time: "8:00 AM – 1:00 PM",
-    location: "Barangay Covered Court",
-    type: "health",
-    description:
-      "Free medical checkups, essential vitamins and maintenance medicines, dental check and tooth extractions.",
-    organizer: "Barangay Health & Wellness Center",
-  },
-  {
-    id: 5,
-    title: "Youth Sports Fest (SK)",
-    day: 27,
-    date: "2026-10-27",
-    time: "2:00 PM – 7:00 PM",
-    location: "Covered Court",
-    type: "sports",
-    description:
-      "Inter-purok basketball and volleyball tournament organized by Sangguniang Kabataan with exciting prizes.",
-    organizer: "Sangguniang Kabataan (SK) Council",
-  },
-];
+const initialEvents: CommunityEvent[] = [];
 
 function parseDbEvent(row: any): CommunityEvent {
   let dateStr = "";
@@ -1013,56 +832,7 @@ export type Msg = {
   dbId?: number;
 };
 
-export const initialThreads: Record<string, Msg[]> = {
-  "maria.santos@email.com": [
-    {
-      from: "resident",
-      text: "Magandang araw po! Nag-submit po ako ng Barangay Clearance request para sa employment requirement. Kailan po kaya ito pwede makuha?",
-      time: "Oct 23 · 9:15 AM",
-    },
-    {
-      from: "admin",
-      text: "Magandang araw, Maria! Na-review na po ang inyong clearance request at kasalukuyang pinipirmahan ni Punong Barangay Roberto Gomez. Mag-a-update kami kapag ready na for pickup sa Window 2. Maraming salamat!",
-      time: "Oct 23 · 10:45 AM",
-    },
-  ],
-  "maria.reyes@email.com": [
-    {
-      from: "resident",
-      text: "Good day po! I need help with my barangay clearance for employment purposes. It has been 5 days since I submitted.",
-      time: "Jun 15 · 9:04 AM",
-    },
-    {
-      from: "admin",
-      text: "Good day, Maria! We have received your request. Please visit the barangay hall on June 17 between 8 AM – 12 PM to sign the document. Thank you!",
-      time: "Jun 15 · 10:30 AM",
-    },
-  ],
-  "juan.dc@email.com": [
-    {
-      from: "resident",
-      text: "Magandang hapon po. Gusto ko po sana itanong kung kailan pa po maaprubahan ang aking registration.",
-      time: "Jun 16 · 2:10 PM",
-    },
-    {
-      from: "admin",
-      text: "Hello Juan! We have approved your resident registration. You can now request barangay documents and participate in community consultations.",
-      time: "Jun 16 · 3:25 PM",
-    },
-  ],
-  "juan.delacruz@gmail.com": [
-    {
-      from: "resident",
-      text: "Hello po, nag-apply po ako ng Barangay Clearance para po sa renewal ng driver's license. Ask ko lang po if kailangan pa ng 2x2 picture sa pickup.",
-      time: "Oct 24 · 8:15 AM",
-    },
-    {
-      from: "admin",
-      text: "Opo Juan, paki-dala po ang 1 valid government ID at 1 pirasong 2x2 ID photo pag-claim sa Window 1. Salamat!",
-      time: "Oct 24 · 8:40 AM",
-    },
-  ],
-};
+export const initialThreads: Record<string, Msg[]> = {};
 
 export function getDeletedThreads(): string[] {
   try {
@@ -1098,29 +868,22 @@ export function isThreadDeleted(email: string): boolean {
 
 export function getCachedThreads(): Record<string, Msg[]> {
   const deleted = getDeletedThreads();
-  const base: Record<string, Msg[]> = {};
-  Object.keys(initialThreads).forEach((k) => {
-    if (!deleted.includes(k.toLowerCase().trim())) {
-      base[k] = initialThreads[k];
-    }
-  });
-
   try {
     const raw = localStorage.getItem("barangay_message_threads");
     if (raw) {
       const parsed = JSON.parse(raw);
       if (parsed && typeof parsed === "object") {
-        const merged: Record<string, Msg[]> = { ...base };
+        const cleaned: Record<string, Msg[]> = {};
         Object.keys(parsed).forEach((k) => {
           if (!deleted.includes(k.toLowerCase().trim())) {
-            merged[k] = parsed[k];
+            cleaned[k] = parsed[k];
           }
         });
-        return merged;
+        return cleaned;
       }
     }
   } catch {}
-  return base;
+  return {};
 }
 
 export function saveCachedThreads(threads: Record<string, Msg[]>) {
@@ -1165,156 +928,98 @@ export type DocumentRequest = {
   controlNo: string;
 };
 
-export const initialDocumentRequests: DocumentRequest[] = [
-  {
-    id: "req-101",
-    trackingNo: "BRGY-2026-0042",
-    residentId: "res-102",
-    residentName: "Maria Santos",
-    residentEmail: "maria.santos@email.com",
-    residentMobile: "0928-876-5432",
-    residentAddress: "142 Mabini Avenue, Purok 2",
-    purok: "Purok 2",
-    docType: "Barangay Clearance",
-    purpose: "Employment requirement (BPO Company)",
-    notes: "Need for upcoming job start next Monday.",
-    fee: "₱ 50",
-    paymentStatus: "Paid at Counter",
-    status: "Approved",
-    dateFiled: "Oct 22, 2026",
-    timeFiled: "09:30 AM",
-    createdAt: "2026-10-22T09:30:00.000Z",
-    updatedAt: "2026-10-23T10:45:00.000Z",
-    adminFeedback:
-      "Document has been reviewed and cleared by Barangay Office. Signed by Punong Barangay Roberto Gomez.",
-    pickupWindow: "Window 2 (Mon–Fri 8AM–5PM)",
-    controlNo: "BC-2026-0042",
-  },
-  {
-    id: "req-102",
-    trackingNo: "BRGY-2026-0038",
-    residentId: "res-102",
-    residentName: "Maria Santos",
-    residentEmail: "maria.santos@email.com",
-    residentMobile: "0928-876-5432",
-    residentAddress: "142 Mabini Avenue, Purok 2",
-    purok: "Purok 2",
-    docType: "Certificate of Residency",
-    purpose: "Bank Account Opening requirement",
-    notes: "Opening savings account at Landbank.",
-    fee: "₱ 30",
-    paymentStatus: "Paid at Counter",
-    status: "Ready for Pickup",
-    dateFiled: "Oct 23, 2026",
-    timeFiled: "02:15 PM",
-    createdAt: "2026-10-23T14:15:00.000Z",
-    updatedAt: "2026-10-24T08:30:00.000Z",
-    adminFeedback:
-      "Ready for claiming at Window 1. Please present 1 valid government ID.",
-    pickupWindow: "Window 1",
-    controlNo: "CR-2026-0038",
-  },
-  {
-    id: "req-103",
-    trackingNo: "BRGY-2026-0051",
-    residentId: "res-101",
-    residentName: "Juan Dela Cruz",
-    residentEmail: "juan.delacruz@gmail.com",
-    residentMobile: "0917-123-4567",
-    residentAddress: "Block 4 Lot 12, Sampaguita St., Purok 1",
-    purok: "Purok 1",
-    docType: "Barangay Clearance",
-    purpose: "Driver's License Renewal",
-    notes: "LTO schedule on Tuesday morning.",
-    fee: "₱ 50",
-    paymentStatus: "Unpaid",
-    status: "Pending",
-    dateFiled: "Oct 24, 2026",
-    timeFiled: "08:10 AM",
-    createdAt: "2026-10-24T08:10:00.000Z",
-    updatedAt: "2026-10-24T08:10:00.000Z",
-    controlNo: "BC-2026-0051",
-  },
-  {
-    id: "req-104",
-    trackingNo: "BRGY-2026-0031",
-    residentId: "res-104",
-    residentName: "Ana Santos",
-    residentEmail: "ana.santos@email.com",
-    residentMobile: "0918-345-6789",
-    residentAddress: "77 Rizal St., Purok 4",
-    purok: "Purok 4",
-    docType: "Certificate of Indigency",
-    purpose: "Educational Financial Aid / Scholarship",
-    notes: "CHED scholarship grant application requirement.",
-    fee: "Free",
-    paymentStatus: "Waived",
-    status: "Approved",
-    dateFiled: "Oct 21, 2026",
-    timeFiled: "11:20 AM",
-    createdAt: "2026-10-21T11:20:00.000Z",
-    updatedAt: "2026-10-22T14:00:00.000Z",
-    adminFeedback:
-      "Indigency evaluation verified with Purok 4 leader. Approved.",
-    pickupWindow: "Window 3 (Social Services)",
-    controlNo: "CI-2026-0031",
-  },
-  {
-    id: "req-105",
-    trackingNo: "BRGY-2026-0022",
-    residentId: "res-105",
-    residentName: "Paolo Garcia",
-    residentEmail: "paolo.garcia@gmail.com",
-    residentMobile: "0919-456-7890",
-    residentAddress: "23 Bonifacio Ave, Purok 1",
-    purok: "Purok 1",
-    docType: "Business Clearance",
-    purpose: "Sari-sari Store Annual Business Permit Renewal",
-    notes: "Inspection completed last month.",
-    fee: "₱ 200",
-    paymentStatus: "Paid at Counter",
-    status: "Released",
-    dateFiled: "Oct 19, 2026",
-    timeFiled: "03:45 PM",
-    createdAt: "2026-10-19T15:45:00.000Z",
-    updatedAt: "2026-10-21T16:00:00.000Z",
-    adminFeedback: "Released and receipt OR#9821 issued to resident.",
-    releasedDate: "Oct 21, 2026",
-    controlNo: "BB-2026-0022",
-  },
-  {
-    id: "req-106",
-    trackingNo: "BRGY-2026-0019",
-    residentId: "res-106",
-    residentName: "Elena Ramos",
-    residentEmail: "elena.ramos@email.com",
-    residentMobile: "0920-567-8901",
-    residentAddress: "56 Dahlia St., Purok 3",
-    purok: "Purok 3",
-    docType: "Good Moral Certificate",
-    purpose: "College Admissions",
-    fee: "₱ 50",
-    paymentStatus: "Unpaid",
-    status: "Declined",
-    dateFiled: "Oct 18, 2026",
-    timeFiled: "10:15 AM",
-    createdAt: "2026-10-18T10:15:00.000Z",
-    updatedAt: "2026-10-19T09:00:00.000Z",
-    adminFeedback:
-      "Residency record under 6 months; please present proof of previous barangay clearance or updated billing statement.",
-    controlNo: "GM-2026-0019",
-  },
-];
+export const initialDocumentRequests: DocumentRequest[] = [];
+
+export function cleanLegacyPlaceholderCaches() {
+  try {
+    const cleanedFlag = "brgy_cleaned_placeholders_v5";
+    if (localStorage.getItem(cleanedFlag)) return;
+
+    localStorage.removeItem("brgy_announcements_seeded");
+
+    const rawAnn = localStorage.getItem("brgy_announcements_cache");
+    if (rawAnn) {
+      try {
+        const list = JSON.parse(rawAnn);
+        if (Array.isArray(list)) {
+          const filtered = list.filter((a: any) => {
+            const t = (a.title || "").toLowerCase().trim();
+            return (
+              t !== "scheduled water interruption" &&
+              t !== "free medical and dental mission"
+            );
+          });
+          localStorage.setItem(
+            "brgy_announcements_cache",
+            JSON.stringify(filtered),
+          );
+        }
+      } catch {}
+    }
+
+    const rawDocs = localStorage.getItem("barangay_document_requests");
+    if (rawDocs) {
+      try {
+        const list = JSON.parse(rawDocs);
+        if (Array.isArray(list)) {
+          const filtered = list.filter(
+            (d: any) => !String(d.id || "").startsWith("REQ-2025-00"),
+          );
+          localStorage.setItem(
+            "barangay_document_requests",
+            JSON.stringify(filtered),
+          );
+        }
+      } catch {}
+    }
+
+    const rawInc = localStorage.getItem("barangay_incidents_cache");
+    if (rawInc) {
+      try {
+        const list = JSON.parse(rawInc);
+        if (Array.isArray(list)) {
+          const filtered = list.filter(
+            (i: any) =>
+              !["INC-2025-042", "INC-2025-041", "INC-2025-039"].includes(i.id),
+          );
+          localStorage.setItem(
+            "barangay_incidents_cache",
+            JSON.stringify(filtered),
+          );
+        }
+      } catch {}
+    }
+
+    const rawEvents = localStorage.getItem("brgy_events_cache");
+    if (rawEvents) {
+      try {
+        const list = JSON.parse(rawEvents);
+        if (Array.isArray(list)) {
+          const filtered = list.filter(
+            (e: any) => ![1, 2, 3].includes(Number(e.id)),
+          );
+          localStorage.setItem(
+            "brgy_events_cache",
+            JSON.stringify(filtered),
+          );
+        }
+      } catch {}
+    }
+
+    localStorage.setItem(cleanedFlag, "true");
+  } catch {}
+}
+cleanLegacyPlaceholderCaches();
 
 export function getCachedDocumentRequests(): DocumentRequest[] {
   try {
     const raw = localStorage.getItem("barangay_document_requests");
     if (raw) {
       const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      if (Array.isArray(parsed)) return parsed;
     }
   } catch {}
-  return initialDocumentRequests;
+  return [];
 }
 
 export function saveCachedDocumentRequests(requests: DocumentRequest[]) {
@@ -1592,56 +1297,29 @@ export function getResidentDirectory(): Record<
   string,
   { name: string; purok: string; phone: string; address: string }
 > {
-  return {
-    "maria.santos@email.com": {
-      name: "Maria Santos",
-      purok: "Purok 2",
-      phone: "0928-876-5432",
-      address: "142 Mabini Avenue, Purok 2",
-    },
-    "maria.reyes@email.com": {
-      name: "Maria Reyes",
-      purok: "Purok 3",
-      phone: "0921-987-6543",
-      address: "Block 12 Lot 5, Ilang-Ilang St., Purok 3",
-    },
-    "juan.dc@email.com": {
-      name: "Juan Dela Cruz",
-      purok: "Purok 1",
-      phone: "0917-123-4567",
-      address: "Block 4 Lot 12, Sampaguita St., Purok 1",
-    },
-    "juan.delacruz@gmail.com": {
-      name: "Juan Dela Cruz",
-      purok: "Purok 1",
-      phone: "0917-123-4567",
-      address: "Block 4 Lot 12, Sampaguita St., Purok 1",
-    },
-    "antonio.luna@outlook.com": {
-      name: "Antonio Luna",
-      purok: "Purok 3",
-      phone: "0939-555-0192",
-      address: "88 Narra Lane, Purok 3",
-    },
-    "ana.santos@email.com": {
-      name: "Ana Santos",
-      purok: "Purok 4",
-      phone: "0918-345-6789",
-      address: "77 Rizal St., Purok 4",
-    },
-    "paolo.garcia@gmail.com": {
-      name: "Paolo Garcia",
-      purok: "Purok 1",
-      phone: "0919-456-7890",
-      address: "23 Bonifacio Ave, Purok 1",
-    },
-    "elena.ramos@email.com": {
-      name: "Elena Ramos",
-      purok: "Purok 3",
-      phone: "0920-567-8901",
-      address: "56 Dahlia St., Purok 3",
-    },
-  };
+  const dir: Record<
+    string,
+    { name: string; purok: string; phone: string; address: string }
+  > = {};
+  try {
+    const raw = localStorage.getItem("brgy_residents_cache");
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        parsed.forEach((r: any) => {
+          if (r.email) {
+            dir[r.email.toLowerCase().trim()] = {
+              name: r.name || "Resident",
+              purok: r.purok || "Purok 1",
+              phone: r.mobile || r.phone || "",
+              address: r.address || "Barangay San Isidro",
+            };
+          }
+        });
+      }
+    }
+  } catch {}
+  return dir;
 }
 
 export function resolveResidentMeta(
@@ -1752,49 +1430,7 @@ export type IncidentReport = {
   deletedAt?: string;
 };
 
-const initialIncidents: IncidentReport[] = [
-  {
-    id: "INC-2025-042",
-    complainantName: "Maria Reyes",
-    complainantEmail: "maria.reyes@email.com",
-    category: "Dispute / Noise",
-    purok: "Purok 2 (Mabini St.)",
-    description:
-      "Repeated late night videoke and loud disturbance after 11:00 PM on weekdays along Mabini St.",
-    date: "Jun 16, 2025",
-    status: "Scheduled Hearing",
-    hearingDate: "June 20, 2025 · 2:00 PM at Lupon Tagapamayapa Hall",
-    officerNotes: "Invited complainant and respondent for formal mediation.",
-    isUrgent: false,
-  },
-  {
-    id: "INC-2025-041",
-    complainantName: "Juan Dela Cruz",
-    complainantEmail: "juan.dc@email.com",
-    category: "Street Hazard",
-    purok: "Purok 1 (Sampaguita Rd.)",
-    description:
-      "Fallen tree branch leaning on electric cables near the daycare center after the heavy rain.",
-    date: "Jun 15, 2025",
-    status: "Under Review",
-    officerNotes:
-      "Endorsed to Barangay Maintenance & Tanod team for urgent clearing.",
-    isUrgent: true,
-  },
-  {
-    id: "INC-2025-039",
-    complainantName: "Ana Santos",
-    complainantEmail: "ana.s@email.com",
-    category: "Sanitation",
-    purok: "Purok 3",
-    description:
-      "Uncollected garbage piled at corner lot causing foul odor and blocking sidewalk.",
-    date: "Jun 10, 2025",
-    status: "Resolved",
-    officerNotes: "Clean-up team deployed and garbage cleared on Jun 11.",
-    isUrgent: false,
-  },
-];
+const initialIncidents: IncidentReport[] = [];
 
 export type EmergencyHotline = {
   id: string;
@@ -2665,6 +2301,38 @@ export default function App() {
   );
   // For admin: which resident thread is open
   const [activeThread, setActiveThread] = useState<string | null>(null);
+  const [allRegisteredResidents, setAllRegisteredResidents] = useState<
+    ResidentRecord[]
+  >(() => {
+    try {
+      const cached = localStorage.getItem("brgy_residents_cache");
+      if (cached) {
+        const list = JSON.parse(cached);
+        if (Array.isArray(list)) return list;
+      }
+    } catch {}
+    return [];
+  });
+  const announcementsChannelRef = useRef<any>(null);
+
+  function notifyAnnouncementChange(newList?: Announcement[]) {
+    if (newList) {
+      try {
+        localStorage.setItem(
+          "brgy_announcements_cache",
+          JSON.stringify(newList),
+        );
+      } catch {}
+    }
+    window.dispatchEvent(new CustomEvent("barangay_announcements_updated"));
+    try {
+      announcementsChannelRef.current?.send({
+        type: "broadcast",
+        event: "announcements_updated",
+        payload: { timestamp: Date.now() },
+      });
+    } catch {}
+  }
   const [printingRequest, setPrintingRequest] =
     useState<DocumentRequest | null>(null);
   const [viewingRequest, setViewingRequest] = useState<DocumentRequest | null>(
@@ -3124,32 +2792,13 @@ export default function App() {
       }
     }
 
-    async function loadLiveData() {
+    async function fetchLiveAnnouncements() {
       try {
-        // Pending residents count
-        const { data: dbAccounts } = await supabase
-          .from("accounts")
-          .select("id, status");
-        if (dbAccounts) {
-          const pending = dbAccounts.filter(
-            (a: any) => a.status === "pending",
-          ).length;
-          setPendingResidents(pending);
-        }
-
-        // Live Barangay Settings & Roles
-        await fetchLiveSettingsAndRoles();
-
-        // Live Document Requests & Messages from Supabase
-        await fetchLiveDocumentRequests();
-        await fetchLiveMessages();
-
-        // Announcements
         const { data: dbAnnouncements } = await supabase
           .from("announcements")
           .select("*")
           .order("created_at", { ascending: false });
-        if (dbAnnouncements && dbAnnouncements.length > 0) {
+        if (dbAnnouncements) {
           const parsed = dbAnnouncements
             .map(parseDbAnnouncement)
             .filter((a) => !isAnnouncementDeleted(a.id, a.title));
@@ -3159,64 +2808,93 @@ export default function App() {
               "brgy_announcements_cache",
               JSON.stringify(parsed),
             );
-            localStorage.setItem("brgy_announcements_seeded", "true");
           } catch {}
         } else {
-          // If Supabase table is empty, only seed if not previously seeded and no deletions
-          const alreadySeeded = localStorage.getItem("brgy_announcements_seeded");
-          const deletedKeys = getDeletedAnnouncementKeys();
-          if (!alreadySeeded && deletedKeys.length === 0) {
-            try {
-              const { data: seeded } = await supabase
-                .from("announcements")
-                .insert([
-                  {
-                    author: "Barangay San Isidro",
-                    initials: "SI",
-                    tag: "Community Advisory",
-                    title: "Scheduled Water Interruption",
-                    body: "Please be advised that there will be a scheduled water interruption on June 18, from 8:00 AM to 3:00 PM due to maintenance works along Mabini Street. We encourage everyone to store enough water in advance.",
-                    accent:
-                      "[IMG:https://images.unsplash.com/photo-1541888946425-d0fbb186f5f7?auto=format&fit=crop&w=1200&q=80]Water service advisory",
-                    accent_text: "[PINNED] June 18 · 8:00 AM – 3:00 PM",
-                    reactions: 48,
-                  },
-                  {
-                    author: "Barangay Health Center",
-                    initials: "HC",
-                    tag: "Health & Wellness",
-                    title: "Free Medical and Dental Mission",
-                    body: "Our health center is inviting all residents to a free medical and dental mission this Saturday. Services include basic check-ups, blood pressure monitoring, and dental consultation.",
-                    accent:
-                      "[IMG:https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=1200&q=80]Barangay Covered Court",
-                    accent_text: "June 21 · 8:00 AM – 12:00 PM",
-                    reactions: 76,
-                  },
-                ])
-                .select();
-              if (seeded && seeded.length > 0) {
-                const parsed = seeded
-                  .map(parseDbAnnouncement)
-                  .filter((a) => !isAnnouncementDeleted(a.id, a.title));
-                setAnnouncements(parsed);
-                try {
-                  localStorage.setItem("brgy_announcements_seeded", "true");
-                  localStorage.setItem(
-                    "brgy_announcements_cache",
-                    JSON.stringify(parsed),
-                  );
-                } catch {}
-              }
-            } catch (seedErr) {
-              console.error("Failed to seed initial announcements", seedErr);
-            }
-          } else {
-            setAnnouncements([]);
-            try {
-              localStorage.setItem("brgy_announcements_cache", "[]");
-            } catch {}
-          }
+          setAnnouncements([]);
+          try {
+            localStorage.setItem("brgy_announcements_cache", "[]");
+          } catch {}
         }
+      } catch (err) {
+        console.warn("fetchLiveAnnouncements error:", err);
+      }
+    }
+
+    async function loadLiveData() {
+      try {
+        // Registered residents count & directory
+        const { data: dbAccounts } = await supabase
+          .from("accounts")
+          .select("*")
+          .order("created_at", { ascending: false });
+        if (dbAccounts) {
+          const pending = dbAccounts.filter(
+            (a: any) => a.status === "pending",
+          ).length;
+          setPendingResidents(pending);
+
+          const meta = getResidentMeta();
+          const purged = getPurgedIds();
+          const mappedResidents: ResidentRecord[] = dbAccounts
+            .filter((row: any) => !purged.includes(String(row.id)))
+            .map((row: any) => {
+              const rowMeta = meta[row.id] || {};
+              let finalStatus = (
+                rowMeta.statusOverride ||
+                row.status ||
+                "active"
+              ).toLowerCase() as any;
+              if (finalStatus === "verified") finalStatus = "active";
+
+              const address = row.address || "Barangay San Isidro";
+              let purok = row.purok || "Purok 1";
+              const purokMatch = address.match(/Purok\s*\d+/i);
+              if (purokMatch) purok = purokMatch[0];
+
+              return {
+                id: String(row.id),
+                name:
+                  row.name ||
+                  (row.email ? row.email.split("@")[0] : "Resident"),
+                email: (row.email || "").toLowerCase().trim(),
+                mobile: row.mobile || row.phone || "",
+                address,
+                purok,
+                role: (row.role as any) || "resident",
+                status: finalStatus,
+                registered: formatResidentDate(row.created_at),
+                isOnline: false,
+              };
+            });
+          setAllRegisteredResidents(mappedResidents);
+          try {
+            localStorage.setItem(
+              "brgy_residents_cache",
+              JSON.stringify(mappedResidents),
+            );
+          } catch {}
+        }
+
+        // Live Barangay Settings & Roles
+        await fetchLiveSettingsAndRoles();
+
+        // Live Document Requests & Messages from Supabase
+        await fetchLiveDocumentRequests();
+        await fetchLiveMessages();
+
+        // Clean any legacy mock announcements that were previously seeded
+        try {
+          await supabase
+            .from("announcements")
+            .delete()
+            .in("title", [
+              "Scheduled Water Interruption",
+              "Free Medical and Dental Mission",
+            ]);
+        } catch {}
+
+        // Announcements
+        await fetchLiveAnnouncements();
 
         // Hotlines
         const { data: dbHotlines } = await supabase
@@ -3405,29 +3083,18 @@ export default function App() {
 
     const announcementsChannel = supabase
       .channel("announcements_sync_channel")
+      .on("broadcast", { event: "announcements_updated" }, () => {
+        fetchLiveAnnouncements();
+      })
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "announcements" },
         async () => {
-          const { data: dbAnnouncements } = await supabase
-            .from("announcements")
-            .select("*")
-            .order("created_at", { ascending: false });
-          if (dbAnnouncements) {
-            const parsed = dbAnnouncements
-              .map(parseDbAnnouncement)
-              .filter((a) => !isAnnouncementDeleted(a.id, a.title));
-            setAnnouncements(parsed);
-            try {
-              localStorage.setItem(
-                "brgy_announcements_cache",
-                JSON.stringify(parsed),
-              );
-            } catch {}
-          }
+          fetchLiveAnnouncements();
         },
       )
       .subscribe();
+    announcementsChannelRef.current = announcementsChannel;
 
     const eventsChannel = supabase
       .channel("events_sync_channel")
@@ -3488,6 +3155,7 @@ export default function App() {
       fetchLiveDocumentRequests();
       fetchLiveMessages();
       fetchLiveSettingsAndRoles();
+      fetchLiveAnnouncements();
     }, 1500);
 
     // Dedicated fast-poll for messages only (every 1s) — makes chat feel near-instant
@@ -3505,15 +3173,24 @@ export default function App() {
       if (e.key === "brgy_promoted_admins") {
         setPromotedAdmins(getPromotedAdminEmails());
       }
+      if (e.key === "brgy_announcements_cache") {
+        fetchLiveAnnouncements();
+      }
     };
     const handleCustomThreads = () => setThreads(getCachedThreads());
     const handleCustomRequests = () => setRequests(getCachedDocumentRequests());
     const handleCustomAdmins = () =>
       setPromotedAdmins(getPromotedAdminEmails());
+    const handleCustomAnnouncements = () => fetchLiveAnnouncements();
+
     window.addEventListener("storage", handleStorageUpdate);
     window.addEventListener("barangay_threads_updated", handleCustomThreads);
     window.addEventListener("barangay_requests_updated", handleCustomRequests);
     window.addEventListener("brgy_promoted_admins_updated", handleCustomAdmins);
+    window.addEventListener(
+      "barangay_announcements_updated",
+      handleCustomAnnouncements,
+    );
 
     return () => {
       clearInterval(liveHeartbeat);
@@ -3530,6 +3207,10 @@ export default function App() {
       window.removeEventListener(
         "brgy_promoted_admins_updated",
         handleCustomAdmins,
+      );
+      window.removeEventListener(
+        "barangay_announcements_updated",
+        handleCustomAnnouncements,
       );
       subscription.unsubscribe();
       accountsChannel.unsubscribe();
@@ -3732,9 +3413,11 @@ export default function App() {
         pinned: postPinned,
         scheduledAt: scheduledIso,
       };
-      setAnnouncements((prev) =>
-        prev.map((a) => (a.id === updated.id ? updated : a)),
-      );
+      setAnnouncements((prev) => {
+        const next = prev.map((a) => (a.id === updated.id ? updated : a));
+        notifyAnnouncementChange(next);
+        return next;
+      });
       setComposerOpen(false);
       setEditingAnnouncement(null);
       setPostText("");
@@ -3793,10 +3476,14 @@ export default function App() {
 
       if (inserted && !error) {
         const parsed = parseDbAnnouncement(inserted);
-        setAnnouncements((prev) => [
-          parsed,
-          ...prev.filter((a) => a.id !== parsed.id),
-        ]);
+        setAnnouncements((prev) => {
+          const next = [
+            parsed,
+            ...prev.filter((a) => a.id !== parsed.id),
+          ];
+          notifyAnnouncementChange(next);
+          return next;
+        });
       } else {
         const fallback: Announcement = {
           id: Date.now(),
@@ -3814,7 +3501,11 @@ export default function App() {
           scheduledAt: scheduledIso,
           createdAt: new Date().toISOString(),
         };
-        setAnnouncements((prev) => [fallback, ...prev]);
+        setAnnouncements((prev) => {
+          const next = [fallback, ...prev];
+          notifyAnnouncementChange(next);
+          return next;
+        });
       }
       showToast(
         scheduledIso
@@ -3837,9 +3528,11 @@ export default function App() {
       scheduledAt: undefined,
       accentText: cleanAccentText,
     };
-    setAnnouncements((prev) =>
-      prev.map((a) => (a.id === ann.id ? updated : a)),
-    );
+    setAnnouncements((prev) => {
+      const next = prev.map((a) => (a.id === ann.id ? updated : a));
+      notifyAnnouncementChange(next);
+      return next;
+    });
     if (viewAnnouncementItem && viewAnnouncementItem.id === ann.id) {
       setViewAnnouncementItem(updated);
     }
@@ -3867,9 +3560,11 @@ export default function App() {
       pinned: newPinned,
       accentText: cleanAccentText,
     };
-    setAnnouncements((prev) =>
-      prev.map((a) => (a.id === ann.id ? updated : a)),
-    );
+    setAnnouncements((prev) => {
+      const next = prev.map((a) => (a.id === ann.id ? updated : a));
+      notifyAnnouncementChange(next);
+      return next;
+    });
     if (viewAnnouncementItem && viewAnnouncementItem.id === ann.id) {
       setViewAnnouncementItem(updated);
     }
@@ -3905,12 +3600,7 @@ export default function App() {
           (!title ||
             a.title.toLowerCase().trim() !== title.toLowerCase().trim()),
       );
-      try {
-        localStorage.setItem(
-          "brgy_announcements_cache",
-          JSON.stringify(updated),
-        );
-      } catch {}
+      notifyAnnouncementChange(updated);
       return updated;
     });
 
@@ -3956,9 +3646,13 @@ export default function App() {
       localStorage.setItem("brgy_user_ack", JSON.stringify(nextAcknowledged));
     } catch {}
 
-    setAnnouncements((prev) =>
-      prev.map((a) => (a.id === postId ? { ...a, reactions: newCount } : a)),
-    );
+    setAnnouncements((prev) => {
+      const next = prev.map((a) =>
+        a.id === postId ? { ...a, reactions: newCount } : a,
+      );
+      notifyAnnouncementChange(next);
+      return next;
+    });
     if (viewAnnouncementItem && viewAnnouncementItem.id === postId) {
       setViewAnnouncementItem({ ...viewAnnouncementItem, reactions: newCount });
     }
@@ -5708,6 +5402,8 @@ export default function App() {
               onViewDocRequest={(req) => {
                 setViewingRequest(req);
               }}
+              currentUser={user || undefined}
+              registeredResidents={allRegisteredResidents}
             />
           ) : (
             <ResidentMessagesPage
@@ -11597,6 +11293,8 @@ function AdminMessagesPage({
   onDeleteThread,
   allRequests,
   onViewDocRequest,
+  currentUser,
+  registeredResidents,
 }: {
   threads: Record<string, Msg[]>;
   activeThread: string | null;
@@ -11610,31 +11308,122 @@ function AdminMessagesPage({
   onDeleteThread: (email: string) => void;
   allRequests: DocumentRequest[];
   onViewDocRequest: (req: DocumentRequest) => void;
+  currentUser?: { id?: string | number; email?: string; role?: string };
+  registeredResidents?: ResidentRecord[];
 }) {
   const [draft, setDraft] = useState("");
   const [search, setSearch] = useState("");
   const [threadToDelete, setThreadToDelete] = useState<string | null>(null);
   const chatRef = useRef<HTMLDivElement>(null);
 
+  const [loadedResidents, setLoadedResidents] = useState<ResidentRecord[]>(() => {
+    if (registeredResidents && registeredResidents.length > 0)
+      return registeredResidents;
+    try {
+      const cached = localStorage.getItem("brgy_residents_cache");
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    } catch {}
+    return [];
+  });
+
+  useEffect(() => {
+    if (registeredResidents && registeredResidents.length > 0) {
+      setLoadedResidents(registeredResidents);
+    } else {
+      supabase
+        .from("accounts")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .then(({ data }) => {
+          if (data && data.length > 0) {
+            const purged = getPurgedIds();
+            const meta = getResidentMeta();
+            const mapped: ResidentRecord[] = data
+              .filter((row: any) => !purged.includes(String(row.id)))
+              .map((row: any) => {
+                const rowMeta = meta[row.id] || {};
+                let finalStatus = (
+                  rowMeta.statusOverride ||
+                  row.status ||
+                  "active"
+                ).toLowerCase() as any;
+                if (finalStatus === "verified") finalStatus = "active";
+
+                const address = row.address || "Barangay San Isidro";
+                let purok = row.purok || "Purok 1";
+                const purokMatch = address.match(/Purok\s*\d+/i);
+                if (purokMatch) purok = purokMatch[0];
+
+                return {
+                  id: String(row.id),
+                  name:
+                    row.name ||
+                    (row.email ? row.email.split("@")[0] : "Resident"),
+                  email: (row.email || "").toLowerCase().trim(),
+                  mobile: row.mobile || row.phone || "",
+                  address,
+                  purok,
+                  role: (row.role as any) || "resident",
+                  status: finalStatus,
+                  registered: formatResidentDate(row.created_at),
+                  isOnline: false,
+                };
+              });
+            setLoadedResidents(mapped);
+            try {
+              localStorage.setItem(
+                "brgy_residents_cache",
+                JSON.stringify(mapped),
+              );
+            } catch {}
+          }
+        });
+    }
+  }, [registeredResidents]);
+
   // Collect all emails that have active threads (filter out deleted ones)
   const allEmails = Object.keys(threads).filter(
     (email) => !isThreadDeleted(email),
   );
-  const residents = allEmails.filter((email) => {
-    if (!search) return true;
-    const q = search.toLowerCase();
+  const activeMatchingEmails = allEmails.filter((email) => {
+    if (!search.trim()) return true;
+    const q = search.trim().toLowerCase();
     const name = resolveResidentMeta(email).name;
     return email.toLowerCase().includes(q) || name.toLowerCase().includes(q);
   });
 
-  // Sort: unread (last msg from resident) first, then by last msg timestamp
-  const sortedResidents = [...residents].sort((a, b) => {
+  // Sort active: unread first, then by last msg timestamp
+  const sortedResidents = [...activeMatchingEmails].sort((a, b) => {
     const aLast = threads[a]?.at(-1);
     const bLast = threads[b]?.at(-1);
     const aUnread = aLast?.from === "resident" ? 1 : 0;
     const bUnread = bLast?.from === "resident" ? 1 : 0;
     if (bUnread !== aUnread) return bUnread - aUnread;
     return (bLast?.timestamp ?? 0) - (aLast?.timestamp ?? 0);
+  });
+
+  // Other registered residents who are not currently in active threads
+  const currentAdminEmail = (currentUser?.email || "").toLowerCase().trim();
+  const availableResidents = loadedResidents.filter((r) => {
+    const resEmail = (r.email || "").toLowerCase().trim();
+    if (!resEmail) return false;
+    if (resEmail === currentAdminEmail) return false;
+    if (r.role === "admin") return false;
+    return !allEmails.includes(resEmail);
+  });
+
+  const filteredAvailable = availableResidents.filter((r) => {
+    if (!search.trim()) return true;
+    const q = search.trim().toLowerCase();
+    return (
+      (r.name && r.name.toLowerCase().includes(q)) ||
+      (r.email && r.email.toLowerCase().includes(q)) ||
+      (r.purok && r.purok.toLowerCase().includes(q)) ||
+      (r.address && r.address.toLowerCase().includes(q))
+    );
   });
 
   const ADMIN_QUICK_REPLIES = [
@@ -11688,58 +11477,430 @@ function AdminMessagesPage({
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
-          {sortedResidents.length === 0 && (
-            <p style={{ padding: "16px", color: "#798b84", fontSize: 13 }}>
-              No conversations yet.
-            </p>
-          )}
-          {sortedResidents.map((email) => {
-            const msgs = threads[email] ?? [];
-            const last = msgs.at(-1);
-            const hasUnread = last?.from === "resident";
-            const meta = resolveResidentMeta(email);
-            const displayName = meta.name || email;
-            const initials = getInitialsFromEmail(email, displayName);
-            return (
-              <div
-                key={email}
-                className={`thread-item-wrapper${activeThread === email ? " active" : ""}`}
-              >
-                <button
-                  type="button"
-                  className={`thread-item${activeThread === email ? " active" : ""}`}
-                  onClick={() => onSelectThread(email)}
-                >
-                  <Avatar
-                    initials={initials}
-                    tone={hasUnread ? "amber" : "green"}
-                  />
-                  <div className="thread-meta">
-                    <strong>{displayName}</strong>
-                    <small>
-                      {last
-                        ? (last.from === "admin" ? "You: " : "") +
-                          last.text.slice(0, 42) +
-                          (last.text.length > 42 ? "…" : "")
-                        : "No messages yet"}
-                    </small>
-                  </div>
-                  {hasUnread && <span className="msg-badge" />}
-                </button>
-                <button
-                  type="button"
-                  className="thread-delete-btn"
-                  title={`Delete conversation with ${displayName}`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setThreadToDelete(email);
+
+          {search.trim() ? (
+            /* Search is Active */
+            <>
+              {sortedResidents.length > 0 && (
+                <div
+                  style={{
+                    padding: "8px 14px 4px",
+                    fontSize: 11,
+                    fontWeight: 700,
+                    color: "#6b7280",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.5px",
                   }}
                 >
-                  <Icon name="trash" size={13} />
-                </button>
-              </div>
-            );
-          })}
+                  Active Conversations ({sortedResidents.length})
+                </div>
+              )}
+              {sortedResidents.map((email) => {
+                const msgs = threads[email] ?? [];
+                const last = msgs.at(-1);
+                const hasUnread = last?.from === "resident";
+                const meta = resolveResidentMeta(email);
+                const displayName = meta.name || email;
+                const initials = getInitialsFromEmail(email, displayName);
+                return (
+                  <div
+                    key={email}
+                    className={`thread-item-wrapper${activeThread === email ? " active" : ""}`}
+                  >
+                    <button
+                      type="button"
+                      className={`thread-item${activeThread === email ? " active" : ""}`}
+                      onClick={() => onSelectThread(email)}
+                    >
+                      <Avatar
+                        initials={initials}
+                        tone={hasUnread ? "amber" : "green"}
+                      />
+                      <div className="thread-meta">
+                        <strong>{displayName}</strong>
+                        <small>
+                          {last
+                            ? (last.from === "admin" ? "You: " : "") +
+                              last.text.slice(0, 42) +
+                              (last.text.length > 42 ? "…" : "")
+                            : "No messages yet"}
+                        </small>
+                      </div>
+                      {hasUnread && <span className="msg-badge" />}
+                    </button>
+                    <button
+                      type="button"
+                      className="thread-delete-btn"
+                      title={`Delete conversation with ${displayName}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setThreadToDelete(email);
+                      }}
+                    >
+                      <Icon name="trash" size={13} />
+                    </button>
+                  </div>
+                );
+              })}
+
+              {filteredAvailable.length > 0 && (
+                <div
+                  style={{
+                    padding: "10px 14px 4px",
+                    fontSize: 11,
+                    fontWeight: 700,
+                    color: "#166534",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.5px",
+                    borderTop:
+                      sortedResidents.length > 0
+                        ? "1px solid #e5e7eb"
+                        : "none",
+                  }}
+                >
+                  Start New Conversation ({filteredAvailable.length})
+                </div>
+              )}
+              {filteredAvailable.map((res) => {
+                const initials = getInitialsFromEmail(res.email, res.name);
+                return (
+                  <button
+                    key={res.email}
+                    type="button"
+                    className={`thread-item${activeThread === res.email ? " active" : ""}`}
+                    onClick={() => {
+                      unmarkThreadDeleted(res.email);
+                      onSelectThread(res.email);
+                    }}
+                    style={{
+                      width: "100%",
+                      textAlign: "left",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "10px",
+                        overflow: "hidden",
+                      }}
+                    >
+                      <Avatar initials={initials} tone="green" />
+                      <div
+                        className="thread-meta"
+                        style={{ overflow: "hidden" }}
+                      >
+                        <strong>{res.name}</strong>
+                        <small style={{ color: "#6b7280" }}>
+                          {res.email} · {res.purok || "Resident"}
+                        </small>
+                      </div>
+                    </div>
+                    <span
+                      style={{
+                        fontSize: "11px",
+                        fontWeight: 600,
+                        padding: "3px 8px",
+                        borderRadius: "12px",
+                        background: "#e8f5e9",
+                        color: "#166534",
+                        flexShrink: 0,
+                      }}
+                    >
+                      Message
+                    </span>
+                  </button>
+                );
+              })}
+
+              {sortedResidents.length === 0 &&
+                filteredAvailable.length === 0 && (
+                  <p
+                    style={{
+                      padding: "24px 16px",
+                      color: "#798b84",
+                      fontSize: 13,
+                      textAlign: "center",
+                    }}
+                  >
+                    No residents found matching "{search}".
+                  </p>
+                )}
+            </>
+          ) : (
+            /* Search is Empty */
+            <>
+              {sortedResidents.length > 0 ? (
+                <>
+                  {sortedResidents.map((email) => {
+                    const msgs = threads[email] ?? [];
+                    const last = msgs.at(-1);
+                    const hasUnread = last?.from === "resident";
+                    const meta = resolveResidentMeta(email);
+                    const displayName = meta.name || email;
+                    const initials = getInitialsFromEmail(email, displayName);
+                    return (
+                      <div
+                        key={email}
+                        className={`thread-item-wrapper${activeThread === email ? " active" : ""}`}
+                      >
+                        <button
+                          type="button"
+                          className={`thread-item${activeThread === email ? " active" : ""}`}
+                          onClick={() => onSelectThread(email)}
+                        >
+                          <Avatar
+                            initials={initials}
+                            tone={hasUnread ? "amber" : "green"}
+                          />
+                          <div className="thread-meta">
+                            <strong>{displayName}</strong>
+                            <small>
+                              {last
+                                ? (last.from === "admin" ? "You: " : "") +
+                                  last.text.slice(0, 42) +
+                                  (last.text.length > 42 ? "…" : "")
+                                : "No messages yet"}
+                            </small>
+                          </div>
+                          {hasUnread && <span className="msg-badge" />}
+                        </button>
+                        <button
+                          type="button"
+                          className="thread-delete-btn"
+                          title={`Delete conversation with ${displayName}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setThreadToDelete(email);
+                          }}
+                        >
+                          <Icon name="trash" size={13} />
+                        </button>
+                      </div>
+                    );
+                  })}
+
+                  {filteredAvailable.length > 0 && (
+                    <div
+                      style={{
+                        padding: "14px 14px 6px",
+                        borderTop: "1px solid #e5e7eb",
+                        marginTop: 8,
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontSize: 11,
+                          fontWeight: 700,
+                          color: "#166534",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.5px",
+                          marginBottom: 8,
+                        }}
+                      >
+                        Message Other Residents ({filteredAvailable.length})
+                      </div>
+                      {filteredAvailable.slice(0, 8).map((res) => {
+                        const initials = getInitialsFromEmail(
+                          res.email,
+                          res.name,
+                        );
+                        return (
+                          <button
+                            key={res.email}
+                            type="button"
+                            className={`thread-item${activeThread === res.email ? " active" : ""}`}
+                            onClick={() => {
+                              unmarkThreadDeleted(res.email);
+                              onSelectThread(res.email);
+                            }}
+                            style={{
+                              width: "100%",
+                              textAlign: "left",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "space-between",
+                              marginBottom: 2,
+                            }}
+                          >
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "10px",
+                                overflow: "hidden",
+                              }}
+                            >
+                              <Avatar initials={initials} tone="green" />
+                              <div
+                                className="thread-meta"
+                                style={{ overflow: "hidden" }}
+                              >
+                                <strong>{res.name}</strong>
+                                <small style={{ color: "#6b7280" }}>
+                                  {res.email} · {res.purok || "Resident"}
+                                </small>
+                              </div>
+                            </div>
+                            <span
+                              style={{
+                                fontSize: "11px",
+                                fontWeight: 600,
+                                padding: "3px 8px",
+                                borderRadius: "12px",
+                                background: "#e8f5e9",
+                                color: "#166534",
+                                flexShrink: 0,
+                              }}
+                            >
+                              + Chat
+                            </span>
+                          </button>
+                        );
+                      })}
+                      {filteredAvailable.length > 8 && (
+                        <p
+                          style={{
+                            fontSize: 11,
+                            color: "#6b7280",
+                            textAlign: "center",
+                            padding: "6px 0",
+                            margin: 0,
+                          }}
+                        >
+                          Use search bar above to message all{" "}
+                          {filteredAvailable.length} residents
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </>
+              ) : (
+                /* No Active Conversations (User's Exact Screenshot State) */
+                <div style={{ padding: "14px 14px" }}>
+                  <div
+                    style={{
+                      background: "#f0fdf4",
+                      border: "1px solid #bbf7d0",
+                      borderRadius: 8,
+                      padding: "10px 12px",
+                      marginBottom: 12,
+                    }}
+                  >
+                    <p
+                      style={{
+                        fontWeight: 600,
+                        fontSize: 13,
+                        color: "#166534",
+                        margin: "0 0 3px",
+                      }}
+                    >
+                      Start a New Conversation
+                    </p>
+                    <p
+                      style={{
+                        fontSize: 11.5,
+                        color: "#15803d",
+                        margin: 0,
+                        lineHeight: 1.4,
+                      }}
+                    >
+                      Choose a registered resident below or use the search bar above to begin messaging.
+                    </p>
+                  </div>
+
+                  {filteredAvailable.length > 0 ? (
+                    <div>
+                      <div
+                        style={{
+                          fontSize: 11,
+                          fontWeight: 700,
+                          color: "#6b7280",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.5px",
+                          marginBottom: 6,
+                        }}
+                      >
+                        Registered Residents ({filteredAvailable.length})
+                      </div>
+                      {filteredAvailable.map((res) => {
+                        const initials = getInitialsFromEmail(
+                          res.email,
+                          res.name,
+                        );
+                        return (
+                          <button
+                            key={res.email}
+                            type="button"
+                            className={`thread-item${activeThread === res.email ? " active" : ""}`}
+                            onClick={() => {
+                              unmarkThreadDeleted(res.email);
+                              onSelectThread(res.email);
+                            }}
+                            style={{
+                              width: "100%",
+                              textAlign: "left",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "space-between",
+                              marginBottom: 4,
+                            }}
+                          >
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "10px",
+                                overflow: "hidden",
+                              }}
+                            >
+                              <Avatar initials={initials} tone="green" />
+                              <div
+                                className="thread-meta"
+                                style={{ overflow: "hidden" }}
+                              >
+                                <strong>{res.name}</strong>
+                                <small style={{ color: "#6b7280" }}>
+                                  {res.email} · {res.purok || "Resident"}
+                                </small>
+                              </div>
+                            </div>
+                            <span
+                              style={{
+                                fontSize: "11px",
+                                fontWeight: 600,
+                                padding: "3px 8px",
+                                borderRadius: "12px",
+                                background: "#e8f5e9",
+                                color: "#166534",
+                                flexShrink: 0,
+                              }}
+                            >
+                              Message
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <p
+                      style={{
+                        padding: "20px 12px",
+                        color: "#798b84",
+                        fontSize: 13,
+                        textAlign: "center",
+                      }}
+                    >
+                      No registered residents found in database. New resident signups will appear here.
+                    </p>
+                  )}
+                </div>
+              )}
+            </>
+          )}
         </div>
 
         {/* Chat pane */}
@@ -11787,37 +11948,90 @@ function AdminMessagesPage({
             </div>
 
             <div className="chat-messages" ref={chatRef}>
-              {(threads[activeThread] ?? []).map((msg, i) => {
-                const isMe = msg.from === "admin";
-                const residentInitials = activeResidentMeta?.name
-                  ? initials(activeResidentMeta.name)
-                  : getInitialsFromEmail(activeThread || "Resident");
-                return (
+              {(threads[activeThread] ?? []).length === 0 ? (
+                <div
+                  style={{
+                    textAlign: "center",
+                    padding: "48px 16px",
+                    color: "#6b7280",
+                    margin: "auto",
+                  }}
+                >
                   <div
-                    key={i}
-                    className={`chat-bubble-wrap ${isMe ? "right" : "left"}`}
+                    style={{
+                      width: 46,
+                      height: 46,
+                      borderRadius: "50%",
+                      background: "#e8f5e9",
+                      color: "#166534",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      margin: "0 auto 12px",
+                    }}
                   >
-                    {!isMe && (
-                      <Avatar initials={residentInitials} tone="amber" />
-                    )}
-                    <div className="chat-bubble-content">
-                      <div className="chat-bubble">
-                        {msg.text}
-                        <button
-                          className="msg-delete-btn"
-                          title="Delete message"
-                          onClick={() =>
-                            onDeleteMessage(activeThread, msg.dbId, msg.timestamp)
-                          }
-                        >
-                          <Icon name="trash" size={11} />
-                        </button>
-                      </div>
-                      <small className="chat-time">{msg.time}</small>
-                    </div>
+                    <Icon name="message" size={22} />
                   </div>
-                );
-              })}
+                  <p
+                    style={{
+                      fontWeight: 600,
+                      fontSize: 15,
+                      color: "#111827",
+                      marginBottom: 4,
+                    }}
+                  >
+                    Conversation with {activeResidentMeta?.name || activeThread}
+                  </p>
+                  <p
+                    style={{
+                      fontSize: 12.5,
+                      color: "#6b7280",
+                      maxWidth: 320,
+                      margin: "0 auto",
+                      lineHeight: 1.4,
+                    }}
+                  >
+                    No messages yet. Send a message or choose a quick reply below
+                    to begin this conversation.
+                  </p>
+                </div>
+              ) : (
+                (threads[activeThread] ?? []).map((msg, i) => {
+                  const isMe = msg.from === "admin";
+                  const residentInitials = activeResidentMeta?.name
+                    ? initials(activeResidentMeta.name)
+                    : getInitialsFromEmail(activeThread || "Resident");
+                  return (
+                    <div
+                      key={i}
+                      className={`chat-bubble-wrap ${isMe ? "right" : "left"}`}
+                    >
+                      {!isMe && (
+                        <Avatar initials={residentInitials} tone="amber" />
+                      )}
+                      <div className="chat-bubble-content">
+                        <div className="chat-bubble">
+                          {msg.text}
+                          <button
+                            className="msg-delete-btn"
+                            title="Delete message"
+                            onClick={() =>
+                              onDeleteMessage(
+                                activeThread,
+                                msg.dbId,
+                                msg.timestamp,
+                              )
+                            }
+                          >
+                            <Icon name="trash" size={11} />
+                          </button>
+                        </div>
+                        <small className="chat-time">{msg.time}</small>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
             </div>
 
             {/* Quick replies */}
@@ -12335,69 +12549,7 @@ function formatResidentDate(isoDate?: string): string {
   }
 }
 
-const fallbackResidents: ResidentRecord[] = [
-  {
-    id: "res-101",
-    name: "Juan Dela Cruz",
-    email: "juan.delacruz@gmail.com",
-    mobile: "0917-123-4567",
-    address: "Block 4 Lot 12, Sampaguita St., Purok 1",
-    purok: "Purok 1",
-    role: "resident",
-    status: "active",
-    registered: "Yesterday",
-    isOnline: false,
-  },
-  {
-    id: "res-102",
-    name: "Maria Clara Santos",
-    email: "maria.santos@yahoo.com",
-    mobile: "0928-876-5432",
-    address: "142 Mabini Avenue, Purok 2",
-    purok: "Purok 2",
-    role: "resident",
-    status: "active",
-    registered: "Oct 18, 2026",
-    isOnline: false,
-  },
-  {
-    id: "res-103",
-    name: "Antonio Luna",
-    email: "antonio.luna@outlook.com",
-    mobile: "0939-555-0192",
-    address: "88 Narra Lane, Purok 3",
-    purok: "Purok 3",
-    role: "resident",
-    status: "pending",
-    registered: "Today",
-    isOnline: false,
-  },
-  {
-    id: "res-104",
-    name: "Gabriela Silang",
-    email: "gabriela.silang@gmail.com",
-    mobile: "0945-333-8877",
-    address: "23 Rizal Boulevard, Purok 4",
-    purok: "Purok 4",
-    role: "resident",
-    status: "active",
-    registered: "Oct 15, 2026",
-    isOnline: false,
-  },
-  {
-    id: "res-105",
-    name: "Emilio Aguinaldo",
-    email: "emilio.aguinaldo@gmail.com",
-    mobile: "0999-444-2211",
-    address: "55 Centro, Purok 7",
-    purok: "Purok 7",
-    role: "resident",
-    status: "suspended",
-    registered: "Oct 10, 2026",
-    isOnline: false,
-    banReason: "Community disturbance report under investigation",
-  },
-];
+const fallbackResidents: ResidentRecord[] = [];
 
 function ResidentsPage({
   pendingCount,
@@ -12417,7 +12569,7 @@ function ResidentsPage({
       const cached = localStorage.getItem("brgy_residents_cache");
       if (cached) return JSON.parse(cached);
     } catch {}
-    return fallbackResidents;
+    return [];
   });
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -12829,7 +12981,7 @@ function ResidentsPage({
       const meta = getResidentMeta();
       const purged = getPurgedIds();
 
-      const rawRows = data && data.length > 0 ? data : fallbackResidents;
+      const rawRows = data && data.length > 0 ? data : [];
 
       const mapped: ResidentRecord[] = rawRows
         .filter((row: any) => !purged.includes(String(row.id)))
@@ -12890,7 +13042,7 @@ function ResidentsPage({
       onPendingChange(pendingTotal);
     } catch (err) {
       console.error("Failed to load residents from Supabase:", err);
-      setResidents((prev) => (prev.length > 0 ? prev : fallbackResidents));
+      setResidents((prev) => (prev.length > 0 ? prev : []));
     } finally {
       setLoading(false);
       setRefreshing(false);
