@@ -594,6 +594,8 @@ h1,h2,h3 { font-family: Manrope, sans-serif; color: #203b32; }
   place-items: center;
   padding: 4px;
   border-radius: 6px;
+  cursor: pointer;
+  z-index: 2;
   transition: color .15s;
 }
 .show-password-btn:hover { color: #176b4d; }

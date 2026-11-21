@@ -27,7 +27,7 @@ export async function copyToClipboard(text: string): Promise<boolean> {
   }
 }
 
-type IconName = "alert" | "ban" | "bell" | "calendar" | "check" | "chevron" | "clock" | "document" | "edit" | "filter" | "home" | "image" | "lock" | "logo" | "megaphone" | "message" | "more" | "phone" | "plus" | "refresh" | "search" | "send" | "settings" | "shield" | "trash" | "userCheck" | "users" | "x"
+type IconName = "alert" | "ban" | "bell" | "calendar" | "check" | "chevron" | "clock" | "document" | "edit" | "eye" | "eyeOff" | "filter" | "home" | "image" | "lock" | "logo" | "megaphone" | "message" | "more" | "phone" | "plus" | "refresh" | "search" | "send" | "settings" | "shield" | "trash" | "userCheck" | "users" | "x"
 
 const paths: Record<IconName, React.ReactNode> = {
   alert: (
@@ -81,6 +81,22 @@ const paths: Record<IconName, React.ReactNode> = {
     <>
       <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
       <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+    </>
+  ),
+
+  eye: (
+    <>
+      <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+      <circle cx="12" cy="12" r="3" />
+    </>
+  ),
+
+  eyeOff: (
+    <>
+      <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
+      <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
+      <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
+      <line x1="2" y1="2" x2="22" y2="22" />
     </>
   ),
 
@@ -2214,6 +2230,7 @@ function UserProfileModal({
   // Email state
   const [newEmail, setNewEmail] = useState("")
   const [verifyEmailPassword, setVerifyEmailPassword] = useState("")
+  const [showVerifyEmailPassword, setShowVerifyEmailPassword] = useState(false)
   const [emailLoading, setEmailLoading] = useState(false)
   const [emailError, setEmailError] = useState("")
   const [emailSuccess, setEmailSuccess] = useState("")
@@ -2802,12 +2819,32 @@ function UserProfileModal({
             </label>
             <label className="field">
               Current Password (Optional verification)
-              <input
-                type="password"
-                value={verifyEmailPassword}
-                onChange={(e) => setVerifyEmailPassword(e.target.value)}
-                placeholder="Enter password if required"
-              />
+              <div className="password-wrapper">
+                <input
+                  type={showVerifyEmailPassword ? "text" : "password"}
+                  value={verifyEmailPassword}
+                  onChange={(e) => setVerifyEmailPassword(e.target.value)}
+                  placeholder="Enter password if required"
+                />
+                <button
+                  type="button"
+                  className="show-password-btn"
+                  onClick={() =>
+                    setShowVerifyEmailPassword(!showVerifyEmailPassword)
+                  }
+                  aria-label={
+                    showVerifyEmailPassword ? "Hide password" : "Show password"
+                  }
+                  title={
+                    showVerifyEmailPassword ? "Hide password" : "Show password"
+                  }
+                >
+                  <Icon
+                    name={showVerifyEmailPassword ? "eyeOff" : "eye"}
+                    size={18}
+                  />
+                </button>
+              </div>
             </label>
 
             {emailError && (
@@ -2939,77 +2976,29 @@ function UserProfileModal({
             {/* Current Password Field */}
             <label className="field">
               Current Password *
-              <div
-                style={{
-                  position: "relative",
-
-                  display: "flex",
-
-                  alignItems: "center",
-                }}
-              >
+              <div className="password-wrapper">
                 <input
                   type={showCurrentPassword ? "text" : "password"}
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
                   placeholder="Enter your current password"
-                  style={{ width: "100%", paddingRight: "40px" }}
                   required
                 />
                 <button
                   type="button"
+                  className="show-password-btn"
                   onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                  style={{
-                    position: "absolute",
-
-                    right: "10px",
-
-                    background: "none",
-
-                    border: "none",
-
-                    cursor: "pointer",
-
-                    color: "#6b7280",
-
-                    display: "flex",
-
-                    alignItems: "center",
-                  }}
                   aria-label={
                     showCurrentPassword ? "Hide password" : "Show password"
                   }
+                  title={
+                    showCurrentPassword ? "Hide password" : "Show password"
+                  }
                 >
-                  {showCurrentPassword ? (
-                    <svg
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.8"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
-                      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
-                      <line x1="1" y1="1" x2="23" y2="23" />
-                    </svg>
-                  ) : (
-                    <svg
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.8"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                      <circle cx="12" cy="12" r="3" />
-                    </svg>
-                  )}
+                  <Icon
+                    name={showCurrentPassword ? "eyeOff" : "eye"}
+                    size={18}
+                  />
                 </button>
               </div>
             </label>
@@ -3017,77 +3006,29 @@ function UserProfileModal({
             {/* New Password Field */}
             <label className="field">
               New Password *
-              <div
-                style={{
-                  position: "relative",
-
-                  display: "flex",
-
-                  alignItems: "center",
-                }}
-              >
+              <div className="password-wrapper">
                 <input
                   type={showNewPassword ? "text" : "password"}
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   placeholder="Enter new password (min. 8 characters)"
-                  style={{ width: "100%", paddingRight: "40px" }}
                   required
                 />
                 <button
                   type="button"
+                  className="show-password-btn"
                   onClick={() => setShowNewPassword(!showNewPassword)}
-                  style={{
-                    position: "absolute",
-
-                    right: "10px",
-
-                    background: "none",
-
-                    border: "none",
-
-                    cursor: "pointer",
-
-                    color: "#6b7280",
-
-                    display: "flex",
-
-                    alignItems: "center",
-                  }}
                   aria-label={
                     showNewPassword ? "Hide password" : "Show password"
                   }
+                  title={
+                    showNewPassword ? "Hide password" : "Show password"
+                  }
                 >
-                  {showNewPassword ? (
-                    <svg
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.8"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
-                      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
-                      <line x1="1" y1="1" x2="23" y2="23" />
-                    </svg>
-                  ) : (
-                    <svg
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.8"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                      <circle cx="12" cy="12" r="3" />
-                    </svg>
-                  )}
+                  <Icon
+                    name={showNewPassword ? "eyeOff" : "eye"}
+                    size={18}
+                  />
                 </button>
               </div>
             </label>
@@ -3095,77 +3036,29 @@ function UserProfileModal({
             {/* Confirm New Password Field */}
             <label className="field">
               Confirm New Password *
-              <div
-                style={{
-                  position: "relative",
-
-                  display: "flex",
-
-                  alignItems: "center",
-                }}
-              >
+              <div className="password-wrapper">
                 <input
                   type={showConfirmPassword ? "text" : "password"}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Re-type your new password"
-                  style={{ width: "100%", paddingRight: "40px" }}
                   required
                 />
                 <button
                   type="button"
+                  className="show-password-btn"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  style={{
-                    position: "absolute",
-
-                    right: "10px",
-
-                    background: "none",
-
-                    border: "none",
-
-                    cursor: "pointer",
-
-                    color: "#6b7280",
-
-                    display: "flex",
-
-                    alignItems: "center",
-                  }}
                   aria-label={
                     showConfirmPassword ? "Hide password" : "Show password"
                   }
+                  title={
+                    showConfirmPassword ? "Hide password" : "Show password"
+                  }
                 >
-                  {showConfirmPassword ? (
-                    <svg
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.8"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
-                      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
-                      <line x1="1" y1="1" x2="23" y2="23" />
-                    </svg>
-                  ) : (
-                    <svg
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.8"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                      <circle cx="12" cy="12" r="3" />
-                    </svg>
-                  )}
+                  <Icon
+                    name={showConfirmPassword ? "eyeOff" : "eye"}
+                    size={18}
+                  />
                 </button>
               </div>
             </label>
@@ -10143,6 +10036,10 @@ function LoginView({
 
   const [regConfirm, setRegConfirm] = useState("")
 
+  const [showRegPassword, setShowRegPassword] = useState(false)
+
+  const [showRegConfirm, setShowRegConfirm] = useState(false)
+
   const [regError, setRegError] = useState("")
 
   const [regSubmitting, setRegSubmitting] = useState(false)
@@ -10788,37 +10685,9 @@ function LoginView({
                 className="show-password-btn"
                 onClick={() => setShowPassword((v) => !v)}
                 aria-label={showPassword ? "Hide password" : "Show password"}
+                title={showPassword ? "Hide password" : "Show password"}
               >
-                {showPassword ? (
-                  <svg
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
-                    <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
-                    <line x1="1" y1="1" x2="23" y2="23" />
-                  </svg>
-                ) : (
-                  <svg
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                    <circle cx="12" cy="12" r="3" />
-                  </svg>
-                )}
+                <Icon name={showPassword ? "eyeOff" : "eye"} size={18} />
               </button>
             </div>
           </label>
@@ -10946,23 +10815,59 @@ function LoginView({
             </label>
             <label className="field">
               Create password *
-              <input
-                type="password"
-                required
-                placeholder="At least 8 characters"
-                value={regPassword}
-                onChange={(e) => setRegPassword(e.target.value)}
-              />
+              <div className="password-wrapper">
+                <input
+                  type={showRegPassword ? "text" : "password"}
+                  required
+                  placeholder="At least 8 characters"
+                  value={regPassword}
+                  onChange={(e) => setRegPassword(e.target.value)}
+                />
+                <button
+                  type="button"
+                  className="show-password-btn"
+                  onClick={() => setShowRegPassword(!showRegPassword)}
+                  aria-label={
+                    showRegPassword ? "Hide password" : "Show password"
+                  }
+                  title={
+                    showRegPassword ? "Hide password" : "Show password"
+                  }
+                >
+                  <Icon
+                    name={showRegPassword ? "eyeOff" : "eye"}
+                    size={18}
+                  />
+                </button>
+              </div>
             </label>
             <label className="field">
               Confirm password *
-              <input
-                type="password"
-                required
-                placeholder="Re-enter your password"
-                value={regConfirm}
-                onChange={(e) => setRegConfirm(e.target.value)}
-              />
+              <div className="password-wrapper">
+                <input
+                  type={showRegConfirm ? "text" : "password"}
+                  required
+                  placeholder="Re-enter your password"
+                  value={regConfirm}
+                  onChange={(e) => setRegConfirm(e.target.value)}
+                />
+                <button
+                  type="button"
+                  className="show-password-btn"
+                  onClick={() => setShowRegConfirm(!showRegConfirm)}
+                  aria-label={
+                    showRegConfirm ? "Hide password" : "Show password"
+                  }
+                  title={
+                    showRegConfirm ? "Hide password" : "Show password"
+                  }
+                >
+                  <Icon
+                    name={showRegConfirm ? "eyeOff" : "eye"}
+                    size={18}
+                  />
+                </button>
+              </div>
             </label>
             <button
               className="primary-button full"
@@ -17284,6 +17189,8 @@ function ResidentsPage({
 
   const [showPwResetNew, setShowPwResetNew] = useState(false)
 
+  const [showPwResetConfirm, setShowPwResetConfirm] = useState(false)
+
   const [copiedSms, setCopiedSms] = useState(false)
 
   // Reload pw reset requests from storage and Supabase
@@ -20615,41 +20522,29 @@ function ResidentsPage({
 
           <label className="field">
             Initial Temporary Password
-            <div style={{ position: "relative" }}>
+            <div className="password-wrapper">
               <input
                 type={showAddPassword ? "text" : "password"}
                 value={newResident.password}
                 onChange={(e) =>
                   setNewResident({ ...newResident, password: e.target.value })
                 }
-                style={{ width: "100%", paddingRight: "40px" }}
               />
               <button
                 type="button"
+                className="show-password-btn"
                 onClick={() => setShowAddPassword(!showAddPassword)}
-                style={{
-                  position: "absolute",
-
-                  right: "10px",
-
-                  top: "50%",
-
-                  transform: "translateY(-50%)",
-
-                  border: "none",
-
-                  background: "transparent",
-
-                  cursor: "pointer",
-
-                  fontSize: "11px",
-
-                  color: "#176b4d",
-
-                  fontWeight: "600",
-                }}
+                aria-label={
+                  showAddPassword ? "Hide password" : "Show password"
+                }
+                title={
+                  showAddPassword ? "Hide password" : "Show password"
+                }
               >
-                {showAddPassword ? "Hide" : "Show"}
+                <Icon
+                  name={showAddPassword ? "eyeOff" : "eye"}
+                  size={18}
+                />
               </button>
             </div>
             <small style={{ color: "#74867f", fontSize: "10px" }}>
@@ -21170,8 +21065,17 @@ function ResidentsPage({
                     onClick={() =>
                       setShowPwResetAdminPass(!showPwResetAdminPass)
                     }
+                    aria-label={
+                      showPwResetAdminPass ? "Hide password" : "Show password"
+                    }
+                    title={
+                      showPwResetAdminPass ? "Hide password" : "Show password"
+                    }
                   >
-                    {showPwResetAdminPass ? "Hide" : "Show"}
+                    <Icon
+                      name={showPwResetAdminPass ? "eyeOff" : "eye"}
+                      size={18}
+                    />
                   </button>
                 </div>
               </label>
@@ -21227,20 +21131,47 @@ function ResidentsPage({
                     type="button"
                     className="show-password-btn"
                     onClick={() => setShowPwResetNew(!showPwResetNew)}
+                    aria-label={
+                      showPwResetNew ? "Hide password" : "Show password"
+                    }
+                    title={
+                      showPwResetNew ? "Hide password" : "Show password"
+                    }
                   >
-                    {showPwResetNew ? "Hide" : "Show"}
+                    <Icon
+                      name={showPwResetNew ? "eyeOff" : "eye"}
+                      size={18}
+                    />
                   </button>
                 </div>
               </label>
 
               <label className="field" style={{ margin: 0 }}>
                 <strong>Confirm Temporary Password *</strong>
-                <input
-                  type={showPwResetNew ? "text" : "password"}
-                  placeholder="Re-enter temporary password"
-                  value={pwResetConfirmPass}
-                  onChange={(e) => setPwResetConfirmPass(e.target.value)}
-                />
+                <div className="password-wrapper">
+                  <input
+                    type={showPwResetConfirm ? "text" : "password"}
+                    placeholder="Re-enter temporary password"
+                    value={pwResetConfirmPass}
+                    onChange={(e) => setPwResetConfirmPass(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    className="show-password-btn"
+                    onClick={() => setShowPwResetConfirm(!showPwResetConfirm)}
+                    aria-label={
+                      showPwResetConfirm ? "Hide password" : "Show password"
+                    }
+                    title={
+                      showPwResetConfirm ? "Hide password" : "Show password"
+                    }
+                  >
+                    <Icon
+                      name={showPwResetConfirm ? "eyeOff" : "eye"}
+                      size={18}
+                    />
+                  </button>
+                </div>
               </label>
 
               <div
@@ -21417,6 +21348,9 @@ function BarangaySettingsPage({
   const [confirmPassword, setConfirmPassword] = useState("")
 
   const [showPassword, setShowPassword] = useState(false)
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [showVerifyEmailPassword, setShowVerifyEmailPassword] = useState(false)
 
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false)
 
@@ -22729,12 +22663,36 @@ function BarangaySettingsPage({
                 </label>
                 <label className="field full">
                   Current password (optional verification)
-                  <input
-                    type="password"
-                    value={verifyEmailPassword}
-                    onChange={(e) => setVerifyEmailPassword(e.target.value)}
-                    placeholder="Enter current password if required"
-                  />
+                  <div className="password-wrapper">
+                    <input
+                      type={showVerifyEmailPassword ? "text" : "password"}
+                      value={verifyEmailPassword}
+                      onChange={(e) => setVerifyEmailPassword(e.target.value)}
+                      placeholder="Enter current password if required"
+                    />
+                    <button
+                      type="button"
+                      className="show-password-btn"
+                      onClick={() =>
+                        setShowVerifyEmailPassword(!showVerifyEmailPassword)
+                      }
+                      aria-label={
+                        showVerifyEmailPassword
+                          ? "Hide password"
+                          : "Show password"
+                      }
+                      title={
+                        showVerifyEmailPassword
+                          ? "Hide password"
+                          : "Show password"
+                      }
+                    >
+                      <Icon
+                        name={showVerifyEmailPassword ? "eyeOff" : "eye"}
+                        size={18}
+                      />
+                    </button>
+                  </div>
                 </label>
               </div>
 
@@ -22790,16 +22748,36 @@ function BarangaySettingsPage({
               <div className="settings-grid">
                 <label className="field full">
                   Current password
-                  <input
-                    type="password"
-                    value={currentPassword}
-                    onChange={(e) => setCurrentPassword(e.target.value)}
-                    placeholder="Enter current password to verify identity"
-                  />
+                  <div className="password-wrapper">
+                    <input
+                      type={showCurrentPassword ? "text" : "password"}
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                      placeholder="Enter current password to verify identity"
+                    />
+                    <button
+                      type="button"
+                      className="show-password-btn"
+                      onClick={() =>
+                        setShowCurrentPassword(!showCurrentPassword)
+                      }
+                      aria-label={
+                        showCurrentPassword ? "Hide password" : "Show password"
+                      }
+                      title={
+                        showCurrentPassword ? "Hide password" : "Show password"
+                      }
+                    >
+                      <Icon
+                        name={showCurrentPassword ? "eyeOff" : "eye"}
+                        size={18}
+                      />
+                    </button>
+                  </div>
                 </label>
                 <label className="field">
                   New password
-                  <div className="pass-input-box">
+                  <div className="password-wrapper">
                     <input
                       type={showPassword ? "text" : "password"}
                       value={newPassword}
@@ -22808,22 +22786,52 @@ function BarangaySettingsPage({
                     />
                     <button
                       type="button"
-                      className="pass-toggle-eye"
+                      className="show-password-btn"
                       onClick={() => setShowPassword(!showPassword)}
+                      aria-label={
+                        showPassword ? "Hide password" : "Show password"
+                      }
                       title={showPassword ? "Hide password" : "Show password"}
                     >
-                      <Icon name="search" size={14} />
+                      <Icon
+                        name={showPassword ? "eyeOff" : "eye"}
+                        size={18}
+                      />
                     </button>
                   </div>
                 </label>
                 <label className="field">
                   Confirm new password
-                  <input
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="Repeat new password"
-                  />
+                  <div className="password-wrapper">
+                    <input
+                      type={showConfirmPassword ? "text" : "password"}
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="Repeat new password"
+                    />
+                    <button
+                      type="button"
+                      className="show-password-btn"
+                      onClick={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }
+                      aria-label={
+                        showConfirmPassword
+                          ? "Hide password"
+                          : "Show password"
+                      }
+                      title={
+                        showConfirmPassword
+                          ? "Hide password"
+                          : "Show password"
+                      }
+                    >
+                      <Icon
+                        name={showConfirmPassword ? "eyeOff" : "eye"}
+                        size={18}
+                      />
+                    </button>
+                  </div>
                 </label>
               </div>
 
