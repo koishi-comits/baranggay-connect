@@ -15,6 +15,7 @@ export default defineConfig(({ mode }) => {
       ? `${process.env.FIGMA_PUBLIC_URL}/`
       : "/",
     build: {
+      target: ["es2020", "edge88", "firefox78", "chrome87", "safari14"],
       sourcemap: emitSourcemaps ? "inline" : false,
       minify: !emitSourcemaps,
     },

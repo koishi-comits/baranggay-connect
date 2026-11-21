@@ -2,6 +2,31 @@ import { useEffect, useMemo, useRef, useState } from "react"
 
 import { supabase, createGuestClient } from "./supabase"
 
+export async function copyToClipboard(text: string): Promise<boolean> {
+  try {
+    if (navigator?.clipboard?.writeText && window.isSecureContext) {
+      await navigator.clipboard.writeText(text)
+      return true
+    }
+  } catch {}
+  try {
+    const textArea = document.createElement("textarea")
+    textArea.value = text
+    textArea.style.position = "fixed"
+    textArea.style.left = "-999999px"
+    textArea.style.top = "-999999px"
+    textArea.setAttribute("readonly", "")
+    document.body.appendChild(textArea)
+    textArea.focus()
+    textArea.select()
+    const successful = document.execCommand("copy")
+    document.body.removeChild(textArea)
+    return successful
+  } catch {
+    return false
+  }
+}
+
 type IconName = "alert" | "ban" | "bell" | "calendar" | "check" | "chevron" | "clock" | "document" | "edit" | "filter" | "home" | "image" | "lock" | "logo" | "megaphone" | "message" | "more" | "phone" | "plus" | "refresh" | "search" | "send" | "settings" | "shield" | "trash" | "userCheck" | "users" | "x"
 
 const paths: Record<IconName, React.ReactNode> = {
@@ -180,7 +205,7 @@ const paths: Record<IconName, React.ReactNode> = {
   x: <path d="M18 6 6 18M6 6l12 12" />,
 }
 
-function Icon({ name, size = 20 }: { name: IconName size?: number }) {
+function Icon({ name, size = 20 }: { name: IconName; size?: number }) {
   return (
     <svg
       width={size}
@@ -1139,6 +1164,8 @@ export type Msg = {
   timestamp?: number
 
   dbId?: number
+
+  senderEmail?: string
 }
 
 export const initialThreads: Record<string, Msg[]> = {}
@@ -1410,6 +1437,12 @@ export function getPromotedAdminEmails(): string[] {
   return []
 }
 
+export function savePromotedAdminEmails(emails: string[]) {
+  try {
+    localStorage.setItem("brgy_promoted_admins", JSON.stringify(emails))
+  } catch {}
+}
+
 export function isPromotedAdmin(email?: string, list?: string[]): boolean {
   if (!email) return false
 
@@ -1420,10 +1453,39 @@ export function isPromotedAdmin(email?: string, list?: string[]): boolean {
   return adminList.some((adm) => adm.toLowerCase().trim() === e)
 }
 
-export function isRootMasterAdmin(email?: string): boolean {
+export function getSavedMasterAdminEmail(): string | null {
+  try {
+    const saved = localStorage.getItem("brgy_master_admin_email")
+    if (saved) return saved.toLowerCase().trim()
+  } catch {}
+  return null
+}
+
+export function saveMasterAdminEmail(email: string) {
+  try {
+    localStorage.setItem("brgy_master_admin_email", email.toLowerCase().trim())
+  } catch {}
+}
+
+export function parseMasterAdminFromDesc(desc?: string): string | null {
+  if (!desc) return null
+  const match = desc.match(/<!--\s*MASTER_ADMIN:\s*([^\s>]+)\s*-->/)
+  if (match && match[1]) {
+    return match[1].toLowerCase().trim()
+  }
+  return null
+}
+
+export function isRootMasterAdmin(email?: string, desc?: string): boolean {
   if (!email) return false
 
   const e = email.toLowerCase().trim()
+
+  const saved = getSavedMasterAdminEmail()
+  if (saved && e === saved) return true
+
+  const fromDesc = parseMasterAdminFromDesc(desc)
+  if (fromDesc && e === fromDesc) return true
 
   return (
     e === "admin@sanisidro.gov.ph" ||
@@ -1434,15 +1496,17 @@ export function isRootMasterAdmin(email?: string): boolean {
 }
 
 export function checkIsAdmin(
-  user: { email?: string role?: string } | null,
-
+  user: { email?: string; role?: string } | null,
   promotedAdminsList?: string[],
+  desc?: string,
 ): boolean {
   if (!user || !user.email) return false
 
   const email = user.email.toLowerCase().trim()
 
-  if (isRootMasterAdmin(email)) return true
+  if (user.role === "admin") return true
+
+  if (isRootMasterAdmin(email, desc)) return true
 
   return isPromotedAdmin(email, promotedAdminsList)
 }
@@ -1498,7 +1562,7 @@ export function parseScheduleFromDesc(desc?: string): OperatingDay[] | null {
 
 export function parseActiveResetsFromDesc(
   desc?: string,
-): Record<string, { tempPassword: string resetAt: string }> {
+): Record<string, { tempPassword: string; resetAt: string }> {
   if (!desc) return {}
 
   const match = desc.match(/<!--\s*ACTIVE_RESETS:\s*(\{.*?\})\s*-->/)
@@ -1824,7 +1888,7 @@ export function resolveResidentMeta(
   email: string,
 
   fallbackName?: string,
-): { name: string purok: string phone: string address: string } {
+): { name: string; purok: string; phone: string; address: string } {
   const dir = getResidentDirectory()
 
   const lower = email.toLowerCase().trim()
@@ -2091,20 +2155,23 @@ const initialEmergencyHotlines: EmergencyHotline[] = [
 
 function UserProfileModal({
   user,
-
   onClose,
-
   onSave,
-
   onToast,
+  onUpdateEmail,
 }: {
   user: Account
 
   onClose: () => void
 
-  onSave: (updated: { name: string photoUrl: string }) => void
+  onSave: (updated: { name: string; photoUrl: string }) => void
 
   onToast?: (msg: string) => void
+
+  onUpdateEmail?: (
+    newEmail: string,
+    verifyPassword?: string,
+  ) => Promise<{ success: boolean; error?: string }>
 }) {
   const storedPhoto = (() => {
     try {
@@ -2114,7 +2181,9 @@ function UserProfileModal({
     }
   })()
 
-  const [activeTab, setActiveTab] = useState<"profile" | "password">("profile")
+  const [activeTab, setActiveTab] = useState<"profile" | "email" | "password">(
+    "profile",
+  )
 
   // Profile state
 
@@ -2141,6 +2210,49 @@ function UserProfileModal({
   const [saving, setSaving] = useState(false)
 
   const fileRef = useRef<HTMLInputElement>(null)
+
+  // Email state
+  const [newEmail, setNewEmail] = useState("")
+  const [verifyEmailPassword, setVerifyEmailPassword] = useState("")
+  const [emailLoading, setEmailLoading] = useState(false)
+  const [emailError, setEmailError] = useState("")
+  const [emailSuccess, setEmailSuccess] = useState("")
+
+  async function handleEmailSubmit() {
+    if (!newEmail.trim() || !newEmail.includes("@")) {
+      setEmailError("Please enter a valid email address.")
+      return
+    }
+    if (newEmail.trim().toLowerCase() === user.email.toLowerCase()) {
+      setEmailError("New email must be different from your current email.")
+      return
+    }
+    setEmailLoading(true)
+    setEmailError("")
+    setEmailSuccess("")
+    try {
+      if (onUpdateEmail) {
+        const res = await onUpdateEmail(
+          newEmail.trim().toLowerCase(),
+          verifyEmailPassword || undefined,
+        )
+        if (!res.success) {
+          setEmailError(res.error || "Failed to update email.")
+          return
+        }
+      }
+      setEmailSuccess(
+        `Email updated successfully to ${newEmail.trim().toLowerCase()}! ✅`,
+      )
+      setNewEmail("")
+      setVerifyEmailPassword("")
+      if (onToast) onToast("Email updated successfully! ✅")
+    } catch (err: any) {
+      setEmailError(err?.message || "Failed to update email.")
+    } finally {
+      setEmailLoading(false)
+    }
+  }
 
   // Password state
 
@@ -2372,6 +2484,43 @@ function UserProfileModal({
             }}
           >
             <Icon name="userCheck" size={15} /> Profile Details
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setActiveTab("email")
+
+              setEmailError("")
+
+              setEmailSuccess("")
+            }}
+            style={{
+              padding: "7px 14px",
+
+              borderRadius: "8px",
+
+              fontSize: "13px",
+
+              fontWeight: 600,
+
+              cursor: "pointer",
+
+              border: "none",
+
+              background: activeTab === "email" ? "#16a34a" : "transparent",
+
+              color: activeTab === "email" ? "white" : "#4b5563",
+
+              display: "flex",
+
+              alignItems: "center",
+
+              gap: "6px",
+
+              transition: "all 0.15s ease",
+            }}
+          >
+            <Icon name="message" size={15} /> Change Email
           </button>
           <button
             type="button"
@@ -2615,6 +2764,103 @@ function UserProfileModal({
               </button>
             </div>
           </>
+        ) : activeTab === "email" ? (
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "14px" }}
+          >
+            <p
+              style={{
+                margin: 0,
+                fontSize: "12.5px",
+                color: "#64748b",
+                lineHeight: 1.5,
+              }}
+            >
+              Update your registered account email address. This email will be
+              used for signing in, receiving official notices, and recovery.
+            </p>
+            <label className="field">
+              Current Email Address
+              <input
+                value={user.email}
+                disabled
+                style={{
+                  background: "#f3f4f6",
+                  color: "#6b7280",
+                  cursor: "not-allowed",
+                }}
+              />
+            </label>
+            <label className="field">
+              New Email Address *
+              <input
+                type="email"
+                value={newEmail}
+                onChange={(e) => setNewEmail(e.target.value)}
+                placeholder="Enter new email address"
+              />
+            </label>
+            <label className="field">
+              Current Password (Optional verification)
+              <input
+                type="password"
+                value={verifyEmailPassword}
+                onChange={(e) => setVerifyEmailPassword(e.target.value)}
+                placeholder="Enter password if required"
+              />
+            </label>
+
+            {emailError && (
+              <div
+                style={{
+                  background: "#fef2f2",
+                  color: "#991b1b",
+                  border: "1px solid #fecaca",
+                  padding: "10px 14px",
+                  borderRadius: "8px",
+                  fontSize: "13px",
+                  fontWeight: 600,
+                }}
+              >
+                {emailError}
+              </div>
+            )}
+
+            {emailSuccess && (
+              <div
+                style={{
+                  background: "#f0fdf4",
+                  color: "#166534",
+                  border: "1px solid #bbf7d0",
+                  padding: "10px 14px",
+                  borderRadius: "8px",
+                  fontSize: "13px",
+                  fontWeight: 600,
+                }}
+              >
+                {emailSuccess}
+              </div>
+            )}
+
+            <div className="modal-actions">
+              <button
+                type="button"
+                className="ghost-button"
+                onClick={onClose}
+                disabled={emailLoading}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="primary-button"
+                onClick={handleEmailSubmit}
+                disabled={emailLoading || !newEmail.trim()}
+              >
+                {emailLoading ? "Updating..." : "Update Email"}
+              </button>
+            </div>
+          </div>
         ) : (
           <form
             onSubmit={handlePasswordChange}
@@ -3433,7 +3679,10 @@ export default function App() {
 
       const email = (authUser.email ?? "").toLowerCase().trim()
 
-      const isAdm = isRootMasterAdmin(email) || isPromotedAdmin(email)
+      const isAdm =
+        profile.role === "admin" ||
+        isRootMasterAdmin(email) ||
+        isPromotedAdmin(email)
 
       return {
         id: authUser.id,
@@ -3587,24 +3836,47 @@ export default function App() {
     async function fetchLiveMessages() {
       try {
         const { data: dbMsgs, error } = await supabase
-
           .from("messages")
-
           .select("*")
-
           .order("created_at", { ascending: true })
 
         if (!error && dbMsgs && dbMsgs.length > 0) {
           const deleted = getDeletedThreads()
-
           const newThreads: Record<string, Msg[]> = {}
+          const currentEmail = (user?.email || "").toLowerCase().trim()
 
           dbMsgs.forEach((row: any) => {
-            const em = (row.resident_email || "").toLowerCase().trim()
+            const rowEmail = (row.resident_email || "").toLowerCase().trim()
+            if (!rowEmail) return
 
-            if (!em || deleted.includes(em)) return
+            const senderRaw = (row.sender || "").trim()
+            const isSenderAdminWithEmail =
+              senderRaw.startsWith("admin:") && senderRaw.includes("@")
+            const senderAdminEmail = isSenderAdminWithEmail
+              ? senderRaw.replace(/^admin:/, "").toLowerCase().trim()
+              : null
 
-            if (!newThreads[em]) newThreads[em] = []
+            let threadKey = rowEmail
+            let fromDirection: "admin" | "resident" =
+              senderRaw.startsWith("admin") ? "admin" : "resident"
+
+            if (senderAdminEmail && currentEmail) {
+              if (currentEmail === senderAdminEmail) {
+                // Sent by current user to rowEmail
+                threadKey = rowEmail
+                fromDirection = "admin"
+              } else if (currentEmail === rowEmail) {
+                // Received by current user from senderAdminEmail
+                threadKey = senderAdminEmail
+                fromDirection = "resident"
+              } else {
+                threadKey = rowEmail
+                fromDirection = "admin"
+              }
+            }
+
+            if (deleted.includes(threadKey)) return
+            if (!newThreads[threadKey]) newThreads[threadKey] = []
 
             const d = new Date(row.created_at)
 
@@ -3612,7 +3884,6 @@ export default function App() {
               ? "Today"
               : d.toLocaleDateString("en-US", {
                   month: "short",
-
                   day: "numeric",
                 })
 
@@ -3620,20 +3891,16 @@ export default function App() {
               ? "Just now"
               : d.toLocaleTimeString("en-US", {
                   hour: "numeric",
-
                   minute: "2-digit",
                 })
 
-            newThreads[em].push({
-              from: row.sender === "admin" ? "admin" : "resident",
-
+            newThreads[threadKey].push({
+              from: fromDirection,
               text: row.text,
-
               time: `${dateStr} · ${timeStr}`,
-
               timestamp: isNaN(d.getTime()) ? Date.now() : d.getTime(),
-
               dbId: row.id,
+              senderEmail: senderAdminEmail || undefined,
             })
           })
 
@@ -5144,7 +5411,7 @@ export default function App() {
     }
 
     try {
-      await navigator.clipboard.writeText(shareText)
+      await copyToClipboard(shareText)
 
       showToast("Announcement details copied to clipboard!")
     } catch {
@@ -5303,6 +5570,13 @@ export default function App() {
 
     try {
       await supabase.from("messages").delete().eq("resident_email", cleanEmail)
+      if (user?.email) {
+        await supabase
+          .from("messages")
+          .delete()
+          .eq("resident_email", user.email.toLowerCase().trim())
+          .eq("sender", `admin:${cleanEmail}`)
+      }
     } catch (err) {
       console.warn("Supabase delete thread messages error:", err)
     }
@@ -5334,7 +5608,20 @@ export default function App() {
 
     const msgTimestamp = Date.now()
 
-    const msg: Msg = { from, text, time: timeStr, timestamp: msgTimestamp }
+    const senderTag =
+      from === "admin"
+        ? user?.email
+          ? `admin:${user.email.toLowerCase().trim()}`
+          : "admin"
+        : "resident"
+
+    const msg: Msg = {
+      from,
+      text,
+      time: timeStr,
+      timestamp: msgTimestamp,
+      senderEmail: user?.email ? user.email.toLowerCase().trim() : undefined,
+    }
 
     // 1. Update local state immediately for instant feedback
 
@@ -5361,7 +5648,7 @@ export default function App() {
           {
             resident_email: cleanEmail,
 
-            sender: from,
+            sender: senderTag,
 
             text: text.trim(),
           },
@@ -5389,6 +5676,142 @@ export default function App() {
     } catch (err) {
       console.warn("Supabase messages insert error:", err)
     }
+  }
+
+  async function handleUpdateAdminEmail(
+    newEmail: string,
+    verifyPassword?: string,
+  ): Promise<{ success: boolean; error?: string }> {
+    const cleanNewEmail = newEmail.trim().toLowerCase()
+    const currentEmail = (user?.email || "").trim().toLowerCase()
+
+    if (!cleanNewEmail || !cleanNewEmail.includes("@")) {
+      return { success: false, error: "Please enter a valid email address." }
+    }
+    if (cleanNewEmail === currentEmail) {
+      return {
+        success: false,
+        error: "New email is the same as your current email.",
+      }
+    }
+
+    if (verifyPassword) {
+      const { error: verifyErr } = await supabase.auth.signInWithPassword({
+        email: currentEmail,
+        password: verifyPassword,
+      })
+      if (verifyErr) {
+        return {
+          success: false,
+          error: "Current password is incorrect. Verification failed.",
+        }
+      }
+    }
+
+    try {
+      const { error: authErr } = await supabase.auth.updateUser({
+        email: cleanNewEmail,
+      })
+      if (authErr) {
+        console.warn("supabase.auth.updateUser:", authErr.message)
+      }
+    } catch (e: any) {
+      console.warn("auth.updateUser catch:", e)
+    }
+
+    try {
+      if (user?.id) {
+        await supabase
+          .from("accounts")
+          .update({ email: cleanNewEmail })
+          .eq("id", user.id)
+      }
+      await supabase
+        .from("accounts")
+        .update({ email: cleanNewEmail })
+        .eq("email", currentEmail)
+    } catch (err) {
+      console.warn("accounts update email error:", err)
+    }
+
+    if (isRootMasterAdmin(currentEmail)) {
+      saveMasterAdminEmail(cleanNewEmail)
+      try {
+        const { data: dbSettings } = await supabase
+          .from("barangay_settings")
+          .select("*")
+          .eq("id", 1)
+          .maybeSingle()
+        if (dbSettings) {
+          const currentDesc = dbSettings.description || ""
+          const updatedDesc =
+            currentDesc.replace(/<!--\s*MASTER_ADMIN:.*-->/g, "").trim() +
+            ` <!-- MASTER_ADMIN: ${cleanNewEmail} -->`
+          await supabase
+            .from("barangay_settings")
+            .update({ description: updatedDesc })
+            .eq("id", 1)
+        }
+      } catch (err) {
+        console.warn("sync master admin email to settings error:", err)
+      }
+    }
+
+    if (promotedAdmins.some((e) => e.toLowerCase().trim() === currentEmail)) {
+      const nextList = promotedAdmins.map((e) =>
+        e.toLowerCase().trim() === currentEmail ? cleanNewEmail : e,
+      )
+      setPromotedAdmins(nextList)
+      savePromotedAdminEmails(nextList)
+      try {
+        const { data: dbSettings } = await supabase
+          .from("barangay_settings")
+          .select("*")
+          .eq("id", 1)
+          .maybeSingle()
+        if (dbSettings) {
+          const cleanDesc = cleanBarangayDescription(dbSettings.description)
+          const adminRolesTag = `<!-- ADMIN_ROLES: ${JSON.stringify(nextList)} -->`
+          const finalDesc = `${cleanDesc} ${adminRolesTag}`.trim()
+          await supabase
+            .from("barangay_settings")
+            .update({ description: finalDesc })
+            .eq("id", 1)
+        }
+      } catch (err) {
+        console.warn("persistPromotedAdmins error:", err)
+      }
+    }
+
+    setUser((prev) => (prev ? { ...prev, email: cleanNewEmail } : null))
+
+    try {
+      const customSession = JSON.parse(
+        localStorage.getItem("brgy_auth_session") || "null",
+      )
+      if (customSession?.user) {
+        customSession.user.email = cleanNewEmail
+        localStorage.setItem("brgy_auth_session", JSON.stringify(customSession))
+      }
+    } catch {}
+
+    try {
+      const cached = JSON.parse(
+        localStorage.getItem("brgy_residents_cache") || "[]",
+      )
+      if (Array.isArray(cached)) {
+        const updated = cached.map((r: any) =>
+          (r.email || "").toLowerCase().trim() === currentEmail
+            ? { ...r, email: cleanNewEmail }
+            : r,
+        )
+        localStorage.setItem("brgy_residents_cache", JSON.stringify(updated))
+        setAllRegisteredResidents(updated)
+      }
+    } catch {}
+
+    showToast(`Email updated to ${cleanNewEmail}! ✅`)
+    return { success: true }
   }
 
   async function handleCreateRequest(
@@ -7110,7 +7533,7 @@ export default function App() {
                       <button
                         className="rail-hotline-btn"
                         onClick={() => {
-                          navigator.clipboard?.writeText(hl.number)
+                          copyToClipboard(hl.number)
 
                           showToast(`Copied ${hl.name}: ${hl.number}`)
                         }}
@@ -7205,6 +7628,8 @@ export default function App() {
               }}
               currentUser={user || undefined}
               registeredResidents={allRegisteredResidents}
+              promotedAdmins={promotedAdmins}
+              barangayInfo={barangay}
             />
           ) : (
             <ResidentMessagesPage
@@ -7219,6 +7644,7 @@ export default function App() {
                 (r) =>
                   r.residentEmail === userEmail || r.residentId === user.id,
               )}
+              barangayInfo={barangay}
             />
           ))}
 
@@ -7491,6 +7917,7 @@ export default function App() {
             onBarangayChange={setBarangay}
             onToast={showToast}
             currentUser={user}
+            onUpdateUserEmail={handleUpdateAdminEmail}
           />
         )}
       </main>
@@ -7522,6 +7949,7 @@ export default function App() {
             }
           }}
           onToast={showToast}
+          onUpdateEmail={handleUpdateAdminEmail}
         />
       )}
 
@@ -11424,13 +11852,8 @@ function CalendarView({
   function handleShare(ev: CommunityEvent) {
     const text = `📅 ${ev.title}\n🗓 Date: ${ev.date || "Scheduled"}\n⏰ Time: ${ev.time || ""}\n📍 Location: ${ev.location || "Barangay Hall"}\n${ev.description || ""}`
 
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(text)
-
-      onToast("Event details copied to clipboard!")
-    } else {
-      onToast("Event: " + ev.title)
-    }
+    copyToClipboard(text)
+    onToast("Event details copied to clipboard!")
   }
 
   // Filter events
@@ -12881,7 +13304,7 @@ function DocumentDetailsModal({
   const [copied, setCopied] = useState(false)
 
   function copyTracking() {
-    navigator.clipboard?.writeText(request.trackingNo)
+    copyToClipboard(request.trackingNo)
 
     setCopied(true)
 
@@ -13350,7 +13773,7 @@ function ResidentDocumentsPage({
 
   onToast,
 }: {
-  user: { id: string name: string email: string }
+  user: { id: string; name: string; email: string }
 
   requests: DocumentRequest[]
 
@@ -14662,58 +15085,45 @@ function getInitialsFromEmail(email: string, name?: string): string {
 
 function AdminMessagesPage({
   threads,
-
   activeThread,
-
   onSelectThread,
-
   onSend,
-
   onDeleteMessage,
-
   onDeleteThread,
-
   allRequests,
-
   onViewDocRequest,
-
   currentUser,
-
   registeredResidents,
+  promotedAdmins,
+  barangayInfo,
 }: {
   threads: Record<string, Msg[]>
-
   activeThread: string | null
-
   onSelectThread: (email: string) => void
-
   onSend: (email: string, text: string) => void
-
   onDeleteMessage: (
     email: string,
-
     dbId: number | undefined,
-
     timestamp: number | undefined,
   ) => void
-
   onDeleteThread: (email: string) => void
-
   allRequests: DocumentRequest[]
-
   onViewDocRequest: (req: DocumentRequest) => void
-
-  currentUser?: { id?: string | number email?: string role?: string }
-
+  currentUser?: { id?: string | number; email?: string; role?: string }
   registeredResidents?: ResidentRecord[]
+  promotedAdmins?: string[]
+  barangayInfo?: BarangayInfo
 }) {
   const [draft, setDraft] = useState("")
-
   const [search, setSearch] = useState("")
-
+  const [filterTab, setFilterTab] = useState<"all" | "residents" | "admins">("all")
   const [threadToDelete, setThreadToDelete] = useState<string | null>(null)
-
   const chatRef = useRef<HTMLDivElement>(null)
+
+  const rawBarangayName = (barangayInfo?.name || "").trim() || "San Isidro"
+  const officeName = rawBarangayName.toLowerCase().startsWith("barangay")
+    ? `${rawBarangayName} Office`
+    : `Barangay ${rawBarangayName} Office`
 
   const [loadedResidents, setLoadedResidents] = useState<ResidentRecord[]>(
     () => {
@@ -14722,14 +15132,11 @@ function AdminMessagesPage({
 
       try {
         const cached = localStorage.getItem("brgy_residents_cache")
-
         if (cached) {
           const parsed = JSON.parse(cached)
-
           if (Array.isArray(parsed)) return parsed
         }
       } catch {}
-
       return []
     },
   )
@@ -14739,136 +15146,172 @@ function AdminMessagesPage({
       setLoadedResidents(registeredResidents)
     } else {
       supabase
-
         .from("accounts")
-
         .select("*")
-
         .order("created_at", { ascending: false })
-
         .then(({ data }) => {
           if (data && data.length > 0) {
             const purged = getPurgedIds()
-
             const meta = getResidentMeta()
-
             const mapped: ResidentRecord[] = data
-
               .filter((row: any) => !purged.includes(String(row.id)))
-
               .map((row: any) => {
                 const rowMeta = meta[row.id] || {}
-
                 let finalStatus = (
                   rowMeta.statusOverride ||
                   row.status ||
                   "active"
-                )
-
-                  .toLowerCase() as any
-
+                ).toLowerCase() as any
                 if (finalStatus === "verified") finalStatus = "active"
 
-                const address = row.address || "Barangay San Isidro"
-
+                const address = row.address || `Barangay ${rawBarangayName}`
                 let purok = row.purok || "Purok 1"
-
                 const purokMatch = address.match(/Purok\s*\d+/i)
-
                 if (purokMatch) purok = purokMatch[0]
 
                 return {
                   id: String(row.id),
-
                   name:
                     row.name ||
                     (row.email ? row.email.split("@")[0] : "Resident"),
-
                   email: (row.email || "").toLowerCase().trim(),
-
                   mobile: row.mobile || row.phone || "",
-
                   address,
-
                   purok,
-
-                  role: row.role as any || "resident",
-
+                  role: (row.role as any) || "resident",
                   status: finalStatus,
-
                   registered: formatResidentDate(row.created_at),
-
                   isOnline: false,
                 }
               })
 
             setLoadedResidents(mapped)
-
             try {
               localStorage.setItem(
                 "brgy_residents_cache",
-
                 JSON.stringify(mapped),
               )
             } catch {}
           }
         })
     }
-  }, [registeredResidents])
+  }, [registeredResidents, rawBarangayName])
+
+  // Identify all administrators
+  const masterAdminEmail = (getSavedMasterAdminEmail() || "admin@sanisidro.gov.ph")
+    .toLowerCase()
+    .trim()
+  const currentAdminEmail = (currentUser?.email || "").toLowerCase().trim()
+
+  const allAdminEmails = useMemo(() => {
+    const set = new Set<string>()
+    if (masterAdminEmail) set.add(masterAdminEmail)
+    set.add("admin@sanisidro.gov.ph")
+    set.add("admin@barangay.gov.ph")
+    set.add("admin@sanisidro.ph")
+    set.add("admin@gov.ph")
+    ;(promotedAdmins || getPromotedAdminEmails()).forEach((em: string) => {
+      if (em) set.add(em.toLowerCase().trim())
+    })
+    loadedResidents.forEach((r) => {
+      if (r.role === "admin" && r.email) set.add(r.email.toLowerCase().trim())
+    })
+    return set
+  }, [masterAdminEmail, promotedAdmins, loadedResidents])
+
+  const isAdminEmail = (email: string) =>
+    allAdminEmails.has(email.toLowerCase().trim())
 
   // Collect all emails that have active threads (filter out deleted ones)
-
   const allEmails = Object.keys(threads).filter(
     (email) => !isThreadDeleted(email),
   )
 
   const activeMatchingEmails = allEmails.filter((email) => {
     if (!search.trim()) return true
-
     const q = search.trim().toLowerCase()
-
     const name = resolveResidentMeta(email).name
-
     return email.toLowerCase().includes(q) || name.toLowerCase().includes(q)
   })
 
   // Sort active: unread first, then by last msg timestamp
-
-  const sortedResidents = [...activeMatchingEmails].sort((a, b) => {
+  const sortedActiveThreads = [...activeMatchingEmails].sort((a, b) => {
     const aLast = threads[a]?.at(-1)
-
     const bLast = threads[b]?.at(-1)
-
     const aUnread = aLast?.from === "resident" ? 1 : 0
-
     const bUnread = bLast?.from === "resident" ? 1 : 0
-
     if (bUnread !== aUnread) return bUnread - aUnread
-
     return (bLast?.timestamp ?? 0) - (aLast?.timestamp ?? 0)
   })
 
+  const activeAdminThreads = sortedActiveThreads.filter((em) => isAdminEmail(em))
+  const activeResidentThreads = sortedActiveThreads.filter((em) => !isAdminEmail(em))
+
+  const displayedThreads =
+    filterTab === "admins"
+      ? activeAdminThreads
+      : filterTab === "residents"
+      ? activeResidentThreads
+      : sortedActiveThreads
+
+  // Other available administrators (excluding current user)
+  const availableAdmins = useMemo(() => {
+    const list: { email: string; name: string; role: string; purok?: string }[] = []
+    const seen = new Set<string>()
+
+    allAdminEmails.forEach((adminEmail) => {
+      if (!adminEmail) return
+      if (adminEmail === currentAdminEmail) return
+      if (seen.has(adminEmail)) return
+      seen.add(adminEmail)
+
+      const res = loadedResidents.find(
+        (r) => r.email.toLowerCase().trim() === adminEmail,
+      )
+      const isMaster =
+        adminEmail === masterAdminEmail ||
+        adminEmail === "admin@sanisidro.gov.ph"
+      list.push({
+        email: adminEmail,
+        name:
+          res?.name ||
+          (isMaster
+            ? "Kapitan Santos (Master Admin)"
+            : adminEmail.split("@")[0]),
+        role: isMaster ? "Master Administrator" : "Administrator",
+        purok: res?.purok,
+      })
+    })
+
+    return list
+  }, [allAdminEmails, currentAdminEmail, loadedResidents, masterAdminEmail])
+
+  const availableAdminsToStart = availableAdmins.filter(
+    (a) => !allEmails.includes(a.email.toLowerCase().trim()),
+  )
+
+  const filteredAvailableAdmins = availableAdminsToStart.filter((a) => {
+    if (!search.trim()) return true
+    const q = search.trim().toLowerCase()
+    return (
+      a.name.toLowerCase().includes(q) ||
+      a.email.toLowerCase().includes(q) ||
+      a.role.toLowerCase().includes(q)
+    )
+  })
+
   // Other registered residents who are not currently in active threads
-
-  const currentAdminEmail = (currentUser?.email || "").toLowerCase().trim()
-
   const availableResidents = loadedResidents.filter((r) => {
     const resEmail = (r.email || "").toLowerCase().trim()
-
     if (!resEmail) return false
-
     if (resEmail === currentAdminEmail) return false
-
-    if (r.role === "admin") return false
-
+    if (isAdminEmail(resEmail)) return false
     return !allEmails.includes(resEmail)
   })
 
-  const filteredAvailable = availableResidents.filter((r) => {
+  const filteredAvailableResidents = availableResidents.filter((r) => {
     if (!search.trim()) return true
-
     const q = search.trim().toLowerCase()
-
     return (
       (r.name && r.name.toLowerCase().includes(q)) ||
       (r.email && r.email.toLowerCase().includes(q)) ||
@@ -14877,23 +15320,26 @@ function AdminMessagesPage({
     )
   })
 
-  const ADMIN_QUICK_REPLIES = [
+  const ADMIN_RESIDENT_QUICK_REPLIES = [
     "Magandang araw! Paano po kita matutulungan ngayon?",
-
-    "Natanggap na po namin ang inyong mensahe. Sasagutin kami ASAP.",
-
-    "Maaari po kayong pumunta sa barangay hall (Mon–Fri, 8AM–5PM).",
-
+    "Natanggap na po namin ang inyong mensahe. Sasagutin namin ASAP.",
+    "Maaari po kayong pumunta sa barangay hall para sa inyong request.",
     "Ang inyong dokumento ay naghihintay na ng pickup sa Window 1.",
-
     "Mayroon pa po bang ibang katanungan?",
+  ]
+
+  const ADMIN_COORDINATION_QUICK_REPLIES = [
+    "Noted, thank you for the update!",
+    "Please verify the latest resident document request when you can.",
+    "Are you available for the barangay council meeting later?",
+    "Updated the announcement board, please take a look.",
+    "Copy that, handling it right now.",
+    "Let's coordinate on the upcoming barangay event.",
   ]
 
   function handleSend() {
     if (!draft.trim() || !activeThread) return
-
     onSend(activeThread, draft.trim())
-
     setDraft("")
   }
 
@@ -14903,13 +15349,28 @@ function AdminMessagesPage({
     }
   }, [activeThread, threads])
 
+  const isActiveThreadAdmin = activeThread ? isAdminEmail(activeThread) : false
   const activeResidentMeta = activeThread
     ? resolveResidentMeta(activeThread)
     : null
 
-  const activeRequests = activeThread
-    ? allRequests.filter((r) => r.residentEmail === activeThread)
-    : []
+  const activeAdminInfo =
+    isActiveThreadAdmin && activeThread
+      ? availableAdmins.find(
+          (a) => a.email.toLowerCase().trim() === activeThread.toLowerCase().trim(),
+        )
+      : null
+
+  const activeDisplayName =
+    activeAdminInfo?.name ||
+    activeResidentMeta?.name ||
+    activeThread ||
+    "Resident"
+
+  const activeRequests =
+    activeThread && !isActiveThreadAdmin
+      ? allRequests.filter((r) => r.residentEmail === activeThread)
+      : []
 
   function initials(name: string): string {
     return getInitials(name)
@@ -14920,8 +15381,8 @@ function AdminMessagesPage({
       <section className="page-heading">
         <div>
           <p className="eyebrow">ADMINISTRATION</p>
-          <h1>Resident Messages</h1>
-          <p>Respond to resident inquiries and coordinate document releases.</p>
+          <h1>Resident & Admin Messages</h1>
+          <p>Coordinate with barangay officials and respond to resident inquiries in real-time.</p>
         </div>
       </section>
       <div className="messages-shell">
@@ -14930,46 +15391,108 @@ function AdminMessagesPage({
           <div className="thread-search">
             <Icon name="search" size={14} />
             <input
-              placeholder="Search residents…"
+              placeholder="Search conversations, residents, admins…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
 
+          {/* Filter tabs */}
+          <div
+            style={{
+              display: "flex",
+              gap: 4,
+              padding: "8px 10px 10px",
+              borderBottom: "1px solid #e5e7eb",
+              background: "#fafbf9",
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => setFilterTab("all")}
+              style={{
+                flex: 1,
+                padding: "5px 6px",
+                fontSize: 11.5,
+                fontWeight: 600,
+                borderRadius: 6,
+                border: "1px solid",
+                borderColor: filterTab === "all" ? "#166534" : "#e5e7eb",
+                background: filterTab === "all" ? "#166534" : "#ffffff",
+                color: filterTab === "all" ? "#ffffff" : "#4b5563",
+                cursor: "pointer",
+                transition: "all 0.15s ease",
+              }}
+            >
+              All ({allEmails.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setFilterTab("residents")}
+              style={{
+                flex: 1,
+                padding: "5px 6px",
+                fontSize: 11.5,
+                fontWeight: 600,
+                borderRadius: 6,
+                border: "1px solid",
+                borderColor: filterTab === "residents" ? "#166534" : "#e5e7eb",
+                background: filterTab === "residents" ? "#166534" : "#ffffff",
+                color: filterTab === "residents" ? "#ffffff" : "#4b5563",
+                cursor: "pointer",
+                transition: "all 0.15s ease",
+              }}
+            >
+              Residents ({activeResidentThreads.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setFilterTab("admins")}
+              style={{
+                flex: 1,
+                padding: "5px 6px",
+                fontSize: 11.5,
+                fontWeight: 600,
+                borderRadius: 6,
+                border: "1px solid",
+                borderColor: filterTab === "admins" ? "#1d4ed8" : "#e5e7eb",
+                background: filterTab === "admins" ? "#1d4ed8" : "#ffffff",
+                color: filterTab === "admins" ? "#ffffff" : "#4b5563",
+                cursor: "pointer",
+                transition: "all 0.15s ease",
+              }}
+            >
+              👑 Admins ({activeAdminThreads.length})
+            </button>
+          </div>
+
           {search.trim() ? (
             /* Search is Active */
-
             <>
-              {sortedResidents.length > 0 && (
+              {displayedThreads.length > 0 && (
                 <div
                   style={{
                     padding: "8px 14px 4px",
-
                     fontSize: 11,
-
                     fontWeight: 700,
-
                     color: "#6b7280",
-
                     textTransform: "uppercase",
-
                     letterSpacing: "0.5px",
                   }}
                 >
-                  Active Conversations ({sortedResidents.length})
+                  Active Conversations ({displayedThreads.length})
                 </div>
               )}
-              {sortedResidents.map((email) => {
+              {displayedThreads.map((email) => {
                 const msgs = threads[email] ?? []
-
                 const last = msgs.at(-1)
-
+                const isTargetAdmin = isAdminEmail(email)
                 const hasUnread = last?.from === "resident"
-
                 const meta = resolveResidentMeta(email)
-
-                const displayName = meta.name || email
-
+                const adm = availableAdmins.find(
+                  (a) => a.email.toLowerCase().trim() === email.toLowerCase().trim(),
+                )
+                const displayName = adm?.name || meta.name || email
                 const initials = getInitialsFromEmail(email, displayName)
 
                 return (
@@ -14988,15 +15511,32 @@ function AdminMessagesPage({
                     >
                       <Avatar
                         initials={initials}
-                        tone={hasUnread ? "amber" : "green"}
+                        tone={isTargetAdmin ? "blue" : (hasUnread ? "amber" : "green")}
                       />
                       <div className="thread-meta">
-                        <strong>{displayName}</strong>
+                        <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                          <strong>{displayName}</strong>
+                          {isTargetAdmin && (
+                            <span
+                              style={{
+                                fontSize: 9.5,
+                                fontWeight: 700,
+                                background: "#eff6ff",
+                                color: "#1d4ed8",
+                                border: "1px solid #bfdbfe",
+                                padding: "0.5px 5px",
+                                borderRadius: 4,
+                              }}
+                            >
+                              👑 Admin
+                            </span>
+                          )}
+                        </div>
                         <small>
                           {last
                             ? (last.from === "admin" ? "You: " : "") +
-                              last.text.slice(0, 42) +
-                              (last.text.length > 42 ? "…" : "")
+                              last.text.slice(0, 38) +
+                              (last.text.length > 38 ? "…" : "")
                             : "No messages yet"}
                         </small>
                       </div>
@@ -15008,7 +15548,6 @@ function AdminMessagesPage({
                       title={`Delete conversation with ${displayName}`}
                       onClick={(e) => {
                         e.stopPropagation()
-
                         setThreadToDelete(email)
                       }}
                     >
@@ -15018,134 +15557,199 @@ function AdminMessagesPage({
                 )
               })}
 
-              {filteredAvailable.length > 0 && (
+              {/* Start new chat with Admins when searching */}
+              {(filterTab === "all" || filterTab === "admins") && filteredAvailableAdmins.length > 0 && (
                 <div
                   style={{
                     padding: "10px 14px 4px",
-
                     fontSize: 11,
-
                     fontWeight: 700,
-
-                    color: "#166534",
-
+                    color: "#1d4ed8",
                     textTransform: "uppercase",
-
                     letterSpacing: "0.5px",
-
-                    borderTop:
-                      sortedResidents.length > 0 ? "1px solid #e5e7eb" : "none",
+                    borderTop: "1px solid #e5e7eb",
                   }}
                 >
-                  Start New Conversation ({filteredAvailable.length})
+                  👑 Start Chat with Admin ({filteredAvailableAdmins.length})
                 </div>
               )}
-              {filteredAvailable.map((res) => {
-                const initials = getInitialsFromEmail(res.email, res.name)
-
-                return (
-                  <button
-                    key={res.email}
-                    type="button"
-                    className={`thread-item${
-                      activeThread === res.email ? " active" : ""
-                    }`}
-                    onClick={() => {
-                      unmarkThreadDeleted(res.email)
-
-                      onSelectThread(res.email)
-                    }}
-                    style={{
-                      width: "100%",
-
-                      textAlign: "left",
-
-                      display: "flex",
-
-                      alignItems: "center",
-
-                      justifyContent: "space-between",
-                    }}
-                  >
-                    <div
+              {(filterTab === "all" || filterTab === "admins") &&
+                filteredAvailableAdmins.map((adm) => {
+                  const initials = getInitialsFromEmail(adm.email, adm.name)
+                  return (
+                    <button
+                      key={adm.email}
+                      type="button"
+                      className={`thread-item${
+                        activeThread === adm.email ? " active" : ""
+                      }`}
+                      onClick={() => {
+                        unmarkThreadDeleted(adm.email)
+                        onSelectThread(adm.email)
+                      }}
                       style={{
+                        width: "100%",
+                        textAlign: "left",
                         display: "flex",
-
                         alignItems: "center",
-
-                        gap: "10px",
-
-                        overflow: "hidden",
+                        justifyContent: "space-between",
                       }}
                     >
-                      <Avatar initials={initials} tone="green" />
                       <div
-                        className="thread-meta"
-                        style={{ overflow: "hidden" }}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "10px",
+                          overflow: "hidden",
+                        }}
                       >
-                        <strong>{res.name}</strong>
-                        <small style={{ color: "#6b7280" }}>
-                          {res.email} · {res.purok || "Resident"}
-                        </small>
+                        <Avatar initials={initials} tone="blue" />
+                        <div
+                          className="thread-meta"
+                          style={{ overflow: "hidden" }}
+                        >
+                          <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                            <strong>{adm.name}</strong>
+                            <span
+                              style={{
+                                fontSize: 9.5,
+                                fontWeight: 700,
+                                background: "#eff6ff",
+                                color: "#1d4ed8",
+                                border: "1px solid #bfdbfe",
+                                padding: "0.5px 5px",
+                                borderRadius: 4,
+                              }}
+                            >
+                              👑 Admin
+                            </span>
+                          </div>
+                          <small style={{ color: "#6b7280" }}>
+                            {adm.email} · {adm.role}
+                          </small>
+                        </div>
                       </div>
-                    </div>
-                    <span
+                      <span
+                        style={{
+                          fontSize: "11px",
+                          fontWeight: 600,
+                          padding: "3px 8px",
+                          borderRadius: "12px",
+                          background: "#eff6ff",
+                          color: "#1d4ed8",
+                          flexShrink: 0,
+                        }}
+                      >
+                        + Chat
+                      </span>
+                    </button>
+                  )
+                })}
+
+              {/* Start new chat with Residents when searching */}
+              {(filterTab === "all" || filterTab === "residents") && filteredAvailableResidents.length > 0 && (
+                <div
+                  style={{
+                    padding: "10px 14px 4px",
+                    fontSize: 11,
+                    fontWeight: 700,
+                    color: "#166534",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.5px",
+                    borderTop: "1px solid #e5e7eb",
+                  }}
+                >
+                  Start Chat with Resident ({filteredAvailableResidents.length})
+                </div>
+              )}
+              {(filterTab === "all" || filterTab === "residents") &&
+                filteredAvailableResidents.map((res) => {
+                  const initials = getInitialsFromEmail(res.email, res.name)
+                  return (
+                    <button
+                      key={res.email}
+                      type="button"
+                      className={`thread-item${
+                        activeThread === res.email ? " active" : ""
+                      }`}
+                      onClick={() => {
+                        unmarkThreadDeleted(res.email)
+                        onSelectThread(res.email)
+                      }}
                       style={{
-                        fontSize: "11px",
-
-                        fontWeight: 600,
-
-                        padding: "3px 8px",
-
-                        borderRadius: "12px",
-
-                        background: "#e8f5e9",
-
-                        color: "#166534",
-
-                        flexShrink: 0,
+                        width: "100%",
+                        textAlign: "left",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
                       }}
                     >
-                      Message
-                    </span>
-                  </button>
-                )
-              })}
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "10px",
+                          overflow: "hidden",
+                        }}
+                      >
+                        <Avatar initials={initials} tone="green" />
+                        <div
+                          className="thread-meta"
+                          style={{ overflow: "hidden" }}
+                        >
+                          <strong>{res.name}</strong>
+                          <small style={{ color: "#6b7280" }}>
+                            {res.email} · {res.purok || "Resident"}
+                          </small>
+                        </div>
+                      </div>
+                      <span
+                        style={{
+                          fontSize: "11px",
+                          fontWeight: 600,
+                          padding: "3px 8px",
+                          borderRadius: "12px",
+                          background: "#e8f5e9",
+                          color: "#166534",
+                          flexShrink: 0,
+                        }}
+                      >
+                        Message
+                      </span>
+                    </button>
+                  )
+                })}
 
-              {sortedResidents.length === 0 &&
-                filteredAvailable.length === 0 && (
+              {displayedThreads.length === 0 &&
+                filteredAvailableAdmins.length === 0 &&
+                filteredAvailableResidents.length === 0 && (
                   <p
                     style={{
                       padding: "24px 16px",
-
                       color: "#798b84",
-
                       fontSize: 13,
-
                       textAlign: "center",
                     }}
                   >
-                    No residents found matching "{search}".
+                    No conversations or accounts matching "{search}".
                   </p>
                 )}
             </>
           ) : (
             /* Search is Empty */
-
             <>
-              {sortedResidents.length > 0 ? (
+              {displayedThreads.length > 0 ? (
                 <>
-                  {sortedResidents.map((email) => {
+                  {displayedThreads.map((email) => {
                     const msgs = threads[email] ?? []
-
                     const last = msgs.at(-1)
-
+                    const isTargetAdmin = isAdminEmail(email)
                     const hasUnread = last?.from === "resident"
-
                     const meta = resolveResidentMeta(email)
-
-                    const displayName = meta.name || email
-
+                    const adm = availableAdmins.find(
+                      (a) => a.email.toLowerCase().trim() === email.toLowerCase().trim(),
+                    )
+                    const displayName = adm?.name || meta.name || email
                     const initials = getInitialsFromEmail(email, displayName)
 
                     return (
@@ -15164,15 +15768,32 @@ function AdminMessagesPage({
                         >
                           <Avatar
                             initials={initials}
-                            tone={hasUnread ? "amber" : "green"}
+                            tone={isTargetAdmin ? "blue" : (hasUnread ? "amber" : "green")}
                           />
                           <div className="thread-meta">
-                            <strong>{displayName}</strong>
+                            <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                              <strong>{displayName}</strong>
+                              {isTargetAdmin && (
+                                <span
+                                  style={{
+                                    fontSize: 9.5,
+                                    fontWeight: 700,
+                                    background: "#eff6ff",
+                                    color: "#1d4ed8",
+                                    border: "1px solid #bfdbfe",
+                                    padding: "0.5px 5px",
+                                    borderRadius: 4,
+                                  }}
+                                >
+                                  👑 Admin
+                                </span>
+                              )}
+                            </div>
                             <small>
                               {last
                                 ? (last.from === "admin" ? "You: " : "") +
-                                  last.text.slice(0, 42) +
-                                  (last.text.length > 42 ? "…" : "")
+                                  last.text.slice(0, 38) +
+                                  (last.text.length > 38 ? "…" : "")
                                 : "No messages yet"}
                             </small>
                           </div>
@@ -15184,7 +15805,6 @@ function AdminMessagesPage({
                           title={`Delete conversation with ${displayName}`}
                           onClick={(e) => {
                             e.stopPropagation()
-
                             setThreadToDelete(email)
                           }}
                         >
@@ -15194,290 +15814,433 @@ function AdminMessagesPage({
                     )
                   })}
 
-                  {filteredAvailable.length > 0 && (
-                    <div
-                      style={{
-                        padding: "14px 14px 6px",
-
-                        borderTop: "1px solid #e5e7eb",
-
-                        marginTop: 8,
-                      }}
-                    >
+                  {/* Show available Admins section if tab allows */}
+                  {(filterTab === "all" || filterTab === "admins") &&
+                    filteredAvailableAdmins.length > 0 && (
                       <div
                         style={{
-                          fontSize: 11,
-
-                          fontWeight: 700,
-
-                          color: "#166534",
-
-                          textTransform: "uppercase",
-
-                          letterSpacing: "0.5px",
-
-                          marginBottom: 8,
+                          padding: "14px 14px 6px",
+                          borderTop: "1px solid #e5e7eb",
+                          marginTop: 8,
                         }}
                       >
-                        Message Other Residents ({filteredAvailable.length})
-                      </div>
-                      {filteredAvailable.slice(0, 8).map((res) => {
-                        const initials = getInitialsFromEmail(
-                          res.email,
-
-                          res.name,
-                        )
-
-                        return (
-                          <button
-                            key={res.email}
-                            type="button"
-                            className={`thread-item${
-                              activeThread === res.email ? " active" : ""
-                            }`}
-                            onClick={() => {
-                              unmarkThreadDeleted(res.email)
-
-                              onSelectThread(res.email)
-                            }}
-                            style={{
-                              width: "100%",
-
-                              textAlign: "left",
-
-                              display: "flex",
-
-                              alignItems: "center",
-
-                              justifyContent: "space-between",
-
-                              marginBottom: 2,
-                            }}
-                          >
-                            <div
-                              style={{
-                                display: "flex",
-
-                                alignItems: "center",
-
-                                gap: "10px",
-
-                                overflow: "hidden",
-                              }}
-                            >
-                              <Avatar initials={initials} tone="green" />
-                              <div
-                                className="thread-meta"
-                                style={{ overflow: "hidden" }}
-                              >
-                                <strong>{res.name}</strong>
-                                <small style={{ color: "#6b7280" }}>
-                                  {res.email} · {res.purok || "Resident"}
-                                </small>
-                              </div>
-                            </div>
-                            <span
-                              style={{
-                                fontSize: "11px",
-
-                                fontWeight: 600,
-
-                                padding: "3px 8px",
-
-                                borderRadius: "12px",
-
-                                background: "#e8f5e9",
-
-                                color: "#166534",
-
-                                flexShrink: 0,
-                              }}
-                            >
-                              + Chat
-                            </span>
-                          </button>
-                        )
-                      })}
-                      {filteredAvailable.length > 8 && (
-                        <p
+                        <div
                           style={{
                             fontSize: 11,
-
-                            color: "#6b7280",
-
-                            textAlign: "center",
-
-                            padding: "6px 0",
-
-                            margin: 0,
+                            fontWeight: 700,
+                            color: "#1d4ed8",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.5px",
+                            marginBottom: 8,
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 4,
                           }}
                         >
-                          Use search bar above to message all{" "}
-                          {filteredAvailable.length} residents
-                        </p>
-                      )}
-                    </div>
-                  )}
+                          👑 Message Other Admins ({filteredAvailableAdmins.length})
+                        </div>
+                        {filteredAvailableAdmins.map((adm) => {
+                          const initials = getInitialsFromEmail(
+                            adm.email,
+                            adm.name,
+                          )
+                          return (
+                            <button
+                              key={adm.email}
+                              type="button"
+                              className={`thread-item${
+                                activeThread === adm.email ? " active" : ""
+                              }`}
+                              onClick={() => {
+                                unmarkThreadDeleted(adm.email)
+                                onSelectThread(adm.email)
+                              }}
+                              style={{
+                                width: "100%",
+                                textAlign: "left",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                                marginBottom: 3,
+                              }}
+                            >
+                              <div
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "10px",
+                                  overflow: "hidden",
+                                }}
+                              >
+                                <Avatar initials={initials} tone="blue" />
+                                <div
+                                  className="thread-meta"
+                                  style={{ overflow: "hidden" }}
+                                >
+                                  <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                                    <strong>{adm.name}</strong>
+                                    <span
+                                      style={{
+                                        fontSize: 9.5,
+                                        fontWeight: 700,
+                                        background: "#eff6ff",
+                                        color: "#1d4ed8",
+                                        border: "1px solid #bfdbfe",
+                                        padding: "0.5px 5px",
+                                        borderRadius: 4,
+                                      }}
+                                    >
+                                      👑
+                                    </span>
+                                  </div>
+                                  <small style={{ color: "#6b7280" }}>
+                                    {adm.email} · {adm.role}
+                                  </small>
+                                </div>
+                              </div>
+                              <span
+                                style={{
+                                  fontSize: "11px",
+                                  fontWeight: 600,
+                                  padding: "3px 8px",
+                                  borderRadius: "12px",
+                                  background: "#eff6ff",
+                                  color: "#1d4ed8",
+                                  flexShrink: 0,
+                                }}
+                              >
+                                + Chat
+                              </span>
+                            </button>
+                          )
+                        })}
+                      </div>
+                    )}
+
+                  {/* Show available residents section if tab allows */}
+                  {(filterTab === "all" || filterTab === "residents") &&
+                    filteredAvailableResidents.length > 0 && (
+                      <div
+                        style={{
+                          padding: "14px 14px 6px",
+                          borderTop: "1px solid #e5e7eb",
+                          marginTop: 8,
+                        }}
+                      >
+                        <div
+                          style={{
+                            fontSize: 11,
+                            fontWeight: 700,
+                            color: "#166534",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.5px",
+                            marginBottom: 8,
+                          }}
+                        >
+                          Message Other Residents ({filteredAvailableResidents.length})
+                        </div>
+                        {filteredAvailableResidents.slice(0, 8).map((res) => {
+                          const initials = getInitialsFromEmail(
+                            res.email,
+                            res.name,
+                          )
+                          return (
+                            <button
+                              key={res.email}
+                              type="button"
+                              className={`thread-item${
+                                activeThread === res.email ? " active" : ""
+                              }`}
+                              onClick={() => {
+                                unmarkThreadDeleted(res.email)
+                                onSelectThread(res.email)
+                              }}
+                              style={{
+                                width: "100%",
+                                textAlign: "left",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                                marginBottom: 2,
+                              }}
+                            >
+                              <div
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "10px",
+                                  overflow: "hidden",
+                                }}
+                              >
+                                <Avatar initials={initials} tone="green" />
+                                <div
+                                  className="thread-meta"
+                                  style={{ overflow: "hidden" }}
+                                >
+                                  <strong>{res.name}</strong>
+                                  <small style={{ color: "#6b7280" }}>
+                                    {res.email} · {res.purok || "Resident"}
+                                  </small>
+                                </div>
+                              </div>
+                              <span
+                                style={{
+                                  fontSize: "11px",
+                                  fontWeight: 600,
+                                  padding: "3px 8px",
+                                  borderRadius: "12px",
+                                  background: "#e8f5e9",
+                                  color: "#166534",
+                                  flexShrink: 0,
+                                }}
+                              >
+                                + Chat
+                              </span>
+                            </button>
+                          )
+                        })}
+                        {filteredAvailableResidents.length > 8 && (
+                          <p
+                            style={{
+                              fontSize: 11,
+                              color: "#6b7280",
+                              textAlign: "center",
+                              padding: "6px 0",
+                              margin: 0,
+                            }}
+                          >
+                            Use search bar above to message all{" "}
+                            {filteredAvailableResidents.length} residents
+                          </p>
+                        )}
+                      </div>
+                    )}
                 </>
               ) : (
-                /* No Active Conversations (User's Exact Screenshot State) */
-
+                /* No Active Conversations In Selected Tab */
                 <div style={{ padding: "14px 14px" }}>
                   <div
                     style={{
-                      background: "#f0fdf4",
-
-                      border: "1px solid #bbf7d0",
-
+                      background: filterTab === "admins" ? "#eff6ff" : "#f0fdf4",
+                      border: "1px solid",
+                      borderColor: filterTab === "admins" ? "#bfdbfe" : "#bbf7d0",
                       borderRadius: 8,
-
                       padding: "10px 12px",
-
                       marginBottom: 12,
                     }}
                   >
                     <p
                       style={{
                         fontWeight: 600,
-
                         fontSize: 13,
-
-                        color: "#166534",
-
+                        color: filterTab === "admins" ? "#1d4ed8" : "#166534",
                         margin: "0 0 3px",
                       }}
                     >
-                      Start a New Conversation
+                      {filterTab === "admins"
+                        ? "👑 Start Admin-to-Admin Chat"
+                        : "Start a New Conversation"}
                     </p>
                     <p
                       style={{
                         fontSize: 11.5,
-
-                        color: "#15803d",
-
+                        color: filterTab === "admins" ? "#2563eb" : "#15803d",
                         margin: 0,
-
                         lineHeight: 1.4,
                       }}
                     >
-                      Choose a registered resident below or use the search bar
-                      above to begin messaging.
+                      {filterTab === "admins"
+                        ? "Message your fellow barangay administrators for instant staff coordination."
+                        : "Choose an administrator or resident below to begin messaging."}
                     </p>
                   </div>
 
-                  {filteredAvailable.length > 0 ? (
-                    <div>
-                      <div
+                  {/* Available Admins List */}
+                  {(filterTab === "all" || filterTab === "admins") &&
+                    filteredAvailableAdmins.length > 0 && (
+                      <div style={{ marginBottom: 16 }}>
+                        <div
+                          style={{
+                            fontSize: 11,
+                            fontWeight: 700,
+                            color: "#1d4ed8",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.5px",
+                            marginBottom: 6,
+                          }}
+                        >
+                          👑 Barangay Administrators ({filteredAvailableAdmins.length})
+                        </div>
+                        {filteredAvailableAdmins.map((adm) => {
+                          const initials = getInitialsFromEmail(
+                            adm.email,
+                            adm.name,
+                          )
+                          return (
+                            <button
+                              key={adm.email}
+                              type="button"
+                              className={`thread-item${
+                                activeThread === adm.email ? " active" : ""
+                              }`}
+                              onClick={() => {
+                                unmarkThreadDeleted(adm.email)
+                                onSelectThread(adm.email)
+                              }}
+                              style={{
+                                width: "100%",
+                                textAlign: "left",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                                marginBottom: 4,
+                              }}
+                            >
+                              <div
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "10px",
+                                  overflow: "hidden",
+                                }}
+                              >
+                                <Avatar initials={initials} tone="blue" />
+                                <div
+                                  className="thread-meta"
+                                  style={{ overflow: "hidden" }}
+                                >
+                                  <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                                    <strong>{adm.name}</strong>
+                                    <span
+                                      style={{
+                                        fontSize: 9.5,
+                                        fontWeight: 700,
+                                        background: "#eff6ff",
+                                        color: "#1d4ed8",
+                                        border: "1px solid #bfdbfe",
+                                        padding: "0.5px 5px",
+                                        borderRadius: 4,
+                                      }}
+                                    >
+                                      👑
+                                    </span>
+                                  </div>
+                                  <small style={{ color: "#6b7280" }}>
+                                    {adm.email} · {adm.role}
+                                  </small>
+                                </div>
+                              </div>
+                              <span
+                                style={{
+                                  fontSize: "11px",
+                                  fontWeight: 600,
+                                  padding: "3px 8px",
+                                  borderRadius: "12px",
+                                  background: "#eff6ff",
+                                  color: "#1d4ed8",
+                                  flexShrink: 0,
+                                }}
+                              >
+                                + Chat
+                              </span>
+                            </button>
+                          )
+                        })}
+                      </div>
+                    )}
+
+                  {/* Available Residents List */}
+                  {(filterTab === "all" || filterTab === "residents") &&
+                    filteredAvailableResidents.length > 0 && (
+                      <div>
+                        <div
+                          style={{
+                            fontSize: 11,
+                            fontWeight: 700,
+                            color: "#6b7280",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.5px",
+                            marginBottom: 6,
+                          }}
+                        >
+                          Registered Residents ({filteredAvailableResidents.length})
+                        </div>
+                        {filteredAvailableResidents.map((res) => {
+                          const initials = getInitialsFromEmail(
+                            res.email,
+                            res.name,
+                          )
+                          return (
+                            <button
+                              key={res.email}
+                              type="button"
+                              className={`thread-item${
+                                activeThread === res.email ? " active" : ""
+                              }`}
+                              onClick={() => {
+                                unmarkThreadDeleted(res.email)
+                                onSelectThread(res.email)
+                              }}
+                              style={{
+                                width: "100%",
+                                textAlign: "left",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                                marginBottom: 4,
+                              }}
+                            >
+                              <div
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "10px",
+                                  overflow: "hidden",
+                                }}
+                              >
+                                <Avatar initials={initials} tone="green" />
+                                <div
+                                  className="thread-meta"
+                                  style={{ overflow: "hidden" }}
+                                >
+                                  <strong>{res.name}</strong>
+                                  <small style={{ color: "#6b7280" }}>
+                                    {res.email} · {res.purok || "Resident"}
+                                  </small>
+                                </div>
+                              </div>
+                              <span
+                                style={{
+                                  fontSize: "11px",
+                                  fontWeight: 600,
+                                  padding: "3px 8px",
+                                  borderRadius: "12px",
+                                  background: "#e8f5e9",
+                                  color: "#166534",
+                                  flexShrink: 0,
+                                }}
+                              >
+                                Message
+                              </span>
+                            </button>
+                          )
+                        })}
+                      </div>
+                    )}
+
+                  {filteredAvailableAdmins.length === 0 &&
+                    filteredAvailableResidents.length === 0 && (
+                      <p
                         style={{
-                          fontSize: 11,
-
-                          fontWeight: 700,
-
-                          color: "#6b7280",
-
-                          textTransform: "uppercase",
-
-                          letterSpacing: "0.5px",
-
-                          marginBottom: 6,
+                          padding: "20px 12px",
+                          color: "#798b84",
+                          fontSize: 13,
+                          textAlign: "center",
                         }}
                       >
-                        Registered Residents ({filteredAvailable.length})
-                      </div>
-                      {filteredAvailable.map((res) => {
-                        const initials = getInitialsFromEmail(
-                          res.email,
-
-                          res.name,
-                        )
-
-                        return (
-                          <button
-                            key={res.email}
-                            type="button"
-                            className={`thread-item${
-                              activeThread === res.email ? " active" : ""
-                            }`}
-                            onClick={() => {
-                              unmarkThreadDeleted(res.email)
-
-                              onSelectThread(res.email)
-                            }}
-                            style={{
-                              width: "100%",
-
-                              textAlign: "left",
-
-                              display: "flex",
-
-                              alignItems: "center",
-
-                              justifyContent: "space-between",
-
-                              marginBottom: 4,
-                            }}
-                          >
-                            <div
-                              style={{
-                                display: "flex",
-
-                                alignItems: "center",
-
-                                gap: "10px",
-
-                                overflow: "hidden",
-                              }}
-                            >
-                              <Avatar initials={initials} tone="green" />
-                              <div
-                                className="thread-meta"
-                                style={{ overflow: "hidden" }}
-                              >
-                                <strong>{res.name}</strong>
-                                <small style={{ color: "#6b7280" }}>
-                                  {res.email} · {res.purok || "Resident"}
-                                </small>
-                              </div>
-                            </div>
-                            <span
-                              style={{
-                                fontSize: "11px",
-
-                                fontWeight: 600,
-
-                                padding: "3px 8px",
-
-                                borderRadius: "12px",
-
-                                background: "#e8f5e9",
-
-                                color: "#166534",
-
-                                flexShrink: 0,
-                              }}
-                            >
-                              Message
-                            </span>
-                          </button>
-                        )
-                      })}
-                    </div>
-                  ) : (
-                    <p
-                      style={{
-                        padding: "20px 12px",
-
-                        color: "#798b84",
-
-                        fontSize: 13,
-
-                        textAlign: "center",
-                      }}
-                    >
-                      No registered residents found in database. New resident
-                      signups will appear here.
-                    </p>
-                  )}
+                        No other accounts found. New registered users will appear here.
+                      </p>
+                    )}
                 </div>
               )}
             </>
@@ -15491,19 +16254,36 @@ function AdminMessagesPage({
               <Avatar
                 initials={getInitialsFromEmail(
                   activeThread,
-
-                  activeResidentMeta?.name,
+                  activeDisplayName,
                 )}
-                tone="green"
+                tone={isActiveThreadAdmin ? "blue" : "green"}
               />
               <div style={{ flex: 1 }}>
-                <strong>{activeResidentMeta?.name || activeThread}</strong>
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <strong>{activeDisplayName}</strong>
+                  {isActiveThreadAdmin && (
+                    <span
+                      style={{
+                        fontSize: 10.5,
+                        fontWeight: 700,
+                        background: "#eff6ff",
+                        color: "#1d4ed8",
+                        border: "1px solid #bfdbfe",
+                        padding: "1px 6px",
+                        borderRadius: 6,
+                      }}
+                    >
+                      👑 Official Admin
+                    </span>
+                  )}
+                </div>
                 <small>
-                  Resident ·{" "}
-                  {activeResidentMeta?.address || "Barangay San Isidro"}
+                  {isActiveThreadAdmin
+                    ? "Barangay Administrator · Staff Coordination Channel"
+                    : `Resident · ${activeResidentMeta?.address || officeName}`}
                 </small>
               </div>
-              {activeRequests.length > 0 && (
+              {activeRequests.length > 0 && !isActiveThreadAdmin && (
                 <button
                   className="ghost-button"
                   style={{ fontSize: 12, padding: "4px 10px" }}
@@ -15518,11 +16298,8 @@ function AdminMessagesPage({
                 className="ghost-button"
                 style={{
                   fontSize: 12,
-
                   padding: "4px 10px",
-
                   color: "#dc2626",
-
                   borderColor: "#fecaca",
                 }}
                 onClick={() => setThreadToDelete(activeThread)}
@@ -15537,32 +16314,21 @@ function AdminMessagesPage({
                 <div
                   style={{
                     textAlign: "center",
-
                     padding: "48px 16px",
-
                     color: "#6b7280",
-
                     margin: "auto",
                   }}
                 >
                   <div
                     style={{
                       width: 46,
-
                       height: 46,
-
                       borderRadius: "50%",
-
-                      background: "#e8f5e9",
-
-                      color: "#166534",
-
+                      background: isActiveThreadAdmin ? "#eff6ff" : "#e8f5e9",
+                      color: isActiveThreadAdmin ? "#1d4ed8" : "#166534",
                       display: "flex",
-
                       alignItems: "center",
-
                       justifyContent: "center",
-
                       margin: "0 auto 12px",
                     }}
                   >
@@ -15571,40 +16337,37 @@ function AdminMessagesPage({
                   <p
                     style={{
                       fontWeight: 600,
-
                       fontSize: 15,
-
                       color: "#111827",
-
                       marginBottom: 4,
                     }}
                   >
-                    Conversation with {activeResidentMeta?.name || activeThread}
+                    {isActiveThreadAdmin
+                      ? `Admin Coordination: ${activeDisplayName}`
+                      : `Conversation with ${activeDisplayName}`}
                   </p>
                   <p
                     style={{
                       fontSize: 12.5,
-
                       color: "#6b7280",
-
                       maxWidth: 320,
-
                       margin: "0 auto",
-
                       lineHeight: 1.4,
                     }}
                   >
-                    No messages yet. Send a message or choose a quick reply
-                    below to begin this conversation.
+                    {isActiveThreadAdmin
+                      ? "Official administrative channel. Send updates, coordinate requests, or discuss barangay operations."
+                      : "No messages yet. Send a message or choose a quick reply below to begin this conversation."}
                   </p>
                 </div>
               ) : (
                 (threads[activeThread] ?? []).map((msg, i) => {
                   const isMe = msg.from === "admin"
-
-                  const residentInitials = activeResidentMeta?.name
+                  const senderInitials = isActiveThreadAdmin
+                    ? initials(activeDisplayName)
+                    : activeResidentMeta?.name
                     ? initials(activeResidentMeta.name)
-                    : getInitialsFromEmail(activeThread || "Resident")
+                    : getInitialsFromEmail(activeThread || "User")
 
                   return (
                     <div
@@ -15612,7 +16375,10 @@ function AdminMessagesPage({
                       className={`chat-bubble-wrap ${isMe ? "right" : "left"}`}
                     >
                       {!isMe && (
-                        <Avatar initials={residentInitials} tone="amber" />
+                        <Avatar
+                          initials={senderInitials}
+                          tone={isActiveThreadAdmin ? "blue" : "amber"}
+                        />
                       )}
                       <div className="chat-bubble-content">
                         <div className="chat-bubble">
@@ -15623,9 +16389,7 @@ function AdminMessagesPage({
                             onClick={() =>
                               onDeleteMessage(
                                 activeThread,
-
                                 msg.dbId,
-
                                 msg.timestamp,
                               )
                             }
@@ -15643,14 +16407,17 @@ function AdminMessagesPage({
 
             {/* Quick replies */}
             <div className="quick-replies">
-              {ADMIN_QUICK_REPLIES.map((qr) => (
+              {(isActiveThreadAdmin
+                ? ADMIN_COORDINATION_QUICK_REPLIES
+                : ADMIN_RESIDENT_QUICK_REPLIES
+              ).map((qr) => (
                 <button
                   key={qr}
                   className="quick-reply-chip"
                   onClick={() => setDraft(qr)}
                 >
-                  {qr.slice(0, 36)}
-                  {qr.length > 36 ? "…" : ""}
+                  {qr.slice(0, 42)}
+                  {qr.length > 42 ? "…" : ""}
                 </button>
               ))}
             </div>
@@ -15662,7 +16429,11 @@ function AdminMessagesPage({
                 onKeyDown={(e) =>
                   e.key === "Enter" && !e.shiftKey && handleSend()
                 }
-                placeholder={`Reply to ${activeResidentMeta?.name || activeThread}…`}
+                placeholder={
+                  isActiveThreadAdmin
+                    ? `Type a message to Admin ${activeDisplayName}…`
+                    : `Reply to ${activeDisplayName}…`
+                }
               />
               <button
                 className="send-button"
@@ -15680,8 +16451,7 @@ function AdminMessagesPage({
             </span>
             <h3>Select a conversation</h3>
             <p>
-              Choose a resident from the list to view and reply to their
-              messages.
+              Choose a resident or administrator from the list to view and reply to messages.
             </p>
           </div>
         )}
@@ -15697,11 +16467,8 @@ function AdminMessagesPage({
             <p
               style={{
                 margin: 0,
-
                 fontSize: 13,
-
                 color: "#374151",
-
                 lineHeight: 1.6,
               }}
             >
@@ -15727,7 +16494,6 @@ function AdminMessagesPage({
                 className="danger-button"
                 onClick={() => {
                   onDeleteThread(threadToDelete)
-
                   setThreadToDelete(null)
                 }}
               >
@@ -15757,8 +16523,10 @@ function ResidentMessagesPage({
   onClearPresetDraft,
 
   myRequests,
+
+  barangayInfo,
 }: {
-  user: { id: string name: string email: string }
+  user: { id: string; name: string; email: string }
 
   thread: Msg[]
 
@@ -15777,12 +16545,23 @@ function ResidentMessagesPage({
   onClearPresetDraft?: () => void
 
   myRequests: DocumentRequest[]
+
+  barangayInfo?: BarangayInfo
 }) {
   const [draft, setDraft] = useState("")
 
   const [confirmClearOpen, setConfirmClearOpen] = useState(false)
 
   const chatRef = useRef<HTMLDivElement>(null)
+
+  const rawBarangayName = (barangayInfo?.name || "").trim() || "San Isidro"
+  const officeName = rawBarangayName.toLowerCase().startsWith("barangay")
+    ? `${rawBarangayName} Office`
+    : `Barangay ${rawBarangayName} Office`
+  const officeInitials = getInitials(rawBarangayName)
+  const hoursText = barangayInfo?.weekdayHours
+    ? `Mon–Fri ${barangayInfo.weekdayHours}`
+    : "Mon–Fri 8AM–5PM"
 
   // Inject preset draft (e.g. follow-up from documents page)
 
@@ -15850,10 +16629,10 @@ function ResidentMessagesPage({
       <div className="messages-shell resident-messages">
         <div className="chat-pane full">
           <div className="chat-header">
-            <Avatar initials="SI" tone="blue" />
+            <Avatar initials={officeInitials} tone="blue" />
             <div style={{ flex: 1 }}>
-              <strong>Barangay San Isidro Office</strong>
-              <small>Administrator · Official channel · Mon–Fri 8AM–5PM</small>
+              <strong>{officeName}</strong>
+              <small>Administrator · Official channel · {hoursText}</small>
             </div>
             {thread.length > 0 && (
               <button
@@ -15881,7 +16660,7 @@ function ResidentMessagesPage({
               <div className="chat-start-note">
                 <Icon name="message" size={22} />
                 <p>
-                  Start a conversation with your barangay office. Use this
+                  Start a conversation with {officeName}. Use this
                   channel for concerns, inquiries, or follow-ups on your
                   requests.
                 </p>
@@ -15895,7 +16674,7 @@ function ResidentMessagesPage({
                   key={i}
                   className={`chat-bubble-wrap ${isMe ? "right" : "left"}`}
                 >
-                  {!isMe && <Avatar initials="SI" tone="blue" />}
+                  {!isMe && <Avatar initials={officeInitials} tone="blue" />}
                   <div className="chat-bubble-content">
                     <div className="chat-bubble">
                       {msg.text}
@@ -15944,7 +16723,7 @@ function ResidentMessagesPage({
               onKeyDown={(e) =>
                 e.key === "Enter" && !e.shiftKey && handleSend()
               }
-              placeholder="Type your message to the barangay office…"
+              placeholder={`Type your message to ${officeName}…`}
             />
             <button
               className="send-button"
@@ -15975,8 +16754,8 @@ function ResidentMessagesPage({
                 lineHeight: 1.6,
               }}
             >
-              Are you sure you want to clear your conversation with the Barangay
-              Office? This will remove all messages from your chat.
+              Are you sure you want to clear your conversation with {officeName}?
+              This will remove all messages from your chat.
             </p>
             <div
               style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}
@@ -20112,7 +20891,7 @@ function ResidentsPage({
                     type="button"
                     className="btn-sm-action"
                     onClick={() => {
-                      navigator.clipboard.writeText(pwResetNewPass)
+                      copyToClipboard(pwResetNewPass)
 
                       onToast("Password copied to clipboard! 📋")
                     }}
@@ -20184,7 +20963,7 @@ function ResidentsPage({
                   onClick={() => {
                     const smsText = `Good day ${pwResetTarget.name}! Your Barangay Connect portal password has been reset by the Barangay Administration.\n\nTemporary Password: ${pwResetNewPass}\n\nPlease sign in to the portal and update your password under Settings. Thank you!`
 
-                    navigator.clipboard.writeText(smsText)
+                    copyToClipboard(smsText)
 
                     setCopiedSms(true)
 
@@ -20524,6 +21303,8 @@ function BarangaySettingsPage({
   onBarangayChange,
 
   currentUser,
+
+  onUpdateUserEmail,
 }: {
   onToast: (msg: string) => void
 
@@ -20532,6 +21313,11 @@ function BarangaySettingsPage({
   onBarangayChange: (info: BarangayInfo) => void
 
   currentUser?: Account | null
+
+  onUpdateUserEmail?: (
+    newEmail: string,
+    verifyPassword?: string,
+  ) => Promise<{ success: boolean; error?: string }>
 }) {
   const [tab, setTab] =
     useState<"profile" | "hours" | "documents" | "notifications" | "security">(
@@ -20639,6 +21425,63 @@ function BarangaySettingsPage({
 
     msg: string
   } | null>(null)
+
+  const [newAdminEmail, setNewAdminEmail] = useState("")
+  const [verifyEmailPassword, setVerifyEmailPassword] = useState("")
+  const [isUpdatingEmail, setIsUpdatingEmail] = useState(false)
+  const [emailStatus, setEmailStatus] = useState<{
+    type: "success" | "error"
+    msg: string
+  } | null>(null)
+
+  const handleUpdateEmail = async () => {
+    const cleanEmail = newAdminEmail.trim().toLowerCase()
+    if (!cleanEmail || !cleanEmail.includes("@")) {
+      setEmailStatus({
+        type: "error",
+        msg: "Please enter a valid email address.",
+      })
+      return
+    }
+    if (cleanEmail === (currentUser?.email || "").toLowerCase().trim()) {
+      setEmailStatus({
+        type: "error",
+        msg: "New email is the same as your current email.",
+      })
+      return
+    }
+    setIsUpdatingEmail(true)
+    setEmailStatus(null)
+    try {
+      if (onUpdateUserEmail) {
+        const res = await onUpdateUserEmail(
+          cleanEmail,
+          verifyEmailPassword || undefined,
+        )
+        if (!res.success) {
+          setEmailStatus({
+            type: "error",
+            msg: res.error || "Failed to update email.",
+          })
+          return
+        }
+      }
+      setEmailStatus({
+        type: "success",
+        msg: `Administrator email updated to ${cleanEmail}!`,
+      })
+      setNewAdminEmail("")
+      setVerifyEmailPassword("")
+      onToast("Admin email updated successfully! ✅")
+    } catch (err: any) {
+      setEmailStatus({
+        type: "error",
+        msg: err?.message || "Failed to update email.",
+      })
+    } finally {
+      setIsUpdatingEmail(false)
+    }
+  }
 
   // Database Diagnostics state
 
@@ -21859,6 +22702,89 @@ function BarangaySettingsPage({
               </div>
 
               <h4 style={{ fontSize: 13, color: "#164032", marginBottom: 12 }}>
+                Update Administrator Email
+              </h4>
+              <div className="settings-grid" style={{ marginBottom: 14 }}>
+                <label className="field">
+                  Current administrator email
+                  <input
+                    type="email"
+                    value={currentUser?.email || "admin@sanisidro.gov.ph"}
+                    disabled
+                    style={{
+                      background: "#f3f4f6",
+                      color: "#6b7280",
+                      cursor: "not-allowed",
+                    }}
+                  />
+                </label>
+                <label className="field">
+                  New administrator email
+                  <input
+                    type="email"
+                    value={newAdminEmail}
+                    onChange={(e) => setNewAdminEmail(e.target.value)}
+                    placeholder="e.g. newadmin@barangay.gov.ph"
+                  />
+                </label>
+                <label className="field full">
+                  Current password (optional verification)
+                  <input
+                    type="password"
+                    value={verifyEmailPassword}
+                    onChange={(e) => setVerifyEmailPassword(e.target.value)}
+                    placeholder="Enter current password if required"
+                  />
+                </label>
+              </div>
+
+              {emailStatus && (
+                <div
+                  style={{
+                    marginBottom: 14,
+                    padding: "10px 14px",
+                    borderRadius: 8,
+                    fontSize: 11.5,
+                    fontWeight: 600,
+                    background:
+                      emailStatus.type === "success" ? "#def7ec" : "#fde8e8",
+                    color:
+                      emailStatus.type === "success" ? "#03543f" : "#9b1c1c",
+                  }}
+                >
+                  {emailStatus.msg}
+                </div>
+              )}
+
+              <button
+                type="button"
+                className="primary-button"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                  padding: "9px 16px",
+                  fontSize: 12,
+                  marginBottom: 24,
+                }}
+                disabled={isUpdatingEmail || !newAdminEmail.trim()}
+                onClick={handleUpdateEmail}
+              >
+                <Icon name="check" size={14} />
+                {isUpdatingEmail
+                  ? "Updating Email..."
+                  : "Update Administrator Email"}
+              </button>
+
+              <hr
+                style={{
+                  border: "none",
+                  borderTop: "1px solid #e5ebe8",
+                  marginBottom: 20,
+                }}
+              />
+
+              <h4 style={{ fontSize: 13, color: "#164032", marginBottom: 12 }}>
                 Update Administrator Password
               </h4>
               <div className="settings-grid">
@@ -22733,9 +23659,7 @@ function IncidentsPage({
   }
 
   function copyNumber(num: string, agency: string) {
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(num)
-    }
+    copyToClipboard(num)
 
     onToast(`Copied hotline for ${agency}: ${num}`)
   }
