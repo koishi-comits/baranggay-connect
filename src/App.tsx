@@ -22604,8 +22604,8 @@ function BarangaySettingsPage({
                       marginTop: 2,
                     }}
                   >
-                    {currentUser?.name || "Kapitan Santos"} (
-                    {currentUser?.email || "admin@sanisidro.gov.ph"})
+                    {currentUser?.name || "Kap. Joseph M. Bueta"} (
+                    {currentUser?.email || "admin@baranggay.conn.gov.ph"})
                   </div>
                   <div style={{ fontSize: 11, color: "#6b8077", marginTop: 2 }}>
                     Role: <strong>Master Administrator</strong> • Status:{" "}
@@ -22643,7 +22643,7 @@ function BarangaySettingsPage({
                   Current administrator email
                   <input
                     type="email"
-                    value={currentUser?.email || "admin@sanisidro.gov.ph"}
+                    value={currentUser?.email || "admin@baranggay.conn.gov.ph"}
                     disabled
                     style={{
                       background: "#f3f4f6",
@@ -22658,42 +22658,10 @@ function BarangaySettingsPage({
                     type="email"
                     value={newAdminEmail}
                     onChange={(e) => setNewAdminEmail(e.target.value)}
-                    placeholder="e.g. newadmin@barangay.gov.ph"
+                    placeholder="e.g. newadmin@baranggay.conn.gov.ph"
                   />
                 </label>
-                <label className="field full">
-                  Current password (optional verification)
-                  <div className="password-wrapper">
-                    <input
-                      type={showVerifyEmailPassword ? "text" : "password"}
-                      value={verifyEmailPassword}
-                      onChange={(e) => setVerifyEmailPassword(e.target.value)}
-                      placeholder="Enter current password if required"
-                    />
-                    <button
-                      type="button"
-                      className="show-password-btn"
-                      onClick={() =>
-                        setShowVerifyEmailPassword(!showVerifyEmailPassword)
-                      }
-                      aria-label={
-                        showVerifyEmailPassword
-                          ? "Hide password"
-                          : "Show password"
-                      }
-                      title={
-                        showVerifyEmailPassword
-                          ? "Hide password"
-                          : "Show password"
-                      }
-                    >
-                      <Icon
-                        name={showVerifyEmailPassword ? "eyeOff" : "eye"}
-                        size={18}
-                      />
-                    </button>
-                  </div>
-                </label>
+
               </div>
 
               {emailStatus && (
