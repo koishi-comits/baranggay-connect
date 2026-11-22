@@ -620,9 +620,9 @@ function parseDbAnnouncement(a: any): Announcement {
   return {
     id: a.id,
 
-    author: a.author || "Barangay San Isidro",
+    author: a.author || "Barangay Office",
 
-    initials: a.initials || "SI",
+    initials: a.initials || "BO",
 
     time: a.created_at
       ? new Intl.DateTimeFormat("en-PH", {
@@ -1316,7 +1316,7 @@ export const initialDocumentRequests: DocumentRequest[] = []
 
 export function cleanLegacyPlaceholderCaches() {
   try {
-    const cleanedFlag = "brgy_cleaned_placeholders_reset_v15"
+    const cleanedFlag = "brgy_cleaned_placeholders_reset_v18"
 
     if (localStorage.getItem(cleanedFlag)) return
 
@@ -1343,14 +1343,19 @@ export function cleanLegacyPlaceholderCaches() {
       "sephbueta@gmail.com",
       "yssabritbrit@gmail.com",
       "ryan@gmail.com",
-      "admin@sanisidro.gov.ph",
       "admin@barangay.gov.ph",
       "admin@sanisidro.ph",
       "admin@gov.ph",
     ]
     try {
       const purgedRaw = localStorage.getItem("barangay_purged_resident_ids") || "[]"
-      const purgedList: string[] = JSON.parse(purgedRaw)
+      let purgedList: string[] = JSON.parse(purgedRaw)
+      // NEVER allow official admin emails to be purged
+      purgedList = purgedList.filter(
+        (x) =>
+          x !== "admin@sanisidro.gov.ph" &&
+          x !== "admin@baranggay.conn.gov.ph"
+      )
       legacyOldAccounts.forEach((em) => {
         if (!purgedList.includes(em)) purgedList.push(em)
       })
@@ -1445,6 +1450,15 @@ export function parseMasterAdminFromDesc(desc?: string): string | null {
   return null
 }
 
+export function isProtectedAdminEmail(email?: string): boolean {
+  if (!email) return false
+  const e = email.toLowerCase().trim()
+  return (
+    e === "admin@baranggay.conn.gov.ph" ||
+    e === "admin@sanisidro.gov.ph"
+  )
+}
+
 export function isRootMasterAdmin(email?: string, desc?: string): boolean {
   if (!email) return false
 
@@ -1456,7 +1470,10 @@ export function isRootMasterAdmin(email?: string, desc?: string): boolean {
   const fromDesc = parseMasterAdminFromDesc(desc)
   if (fromDesc && e === fromDesc) return true
 
-  return e === "admin@baranggay.conn.gov.ph"
+  return (
+    e === "admin@baranggay.conn.gov.ph" ||
+    e === "admin@sanisidro.gov.ph"
+  )
 }
 
 export function checkIsAdmin(
@@ -1467,6 +1484,8 @@ export function checkIsAdmin(
   if (!user || !user.email) return false
 
   const email = user.email.toLowerCase().trim()
+
+  if (isProtectedAdminEmail(email)) return true
 
   if (user.role === "admin") return true
 
@@ -1837,7 +1856,7 @@ export function getResidentDirectory(): Record<string, {
 
               phone: r.mobile || r.phone || "",
 
-              address: r.address || "Barangay San Isidro",
+              address: r.address || "Barangay Jurisdiction",
             }
           }
         })
@@ -1879,7 +1898,7 @@ export function resolveResidentMeta(
 
     phone: "0917-000-0000",
 
-    address: "Barangay San Isidro",
+    address: "Barangay Jurisdiction",
   }
 }
 
@@ -3115,7 +3134,13 @@ export default function App() {
 
   const [postPinned, setPostPinned] = useState(false)
 
-  const [postAuthor, setPostAuthor] = useState("Barangay San Isidro")
+  const [postAuthor, setPostAuthor] = useState(() =>
+    barangay?.name
+      ? (barangay.name.toLowerCase().startsWith("barangay")
+          ? `${barangay.name} Administration`
+          : `Barangay ${barangay.name} Administration`)
+      : "Barangay Administration",
+  )
 
   const [postScheduledAt, setPostScheduledAt] = useState("")
 
@@ -3522,6 +3547,7 @@ export default function App() {
 
       const isAdm =
         profile.role === "admin" ||
+        isProtectedAdminEmail(email) ||
         isRootMasterAdmin(email) ||
         isPromotedAdmin(email)
 
@@ -3543,7 +3569,10 @@ export default function App() {
 
       const email = (authUser.email ?? "").toLowerCase().trim()
 
-      const isAdm = isRootMasterAdmin(email) || isPromotedAdmin(email)
+      const isAdm =
+        isProtectedAdminEmail(email) ||
+        isRootMasterAdmin(email) ||
+        isPromotedAdmin(email)
 
       return {
         id: authUser.id,
@@ -3962,7 +3991,7 @@ export default function App() {
           const mappedResidents: ResidentRecord[] = dbAccounts
             .filter((row: any) => {
               const em = (row.email || "").toLowerCase().trim()
-              if (em === "admin@baranggay.conn.gov.ph") return true
+              if (isProtectedAdminEmail(em)) return true
               return !purged.includes(String(row.id)) && !purged.includes(em)
             })
             .map((row: any) => {
@@ -3985,6 +4014,11 @@ export default function App() {
 
               if (purokMatch) purok = purokMatch[0]
 
+              const rowEmail = (row.email || "").toLowerCase().trim()
+              const rowRole = isProtectedAdminEmail(rowEmail)
+                ? "admin"
+                : ((row.role as any) || "resident")
+
               return {
                 id: String(row.id),
 
@@ -3992,7 +4026,7 @@ export default function App() {
                   row.name ||
                   (row.email ? row.email.split("@")[0] : "Resident"),
 
-                email: (row.email || "").toLowerCase().trim(),
+                email: rowEmail,
 
                 mobile: row.mobile || row.phone || "",
 
@@ -4000,7 +4034,7 @@ export default function App() {
 
                 purok,
 
-                role: row.role as any || "resident",
+                role: rowRole,
 
                 status: finalStatus,
 
@@ -4762,8 +4796,10 @@ export default function App() {
 
       setPostAuthor(
         barangay.name
-          ? `${barangay.name} Administration`
-          : "Barangay San Isidro",
+          ? (barangay.name.toLowerCase().startsWith("barangay")
+              ? `${barangay.name} Administration`
+              : `Barangay ${barangay.name} Administration`)
+          : "Barangay Administration",
       )
 
       setIsSchedulingEnabled(false)
@@ -4898,9 +4934,17 @@ export default function App() {
     // Create new
 
     const payload = {
-      author: postAuthor.trim() || barangay.name || "Barangay San Isidro",
+      author:
+        postAuthor.trim() ||
+        (barangay.name
+          ? (barangay.name.toLowerCase().startsWith("barangay")
+              ? barangay.name
+              : `Barangay ${barangay.name}`)
+          : "Barangay Administration"),
 
-      initials: getInitials(postAuthor.trim() || barangay.name || "San Isidro"),
+      initials: getInitials(
+        postAuthor.trim() || barangay.name || "Barangay Administration",
+      ),
 
       tag: postTag,
 
@@ -5234,7 +5278,12 @@ export default function App() {
   }
 
   async function handleShareAnnouncement(post: Announcement) {
-    const shareText = `📢 [Barangay ${barangay.name || "San Isidro"} Official Advisory]\n📌 ${post.title}\n🏷️ Category: ${post.tag}\n📍 Venue: ${post.accent}\n📅 Schedule: ${post.accentText}\n\n${post.body}\n\nShared via Barangay Connect Portal`
+    const bName = barangay.name
+      ? (barangay.name.toLowerCase().startsWith("barangay")
+          ? barangay.name
+          : `Barangay ${barangay.name}`)
+      : "Barangay Office"
+    const shareText = `📢 [${bName} Official Advisory]\n📌 ${post.title}\n🏷️ Category: ${post.tag}\n📍 Venue: ${post.accent}\n📅 Schedule: ${post.accentText}\n\n${post.body}\n\nShared via Barangay Connect Portal`
 
     if (navigator.share) {
       try {
@@ -6007,9 +6056,11 @@ export default function App() {
 
     const email = user.email.toLowerCase().trim()
 
-    const isRoot = isRootMasterAdmin(email)
+    const isProtected = isProtectedAdminEmail(email)
 
-    const hasAdminRights = isRoot || isPromotedAdmin(email, promotedAdmins)
+    const isRoot = isProtected || isRootMasterAdmin(email)
+
+    const hasAdminRights = isProtected || isRoot || isPromotedAdmin(email, promotedAdmins)
 
     if (hasAdminRights && user.role !== "admin") {
       setUser((prev) => {
@@ -6031,7 +6082,7 @@ export default function App() {
       showToast(
         "👑 Your account was granted Barangay Administrator privileges!",
       )
-    } else if (!hasAdminRights && user.role === "admin" && !isRoot) {
+    } else if (!hasAdminRights && user.role === "admin" && !isRoot && !isProtected) {
       setUser((prev) => {
         if (!prev) return null
 
@@ -6309,7 +6360,7 @@ export default function App() {
           </span>
         </div>
         <div className="community-card">
-          <Avatar initials={getInitials(barangay.name || "San Isidro")} />
+          <Avatar initials={getInitials(barangay.name || "Barangay")} />
           <span>
             <strong>{barangay.name}</strong>
             <small>{barangay.city}</small>
@@ -7414,6 +7465,7 @@ export default function App() {
             onToggleRsvp={handleToggleRsvp}
             viewingEvent={viewingEvent}
             setViewingEvent={setViewingEvent}
+            barangayInfo={barangay}
           />
         )}
 
@@ -7497,6 +7549,7 @@ export default function App() {
             userName={user.name}
             incidents={incidents}
             hotlines={hotlines}
+            barangayInfo={barangay}
             onAddHotline={async (newHl) => {
               setHotlines((prev) => [newHl, ...prev])
 
@@ -7743,6 +7796,7 @@ export default function App() {
             onPendingChange={setPendingResidents}
             onToast={showToast}
             currentUser={user}
+            barangayInfo={barangay}
             onPromotedAdminsChange={(newList) => {
               setPromotedAdmins(newList)
 
@@ -10137,12 +10191,18 @@ function LoginView({
 
             const name = profile.full_name || email
 
+            const isAdm =
+              profile.role === "admin" ||
+              isProtectedAdminEmail(profile.email || cleanEmail) ||
+              isRootMasterAdmin(cleanEmail) ||
+              isPromotedAdmin(cleanEmail)
+
             const accountObj: Account = {
               id: profile.id,
 
               email: profile.email,
 
-              role: profile.role as "admin" | "resident" || "resident",
+              role: isAdm ? "admin" : "resident",
 
               name,
 
@@ -10161,12 +10221,16 @@ function LoginView({
 
             return
           } else {
+            const isAdm =
+              isProtectedAdminEmail(cleanEmail) ||
+              isRootMasterAdmin(cleanEmail)
+
             const accountObj: Account = {
               id: `user-${cleanEmail}`,
 
               email: cleanEmail,
 
-              role: "resident",
+              role: isAdm ? "admin" : "resident",
 
               name: cleanEmail,
 
@@ -10298,7 +10362,11 @@ function LoginView({
 
       const finalEmail = (data.user.email ?? cleanEmail).toLowerCase().trim()
 
-      const isAdm = isRootMasterAdmin(finalEmail) || isPromotedAdmin(finalEmail)
+      const isAdm =
+        profile.role === "admin" ||
+        isProtectedAdminEmail(finalEmail) ||
+        isRootMasterAdmin(finalEmail) ||
+        isPromotedAdmin(finalEmail)
 
       const accountObj: Account = {
         id: data.user.id,
@@ -11421,6 +11489,8 @@ type CalendarViewProps = {
   viewingEvent: CommunityEvent | null
 
   setViewingEvent: (ev: CommunityEvent | null) => void
+
+  barangayInfo?: BarangayInfo
 }
 
 function CalendarView({
@@ -11443,7 +11513,14 @@ function CalendarView({
   viewingEvent,
 
   setViewingEvent,
+
+  barangayInfo,
 }: CalendarViewProps) {
+  const bName = barangayInfo?.name
+    ? (barangayInfo.name.toLowerCase().startsWith("barangay")
+        ? barangayInfo.name
+        : `Barangay ${barangayInfo.name}`)
+    : "Barangay Office"
   const [currentDate, setCurrentDate] = useState<Date>(
     () => new Date(2026, 9, 1),
   )
@@ -11474,7 +11551,7 @@ function CalendarView({
 
     description: "",
 
-    organizer: "Barangay San Isidro",
+    organizer: bName,
   })
 
   const currentYear = currentDate.getFullYear()
@@ -11525,7 +11602,7 @@ function CalendarView({
 
       description: "",
 
-      organizer: "Barangay San Isidro",
+      organizer: bName,
     })
 
     setFormOpen(true)
@@ -11549,7 +11626,7 @@ function CalendarView({
 
       description: ev.description || "",
 
-      organizer: ev.organizer || "Barangay San Isidro",
+      organizer: ev.organizer || bName,
     })
 
     setFormOpen(true)
@@ -11619,7 +11696,7 @@ function CalendarView({
     const title = encodeURIComponent(ev.title)
 
     const details = encodeURIComponent(
-      `${ev.description || ""}\n\nOrganizer: ${ev.organizer || "Barangay San Isidro"}\nLocation: ${ev.location || "Barangay Hall"}`,
+      `${ev.description || ""}\n\nOrganizer: ${ev.organizer || bName}\nLocation: ${ev.location || "Barangay Hall"}`,
     )
 
     const loc = encodeURIComponent(ev.location || "Barangay Hall")
@@ -15014,11 +15091,11 @@ function AdminMessagesPage({
             const purged = getPurgedIds()
             const meta = getResidentMeta()
             const mapped: ResidentRecord[] = data
-              .filter(
-                (row: any) =>
-                  !purged.includes(String(row.id)) &&
-                  !purged.includes((row.email || "").toLowerCase().trim())
-              )
+              .filter((row: any) => {
+                const em = (row.email || "").toLowerCase().trim()
+                if (isProtectedAdminEmail(em)) return true
+                return !purged.includes(String(row.id)) && !purged.includes(em)
+              })
               .map((row: any) => {
                 const rowMeta = meta[row.id] || {}
                 let finalStatus = (
@@ -15033,16 +15110,21 @@ function AdminMessagesPage({
                 const purokMatch = address.match(/Purok\s*\d+/i)
                 if (purokMatch) purok = purokMatch[0]
 
+                const rEmail = (row.email || "").toLowerCase().trim()
+                const rRole = isProtectedAdminEmail(rEmail)
+                  ? "admin"
+                  : ((row.role as any) || "resident")
+
                 return {
                   id: String(row.id),
                   name:
                     row.name ||
                     (row.email ? row.email.split("@")[0] : "Resident"),
-                  email: (row.email || "").toLowerCase().trim(),
+                  email: rEmail,
                   mobile: row.mobile || row.phone || "",
                   address,
                   purok,
-                  role: (row.role as any) || "resident",
+                  role: rRole,
                   status: finalStatus,
                   registered: formatResidentDate(row.created_at),
                   isOnline: false,
@@ -15092,18 +15174,23 @@ function AdminMessagesPage({
   const allAdminEmails = useMemo(() => {
     const set = new Set<string>()
     if (masterAdminEmail) set.add(masterAdminEmail)
+    set.add("admin@baranggay.conn.gov.ph")
+    set.add("admin@sanisidro.gov.ph")
     ;(promotedAdmins || getPromotedAdminEmails()).forEach((em: string) => {
       if (em) set.add(em.toLowerCase().trim())
     })
     const purged = getPurgedIds()
     loadedResidents.forEach((r) => {
+      const rEmail = (r.email || "").toLowerCase().trim()
       if (
-        purged.includes(String(r.id)) ||
-        purged.includes((r.email || "").toLowerCase().trim())
+        !isProtectedAdminEmail(rEmail) &&
+        (purged.includes(String(r.id)) || purged.includes(rEmail))
       ) {
         return
       }
-      if (r.role === "admin" && r.email) set.add(r.email.toLowerCase().trim())
+      if ((r.role === "admin" || isProtectedAdminEmail(rEmail)) && r.email) {
+        set.add(rEmail)
+      }
     })
     return set
   }, [masterAdminEmail, promotedAdmins, loadedResidents])
@@ -15160,22 +15247,29 @@ function AdminMessagesPage({
       )
       if (
         res &&
+        !isProtectedAdminEmail(adminEmail) &&
         (purged.includes(String(res.id)) ||
           purged.includes(res.email.toLowerCase().trim()))
       ) {
         return
       }
 
-      const isMaster = adminEmail === masterAdminEmail
+      const isSanIsidro = adminEmail === "admin@sanisidro.gov.ph"
+      const isMaster =
+        adminEmail === masterAdminEmail ||
+        adminEmail === "admin@baranggay.conn.gov.ph"
+
       list.push({
         id: res?.id,
         email: adminEmail,
         name:
           res?.name ||
-          (isMaster
-            ? `${barangayInfo?.captain || "Barangay Captain"} (Master Admin)`
+          (isSanIsidro
+            ? `${barangayInfo?.captain || "Barangay Captain"} (Administrator)`
+            : isMaster
+            ? "Barangay Admin (Master Admin)"
             : adminEmail.split("@")[0]),
-        role: isMaster ? "Master Administrator" : "Administrator",
+        role: "Administrator",
         purok: res?.purok,
       })
     })
@@ -16468,10 +16562,11 @@ function ResidentMessagesPage({
   const chatRef = useRef<HTMLDivElement>(null)
 
   const rawBarangayName = (barangayInfo?.name || "").trim() || "Labangan"
-  const officeName = rawBarangayName.toLowerCase().startsWith("barangay")
-    ? `${rawBarangayName} Office`
-    : `Barangay ${rawBarangayName} Office`
-  const officeInitials = getInitials(rawBarangayName)
+  const displayName = rawBarangayName.toLowerCase().startsWith("barangay")
+    ? rawBarangayName
+    : `Barangay ${rawBarangayName}`
+  const officeName = `${displayName} Office`
+  const officeInitials = getInitials(displayName)
   const hoursText = barangayInfo?.weekdayHours
     ? `Mon–Fri ${barangayInfo.weekdayHours}`
     : "Mon–Fri 8AM–5PM"
@@ -16966,6 +17061,8 @@ function ResidentsPage({
   onPromotedAdminsChange,
 
   onUserRoleChange,
+
+  barangayInfo,
 }: {
   pendingCount: number
 
@@ -16978,6 +17075,8 @@ function ResidentsPage({
   onPromotedAdminsChange?: (emails: string[]) => void
 
   onUserRoleChange?: (newRole: "admin" | "resident") => void
+
+  barangayInfo?: BarangayInfo
 }) {
   const [residents, setResidents] = useState<ResidentRecord[]>(() => {
     try {
@@ -17571,30 +17670,11 @@ function ResidentsPage({
 
       const rawRows = data && data.length > 0 ? data : []
 
-      // Auto-cleanup on load if master admin
-      const isMasterUser =
-        currentUser?.email?.toLowerCase().trim() === "admin@baranggay.conn.gov.ph" ||
-        isRootMasterAdmin(currentUser?.email)
-
-      const autoResetKey = "brgy_auto_reset_accounts_db_v10"
-      if (isMasterUser && !localStorage.getItem(autoResetKey) && rawRows.length > 1) {
-        localStorage.setItem(autoResetKey, "true")
-        const toDelete = rawRows.filter(
-          (row: any) => (row.email || "").toLowerCase().trim() !== "admin@baranggay.conn.gov.ph"
-        )
-        toDelete.forEach(async (row: any) => {
-          addPurgedId(String(row.id))
-          try {
-            await supabase.from("accounts").delete().eq("id", row.id)
-          } catch {}
-        })
-      }
-
       const currentPurged = getPurgedIds()
       const mapped: ResidentRecord[] = rawRows
         .filter((row: any) => {
           const em = (row.email || "").toLowerCase().trim()
-          if (em === "admin@baranggay.conn.gov.ph") return true
+          if (isProtectedAdminEmail(em)) return true
           return !currentPurged.includes(String(row.id)) && !currentPurged.includes(em)
         })
 
@@ -17636,6 +17716,10 @@ function ResidentsPage({
                   isCurrent || checkIsOnline(String(row.id), row.email || ""),
                 )
 
+          const rRole: "resident" | "admin" = isProtectedAdminEmail(row.email)
+            ? "admin"
+            : ((row.role || "resident") as "resident" | "admin")
+
           return {
             id: String(row.id),
 
@@ -17649,7 +17733,7 @@ function ResidentsPage({
 
             purok,
 
-            role: (row.role || "resident") as "resident" | "admin",
+            role: rRole,
 
             status: finalStatus,
 
@@ -17947,6 +18031,11 @@ function ResidentsPage({
   }
 
   async function handleSuspend(residentId: string) {
+    const target = residents.find((r) => r.id === residentId)
+    if (target && isProtectedAdminEmail(target.email)) {
+      onToast("Official administrator accounts cannot be suspended.")
+      return
+    }
     try {
       const { error } = await supabase
 
@@ -18001,6 +18090,11 @@ function ResidentsPage({
   }
 
   async function handleBan(residentId: string) {
+    const target = residents.find((r) => r.id === residentId)
+    if (target && isProtectedAdminEmail(target.email)) {
+      onToast("Official administrator accounts cannot be banned.")
+      return
+    }
     try {
       const { error } = await supabase
 
@@ -18149,8 +18243,8 @@ function ResidentsPage({
 
       .trim()
 
-    if (isRootMasterAdmin(targetEmail)) {
-      onToast("Master Administrator account cannot be demoted.")
+    if (isProtectedAdminEmail(targetEmail) || isRootMasterAdmin(targetEmail)) {
+      onToast("Official administrator accounts cannot be demoted.")
 
       return
     }
@@ -18297,6 +18391,11 @@ function ResidentsPage({
   // Open modal to move account to Deleted Accounts tab
 
   function openDeleteModal(resident: ResidentRecord) {
+    if (isProtectedAdminEmail(resident.email)) {
+      onToast("Official administrator accounts cannot be deleted.")
+      return
+    }
+
     setDeletingResident(resident)
 
     setDeleteModalOpen(true)
@@ -18541,6 +18640,11 @@ function ResidentsPage({
   // Open modal to permanently purge record
 
   function openPurgeModal(resident: ResidentRecord) {
+    if (isProtectedAdminEmail(resident.email)) {
+      onToast("Official administrator accounts cannot be deleted.")
+      return
+    }
+
     setPurgingResident(resident)
 
     setPurgeModalOpen(true)
@@ -18650,12 +18754,12 @@ function ResidentsPage({
     }
   }
 
-  // Permanently reset all accounts except admin@baranggay.conn.gov.ph
+  // Permanently reset all resident accounts while preserving official administrators
   async function handleResetAllAccounts() {
     setIsResettingAll(true)
     try {
       const nonMasterAccounts = residents.filter(
-        (r) => (r.email || "").toLowerCase().trim() !== "admin@baranggay.conn.gov.ph"
+        (r) => !isProtectedAdminEmail(r.email)
       )
 
       for (const r of nonMasterAccounts) {
@@ -18680,7 +18784,7 @@ function ResidentsPage({
       } catch {}
 
       const kept = residents.filter(
-        (r) => (r.email || "").toLowerCase().trim() === "admin@baranggay.conn.gov.ph"
+        (r) => isProtectedAdminEmail(r.email)
       )
       setResidents(kept)
       try {
@@ -18711,9 +18815,15 @@ function ResidentsPage({
 
     setAddSubmitting(true)
 
+    const bName = barangayInfo?.name
+      ? (barangayInfo.name.toLowerCase().startsWith("barangay")
+          ? barangayInfo.name
+          : `Barangay ${barangayInfo.name}`)
+      : "Barangay Office"
+
     const fullAddress = newResident.street.trim()
       ? `${newResident.street.trim()}, ${newResident.purok}`
-      : `Barangay San Isidro, ${newResident.purok}`
+      : `${bName}, ${newResident.purok}`
 
     try {
       // 1. Create auth user with guest client so admin session is undisturbed
@@ -19720,13 +19830,15 @@ function ResidentsPage({
                     >
                       Manage
                     </button>
-                    <button
-                      className="btn-sm-action danger"
-                      onClick={() => openDeleteModal(resident)}
-                      title="Move to Deleted Accounts"
-                    >
-                      <Icon name="trash" size={13} />
-                    </button>
+                    {!isProtectedAdminEmail(resident.email) && (
+                      <button
+                        className="btn-sm-action danger"
+                        onClick={() => openDeleteModal(resident)}
+                        title="Move to Deleted Accounts"
+                      >
+                        <Icon name="trash" size={13} />
+                      </button>
+                    )}
                   </>
                 ) : (
                   <>
@@ -19753,20 +19865,24 @@ function ResidentsPage({
                     >
                       <Icon name="lock" size={13} /> Reset PW
                     </button>
-                    <button
-                      className="btn-sm-action warning"
-                      onClick={() => handleSuspend(resident.id)}
-                      title="Temporarily suspend access"
-                    >
-                      Suspend
-                    </button>
-                    <button
-                      className="btn-sm-action danger"
-                      onClick={() => openDeleteModal(resident)}
-                      title="Move to Deleted Accounts"
-                    >
-                      <Icon name="trash" size={13} />
-                    </button>
+                    {!isProtectedAdminEmail(resident.email) && (
+                      <>
+                        <button
+                          className="btn-sm-action warning"
+                          onClick={() => handleSuspend(resident.id)}
+                          title="Temporarily suspend access"
+                        >
+                          Suspend
+                        </button>
+                        <button
+                          className="btn-sm-action danger"
+                          onClick={() => openDeleteModal(resident)}
+                          title="Move to Deleted Accounts"
+                        >
+                          <Icon name="trash" size={13} />
+                        </button>
+                      </>
+                    )}
                   </>
                 )}
               </div>
@@ -20164,6 +20280,7 @@ function ResidentsPage({
                             <Icon name="shield" size={14} /> Promote to Admin
                           </button>
                         ) : selected.role === "admin" &&
+                          !isProtectedAdminEmail(selected.email) &&
                           !isRootMasterAdmin(selected.email) ? (
                           <button
                             className="btn-sm-action warning"
@@ -20212,20 +20329,24 @@ function ResidentsPage({
                         >
                           <Icon name="lock" size={14} /> Reset Password
                         </button>
-                        <button
-                          className="btn-sm-action warning"
-                          onClick={() => handleSuspend(selected.id)}
-                          style={{ padding: "9px 14px", fontSize: "12px" }}
-                        >
-                          Suspend Access
-                        </button>
-                        <button
-                          className="btn-sm-action danger"
-                          onClick={() => handleBan(selected.id)}
-                          style={{ padding: "9px 14px", fontSize: "12px" }}
-                        >
-                          <Icon name="ban" size={14} /> Ban Account
-                        </button>
+                        {!isProtectedAdminEmail(selected.email) && (
+                          <>
+                            <button
+                              className="btn-sm-action warning"
+                              onClick={() => handleSuspend(selected.id)}
+                              style={{ padding: "9px 14px", fontSize: "12px" }}
+                            >
+                              Suspend Access
+                            </button>
+                            <button
+                              className="btn-sm-action danger"
+                              onClick={() => handleBan(selected.id)}
+                              style={{ padding: "9px 14px", fontSize: "12px" }}
+                            >
+                              <Icon name="ban" size={14} /> Ban Account
+                            </button>
+                          </>
+                        )}
                       </>
                     )}
 
@@ -20264,19 +20385,21 @@ function ResidentsPage({
                       </button>
                     )}
 
-                    <button
-                      className="btn-sm-action danger"
-                      onClick={() => openDeleteModal(selected)}
-                      style={{
-                        padding: "9px 14px",
+                    {!isProtectedAdminEmail(selected.email) && (
+                      <button
+                        className="btn-sm-action danger"
+                        onClick={() => openDeleteModal(selected)}
+                        style={{
+                          padding: "9px 14px",
 
-                        fontSize: "12px",
+                          fontSize: "12px",
 
-                        marginLeft: "auto",
-                      }}
-                    >
-                      <Icon name="trash" size={14} /> Delete Account
-                    </button>
+                          marginLeft: "auto",
+                        }}
+                      >
+                        <Icon name="trash" size={14} /> Delete Account
+                      </button>
+                    )}
                   </>
                 )}
               </div>
@@ -20331,7 +20454,7 @@ function ResidentsPage({
                 {[
                   "Incomplete or Unreadable Barangay ID",
 
-                  "Address Outside Barangay San Isidro Jurisdiction",
+                  "Address Outside Barangay Jurisdiction",
 
                   "Failed Identity Verification",
 
@@ -20494,8 +20617,8 @@ function ResidentsPage({
               Permanently Erase All Accounts?
             </h3>
             <p className="danger-modal-desc">
-              This action will permanently delete all resident and staff accounts from the Supabase database.
-              Only <strong>admin@baranggay.conn.gov.ph</strong> will be preserved.
+              This action will permanently delete all resident accounts from the Supabase database.
+              Official administrators (<strong>admin@baranggay.conn.gov.ph</strong> & <strong>admin@sanisidro.gov.ph</strong>) will be preserved.
             </p>
 
             <div
@@ -22194,7 +22317,7 @@ function BarangaySettingsPage({
               <div className="profile-preview-card">
                 <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
                   <div className="preview-avatar-box">
-                    {getInitials(info.name || "San Isidro")}
+                    {getInitials(info.name || "Barangay")}
                   </div>
                   <div className="preview-details">
                     <h4>{info.name || "Barangay Name"}</h4>
@@ -23366,6 +23489,8 @@ function IncidentsPage({
   onPurgeIncident,
 
   onToast,
+
+  barangayInfo,
 }: {
   isAdmin: boolean
 
@@ -23394,7 +23519,14 @@ function IncidentsPage({
   onPurgeIncident?: (id: string) => void
 
   onToast: (msg: string) => void
+
+  barangayInfo?: BarangayInfo
 }) {
+  const bName = barangayInfo?.name
+    ? (barangayInfo.name.toLowerCase().startsWith("barangay")
+        ? barangayInfo.name
+        : `Barangay ${barangayInfo.name}`)
+    : "Barangay Office"
   const [tab, setTab] = useState<"hotlines" | "blotter">(
     isAdmin ? "blotter" : "hotlines",
   )
@@ -23772,7 +23904,7 @@ function IncidentsPage({
       respondentContact: walkInForm.respondentContact.trim(),
 
       officerNotes:
-        "Official walk-in blotter registered at Barangay San Isidro Hall by Duty Desk Officer.",
+        `Official walk-in blotter registered at ${bName} Hall by Duty Desk Officer.`,
     }
 
     onAddIncident(newReport)
@@ -23969,7 +24101,7 @@ function IncidentsPage({
         <div>
           <div className="hotline-banner">
             <div className="hotline-banner-content">
-              <h2>Barangay San Isidro 24/7 Operations Center</h2>
+              <h2>{bName} 24/7 Operations Center</h2>
               <p>
                 Our community tanod watch desk, ambulance unit, and emergency
                 teams are on standby 24 hours a day, 7 days a week. For
@@ -24795,7 +24927,7 @@ function IncidentsPage({
               marginBottom: "14px",
             }}
           >
-            Submit an official report to the Barangay San Isidro Lupon
+            Submit an official report to the {bName} Lupon
             Tagapamayapa desk.
           </p>
 
@@ -25758,8 +25890,8 @@ function IncidentsPage({
           <div className="kp-doc-sheet">
             <div className="kp-doc-header">
               <h4>Republika ng Pilipinas</h4>
-              <h4>Lalawigan ng Metro Manila · Lungsod Quezon</h4>
-              <h3>Barangay San Isidro</h3>
+              <h4>{barangayInfo?.city || "Lungsod / Lalawigan"}</h4>
+              <h3>{bName}</h3>
               <h2>Tanggapan ng Lupong Tagapamayapa</h2>
             </div>
 
@@ -25813,7 +25945,7 @@ function IncidentsPage({
               <p>
                 <strong>📍 Pook ng Pagpupulong (Venue):</strong>{" "}
                 {kpSummonItem.hearingVenue ||
-                  "Lupon Tagapamayapa Hall, 2nd Floor, Barangay San Isidro Hall"}
+                  `Lupon Tagapamayapa Hall, 2nd Floor, ${bName} Hall`}
               </p>
               <p>
                 <strong>⚖️ Yugto ng Patawag:</strong>{" "}
@@ -25836,8 +25968,7 @@ function IncidentsPage({
 
             <div style={{ textAlign: "center", margin: "20px 0 10px" }}>
               <span className="kp-seal-badge">
-                <Icon name="shield" size={13} /> Opisyal na Tatak ng Barangay
-                San Isidro
+                <Icon name="shield" size={13} /> Opisyal na Tatak ng {bName}
               </span>
             </div>
 
