@@ -1,33 +1,63 @@
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react";
 
-import { supabase, createGuestClient } from "./supabase"
+import { supabase, createGuestClient } from "./supabase";
 
 export async function copyToClipboard(text: string): Promise<boolean> {
   try {
     if (navigator?.clipboard?.writeText && window.isSecureContext) {
-      await navigator.clipboard.writeText(text)
-      return true
+      await navigator.clipboard.writeText(text);
+      return true;
     }
   } catch {}
   try {
-    const textArea = document.createElement("textarea")
-    textArea.value = text
-    textArea.style.position = "fixed"
-    textArea.style.left = "-999999px"
-    textArea.style.top = "-999999px"
-    textArea.setAttribute("readonly", "")
-    document.body.appendChild(textArea)
-    textArea.focus()
-    textArea.select()
-    const successful = document.execCommand("copy")
-    document.body.removeChild(textArea)
-    return successful
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.position = "fixed";
+    textArea.style.left = "-999999px";
+    textArea.style.top = "-999999px";
+    textArea.setAttribute("readonly", "");
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    const successful = document.execCommand("copy");
+    document.body.removeChild(textArea);
+    return successful;
   } catch {
-    return false
+    return false;
   }
 }
 
-type IconName = "alert" | "ban" | "bell" | "calendar" | "check" | "chevron" | "clock" | "document" | "edit" | "eye" | "eyeOff" | "filter" | "home" | "image" | "lock" | "logo" | "megaphone" | "message" | "more" | "phone" | "plus" | "refresh" | "search" | "send" | "settings" | "shield" | "trash" | "userCheck" | "users" | "x"
+type IconName =
+  | "alert"
+  | "ban"
+  | "bell"
+  | "calendar"
+  | "check"
+  | "chevron"
+  | "clock"
+  | "document"
+  | "edit"
+  | "eye"
+  | "eyeOff"
+  | "filter"
+  | "home"
+  | "image"
+  | "lock"
+  | "logo"
+  | "megaphone"
+  | "message"
+  | "more"
+  | "phone"
+  | "plus"
+  | "refresh"
+  | "search"
+  | "send"
+  | "settings"
+  | "shield"
+  | "trash"
+  | "userCheck"
+  | "users"
+  | "x";
 
 const paths: Record<IconName, React.ReactNode> = {
   alert: (
@@ -219,7 +249,7 @@ const paths: Record<IconName, React.ReactNode> = {
   ),
 
   x: <path d="M18 6 6 18M6 6l12 12" />,
-}
+};
 
 function Icon({ name, size = 20 }: { name: IconName; size?: number }) {
   return (
@@ -236,7 +266,7 @@ function Icon({ name, size = 20 }: { name: IconName; size?: number }) {
     >
       {paths[name]}
     </svg>
-  )
+  );
 }
 
 function Avatar({
@@ -246,11 +276,11 @@ function Avatar({
 
   photoUrl,
 }: {
-  initials: string
+  initials: string;
 
-  tone?: "blue" | "amber" | "green"
+  tone?: "blue" | "amber" | "green";
 
-  photoUrl?: string
+  photoUrl?: string;
 }) {
   if (photoUrl) {
     return (
@@ -271,27 +301,27 @@ function Avatar({
             borderRadius: "50%",
           }}
           onError={(e) => {
-            ;(e.currentTarget as HTMLElement).style.display = "none"
+            (e.currentTarget as HTMLElement).style.display = "none";
           }}
         />
       </span>
-    )
+    );
   }
 
-  return <span className={`avatar avatar-${tone}`}>{initials}</span>
+  return <span className={`avatar avatar-${tone}`}>{initials}</span>;
 }
 
 type Account = {
-  id: string
+  id: string;
 
-  email: string
+  email: string;
 
-  role: "admin" | "resident"
+  role: "admin" | "resident";
 
-  name: string
+  name: string;
 
-  initials: string
-}
+  initials: string;
+};
 
 // Helper: derive initials from full name
 
@@ -306,7 +336,7 @@ function getInitials(name: string): string {
 
     .toUpperCase()
 
-    .slice(0, 2)
+    .slice(0, 2);
 }
 
 const adminNavItems = [
@@ -379,7 +409,7 @@ const adminNavItems = [
 
     section: "management" as const,
   },
-]
+];
 
 const residentNavItems = [
   {
@@ -431,55 +461,55 @@ const residentNavItems = [
 
     section: "community" as const,
   },
-]
+];
 
 type Announcement = {
-  id: number
+  id: number;
 
-  author: string
+  author: string;
 
-  initials: string
+  initials: string;
 
-  time: string
+  time: string;
 
-  tag: string
+  tag: string;
 
-  title: string
+  title: string;
 
-  body: string
+  body: string;
 
-  accent: string
+  accent: string;
 
-  accentText: string
+  accentText: string;
 
-  reactions: number
+  reactions: number;
 
-  pinned?: boolean
+  pinned?: boolean;
 
-  imageUrl?: string
+  imageUrl?: string;
 
-  createdAt?: string
+  createdAt?: string;
 
-  scheduledAt?: string
-}
+  scheduledAt?: string;
+};
 
 type AnnouncementComment = {
-  id: string
+  id: string;
 
-  announcementId: number
+  announcementId: number;
 
-  userName: string
+  userName: string;
 
-  userRole: "admin" | "resident"
+  userRole: "admin" | "resident";
 
-  userInitials: string
+  userInitials: string;
 
-  text: string
+  text: string;
 
-  time: string
+  time: string;
 
-  timestamp: number
-}
+  timestamp: number;
+};
 
 const PRESET_BANNERS = [
   {
@@ -529,53 +559,53 @@ const PRESET_BANNERS = [
 
     url: "https://images.unsplash.com/photo-1618477461853-cf6ed80faba5?auto=format&fit=crop&w=1200&q=80",
   },
-]
+];
 
 function getTagClass(tag: string): string {
   switch (tag) {
     case "Health & Wellness":
-      return "tag-health"
+      return "tag-health";
 
     case "Emergency Notice":
-      return "tag-emergency"
+      return "tag-emergency";
 
     case "Community Advisory":
-      return "tag-advisory"
+      return "tag-advisory";
 
     case "Youth & Sports":
-      return "tag-sports"
+      return "tag-sports";
 
     case "Environment":
-      return "tag-environment"
+      return "tag-environment";
 
     case "Public Safety":
-      return "tag-safety"
+      return "tag-safety";
 
     case "Infrastructure":
-      return "tag-infrastructure"
+      return "tag-infrastructure";
 
     case "Senior Citizens":
-      return "tag-senior"
+      return "tag-senior";
 
     case "Events & Programs":
-      return "tag-events"
+      return "tag-events";
 
     default:
-      return "tag-default"
+      return "tag-default";
   }
 }
 
 function parseDbAnnouncement(a: any): Announcement {
-  const rawAccentText = a.accent_text || ""
+  const rawAccentText = a.accent_text || "";
 
-  const isPinned = rawAccentText.includes("[PINNED]")
+  const isPinned = rawAccentText.includes("[PINNED]");
 
-  let scheduledAt: string | undefined = undefined
+  let scheduledAt: string | undefined = undefined;
 
-  const schedMatch = rawAccentText.match(/\[SCHEDULED:([^\]]+)\]/)
+  const schedMatch = rawAccentText.match(/\[SCHEDULED:([^\]]+)\]/);
 
   if (schedMatch) {
-    scheduledAt = schedMatch[1]
+    scheduledAt = schedMatch[1];
   }
 
   const cleanAccentText =
@@ -585,20 +615,20 @@ function parseDbAnnouncement(a: any): Announcement {
 
       .replace(/\[SCHEDULED:[^\]]+\]\s*/g, "")
 
-      .trim() || "Recently posted"
+      .trim() || "Recently posted";
 
-  let imageUrl: string | undefined = undefined
+  let imageUrl: string | undefined = undefined;
 
-  let cleanAccent = a.accent || "Official announcement"
+  let cleanAccent = a.accent || "Official announcement";
 
   if (cleanAccent.startsWith("[IMG:")) {
-    const endIdx = cleanAccent.indexOf("]")
+    const endIdx = cleanAccent.indexOf("]");
 
     if (endIdx > 5) {
-      imageUrl = cleanAccent.slice(5, endIdx)
+      imageUrl = cleanAccent.slice(5, endIdx);
 
       cleanAccent =
-        cleanAccent.slice(endIdx + 1).trim() || "Official announcement"
+        cleanAccent.slice(endIdx + 1).trim() || "Official announcement";
     }
   }
 
@@ -607,13 +637,13 @@ function parseDbAnnouncement(a: any): Announcement {
   if (!imageUrl) {
     if (a.title?.toLowerCase().includes("water")) {
       imageUrl =
-        "https://images.unsplash.com/photo-1541888946425-d0fbb186f5f7?auto=format&fit=crop&w=1200&q=80"
+        "https://images.unsplash.com/photo-1541888946425-d0fbb186f5f7?auto=format&fit=crop&w=1200&q=80";
     } else if (
       a.title?.toLowerCase().includes("medical") ||
       a.tag === "Health & Wellness"
     ) {
       imageUrl =
-        "https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=1200&q=80"
+        "https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=1200&q=80";
     }
   }
 
@@ -657,26 +687,26 @@ function parseDbAnnouncement(a: any): Announcement {
     createdAt: a.created_at,
 
     scheduledAt,
-  }
+  };
 }
 
-const initialComments: Record<number, AnnouncementComment[]> = {}
+const initialComments: Record<number, AnnouncementComment[]> = {};
 
-const initialAnnouncements: Announcement[] = []
+const initialAnnouncements: Announcement[] = [];
 
 export function getDeletedAnnouncementKeys(): string[] {
   try {
-    const cached = localStorage.getItem("brgy_deleted_announcement_keys")
+    const cached = localStorage.getItem("brgy_deleted_announcement_keys");
 
-    if (cached) return JSON.parse(cached)
+    if (cached) return JSON.parse(cached);
   } catch {}
 
-  return []
+  return [];
 }
 
 export function markAnnouncementDeleted(id: number | string, title?: string) {
   try {
-    const keys = getDeletedAnnouncementKeys()
+    const keys = getDeletedAnnouncementKeys();
 
     const newKeys = [
       ...keys,
@@ -684,13 +714,13 @@ export function markAnnouncementDeleted(id: number | string, title?: string) {
       String(id),
 
       (title || "").toLowerCase().trim(),
-    ].filter(Boolean)
+    ].filter(Boolean);
 
     localStorage.setItem(
       "brgy_deleted_announcement_keys",
 
       JSON.stringify(Array.from(new Set(newKeys))),
-    )
+    );
   } catch {}
 }
 
@@ -699,13 +729,13 @@ export function isAnnouncementDeleted(
 
   title?: string,
 ): boolean {
-  const keys = getDeletedAnnouncementKeys()
+  const keys = getDeletedAnnouncementKeys();
 
-  if (keys.includes(String(id))) return true
+  if (keys.includes(String(id))) return true;
 
-  if (title && keys.includes(title.toLowerCase().trim())) return true
+  if (title && keys.includes(title.toLowerCase().trim())) return true;
 
-  return false
+  return false;
 }
 
 const ANNOUNCEMENT_TAGS = [
@@ -728,63 +758,63 @@ const ANNOUNCEMENT_TAGS = [
   "Environment",
 
   "Public Safety",
-]
+];
 
 type CommunityEvent = {
-  id: number
+  id: number;
 
-  title: string
+  title: string;
 
-  day: number
+  day: number;
 
-  date: string // "YYYY-MM-DD"
+  date: string; // "YYYY-MM-DD"
 
-  time: string
+  time: string;
 
-  location: string
+  location: string;
 
-  type: string // "community" | "health" | "meeting" | "advisory" | "sports"
+  type: string; // "community" | "health" | "meeting" | "advisory" | "sports"
 
-  description: string
+  description: string;
 
-  organizer?: string
+  organizer?: string;
 
-  created_at?: string
-}
+  created_at?: string;
+};
 
-const initialEvents: CommunityEvent[] = []
+const initialEvents: CommunityEvent[] = [];
 
 function parseDbEvent(row: any): CommunityEvent {
-  let dateStr = ""
+  let dateStr = "";
 
-  let cleanDesc = row.description || ""
+  let cleanDesc = row.description || "";
 
-  const match = cleanDesc.match(/^\[DATE:(\d{4}-\d{2}-\d{2})\]\s*/)
+  const match = cleanDesc.match(/^\[DATE:(\d{4}-\d{2}-\d{2})\]\s*/);
 
   if (match) {
-    dateStr = match[1]
+    dateStr = match[1];
 
-    cleanDesc = cleanDesc.replace(/^\[DATE:\d{4}-\d{2}-\d{2}\]\s*/, "")
+    cleanDesc = cleanDesc.replace(/^\[DATE:\d{4}-\d{2}-\d{2}\]\s*/, "");
   } else if (row.created_at) {
-    const c = new Date(row.created_at)
+    const c = new Date(row.created_at);
 
-    const yr = c.getFullYear()
+    const yr = c.getFullYear();
 
-    const mo = String(c.getMonth() + 1).padStart(2, "0")
+    const mo = String(c.getMonth() + 1).padStart(2, "0");
 
-    const d = String(row.day || c.getDate()).padStart(2, "0")
+    const d = String(row.day || c.getDate()).padStart(2, "0");
 
-    dateStr = `${yr}-${mo}-${d}`
+    dateStr = `${yr}-${mo}-${d}`;
   } else {
-    const now = new Date()
+    const now = new Date();
 
-    const yr = now.getFullYear()
+    const yr = now.getFullYear();
 
-    const mo = String(now.getMonth() + 1).padStart(2, "0")
+    const mo = String(now.getMonth() + 1).padStart(2, "0");
 
-    const d = String(row.day || 1).padStart(2, "0")
+    const d = String(row.day || 1).padStart(2, "0");
 
-    dateStr = `${yr}-${mo}-${d}`
+    dateStr = `${yr}-${mo}-${d}`;
   }
 
   return {
@@ -805,32 +835,32 @@ function parseDbEvent(row: any): CommunityEvent {
     description: cleanDesc,
 
     created_at: row.created_at,
-  }
+  };
 }
 
 type BarangayInfo = {
-  name: string
+  name: string;
 
-  city: string
+  city: string;
 
-  district: string
+  district: string;
 
-  captain: string
+  captain: string;
 
-  phone: string
+  phone: string;
 
-  email: string
+  email: string;
 
-  address: string
+  address: string;
 
-  description: string
+  description: string;
 
-  weekdayHours: string
+  weekdayHours: string;
 
-  saturdayHours: string
+  saturdayHours: string;
 
-  sundayHours: string
-}
+  sundayHours: string;
+};
 
 const defaultBarangayInfo: BarangayInfo = {
   name: "Labangan",
@@ -855,35 +885,35 @@ const defaultBarangayInfo: BarangayInfo = {
   saturdayHours: "8:00 AM – 12:00 PM",
 
   sundayHours: "Closed",
-}
+};
 
 export function getCachedBarangayInfo(): BarangayInfo {
   try {
-    const cached = localStorage.getItem("barangay_info")
+    const cached = localStorage.getItem("barangay_info");
 
     if (cached) {
-      return { ...defaultBarangayInfo, ...JSON.parse(cached) }
+      return { ...defaultBarangayInfo, ...JSON.parse(cached) };
     }
   } catch {}
 
-  return defaultBarangayInfo
+  return defaultBarangayInfo;
 }
 
 export type DocumentService = {
-  id: string
+  id: string;
 
-  name: string
+  name: string;
 
-  days: number
+  days: number;
 
-  fee: string
+  fee: string;
 
-  requirements: string
+  requirements: string;
 
-  description: string
+  description: string;
 
-  enabled: boolean
-}
+  enabled: boolean;
+};
 
 export const defaultDocumentServices: DocumentService[] = [
   {
@@ -988,20 +1018,20 @@ export const defaultDocumentServices: DocumentService[] = [
 
     enabled: true,
   },
-]
+];
 
 export function getCachedDocumentServices(): DocumentService[] {
   try {
-    const cached = localStorage.getItem("barangay_document_services")
+    const cached = localStorage.getItem("barangay_document_services");
 
     if (cached) {
-      const parsed = JSON.parse(cached)
+      const parsed = JSON.parse(cached);
 
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
     }
   } catch {}
 
-  return defaultDocumentServices
+  return defaultDocumentServices;
 }
 
 export function saveCachedDocumentServices(services: DocumentService[]) {
@@ -1010,19 +1040,19 @@ export function saveCachedDocumentServices(services: DocumentService[]) {
       "barangay_document_services",
 
       JSON.stringify(services),
-    )
+    );
   } catch {}
 }
 
 export type OperatingDay = {
-  day: string
+  day: string;
 
-  open: string
+  open: string;
 
-  close: string
+  close: string;
 
-  active: boolean
-}
+  active: boolean;
+};
 
 export const defaultSchedule: OperatingDay[] = [
   { day: "Monday", open: "8:00 AM", close: "5:00 PM", active: true },
@@ -1038,20 +1068,20 @@ export const defaultSchedule: OperatingDay[] = [
   { day: "Saturday", open: "8:00 AM", close: "12:00 PM", active: true },
 
   { day: "Sunday", open: "—", close: "—", active: false },
-]
+];
 
 export function getCachedSchedule(): OperatingDay[] {
   try {
-    const cached = localStorage.getItem("barangay_operating_schedule")
+    const cached = localStorage.getItem("barangay_operating_schedule");
 
     if (cached) {
-      const parsed = JSON.parse(cached)
+      const parsed = JSON.parse(cached);
 
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
     }
   } catch {}
 
-  return defaultSchedule
+  return defaultSchedule;
 }
 
 export function saveCachedSchedule(schedule: OperatingDay[]) {
@@ -1060,35 +1090,35 @@ export function saveCachedSchedule(schedule: OperatingDay[]) {
       "barangay_operating_schedule",
 
       JSON.stringify(schedule),
-    )
+    );
   } catch {}
 }
 
 export type NotificationPrefs = {
-  announcements: boolean
+  announcements: boolean;
 
-  docStatus: boolean
+  docStatus: boolean;
 
-  eventReminder: boolean
+  eventReminder: boolean;
 
-  registrationApproval: boolean
+  registrationApproval: boolean;
 
-  adminMessage: boolean
+  adminMessage: boolean;
 
-  newRegistration: boolean
+  newRegistration: boolean;
 
-  docSubmitted: boolean
+  docSubmitted: boolean;
 
-  residentMessage: boolean
+  residentMessage: boolean;
 
-  blotterFiled: boolean
+  blotterFiled: boolean;
 
-  inApp: boolean
+  inApp: boolean;
 
-  emailDigest: boolean
+  emailDigest: boolean;
 
-  smsAlerts: boolean
-}
+  smsAlerts: boolean;
+};
 
 export const defaultNotificationPrefs: NotificationPrefs = {
   announcements: true,
@@ -1114,33 +1144,33 @@ export const defaultNotificationPrefs: NotificationPrefs = {
   emailDigest: false,
 
   smsAlerts: false,
-}
+};
 
 export function getCachedNotifPrefs(): NotificationPrefs {
   try {
-    const cached = localStorage.getItem("barangay_notif_prefs")
+    const cached = localStorage.getItem("barangay_notif_prefs");
 
-    if (cached) return { ...defaultNotificationPrefs, ...JSON.parse(cached) }
+    if (cached) return { ...defaultNotificationPrefs, ...JSON.parse(cached) };
   } catch {}
 
-  return defaultNotificationPrefs
+  return defaultNotificationPrefs;
 }
 
 export function saveCachedNotifPrefs(prefs: NotificationPrefs) {
   try {
-    localStorage.setItem("barangay_notif_prefs", JSON.stringify(prefs))
+    localStorage.setItem("barangay_notif_prefs", JSON.stringify(prefs));
   } catch {}
 }
 
 export type SecurityAccessPrefs = {
-  requireEmailVerification: boolean
+  requireEmailVerification: boolean;
 
-  adminApprovalRequired: boolean
+  adminApprovalRequired: boolean;
 
-  openRegistration: boolean
+  openRegistration: boolean;
 
-  sessionTimeout: boolean
-}
+  sessionTimeout: boolean;
+};
 
 export const defaultSecurityPrefs: SecurityAccessPrefs = {
   requireEmailVerification: false,
@@ -1150,189 +1180,198 @@ export const defaultSecurityPrefs: SecurityAccessPrefs = {
   openRegistration: true,
 
   sessionTimeout: true,
-}
+};
 
 export function getCachedSecurityPrefs(): SecurityAccessPrefs {
   try {
-    const cached = localStorage.getItem("barangay_security_prefs")
+    const cached = localStorage.getItem("barangay_security_prefs");
 
-    if (cached) return { ...defaultSecurityPrefs, ...JSON.parse(cached) }
+    if (cached) return { ...defaultSecurityPrefs, ...JSON.parse(cached) };
   } catch {}
 
-  return defaultSecurityPrefs
+  return defaultSecurityPrefs;
 }
 
 export function saveCachedSecurityPrefs(prefs: SecurityAccessPrefs) {
   try {
-    localStorage.setItem("barangay_security_prefs", JSON.stringify(prefs))
+    localStorage.setItem("barangay_security_prefs", JSON.stringify(prefs));
   } catch {}
 }
 
 // ─── Messaging & Document Types ──────────────────────────────────────────────
 
 export type Msg = {
-  from: "admin" | "resident"
+  from: "admin" | "resident";
 
-  text: string
+  text: string;
 
-  time: string
+  time: string;
 
-  timestamp?: number
+  timestamp?: number;
 
-  dbId?: number
+  dbId?: number;
 
-  senderEmail?: string
-}
+  senderEmail?: string;
+};
 
-export const initialThreads: Record<string, Msg[]> = {}
+export const initialThreads: Record<string, Msg[]> = {};
 
 export function getDeletedThreads(): string[] {
   try {
-    const raw = localStorage.getItem("brgy_deleted_threads")
+    const raw = localStorage.getItem("brgy_deleted_threads");
 
-    if (raw) return JSON.parse(raw)
+    if (raw) return JSON.parse(raw);
   } catch {}
 
-  return []
+  return [];
 }
 
 export function markThreadDeleted(email: string) {
   try {
-    const list = getDeletedThreads()
+    const list = getDeletedThreads();
 
-    const clean = email.toLowerCase().trim()
+    const clean = email.toLowerCase().trim();
 
     if (!list.includes(clean)) {
-      list.push(clean)
+      list.push(clean);
 
-      localStorage.setItem("brgy_deleted_threads", JSON.stringify(list))
+      localStorage.setItem("brgy_deleted_threads", JSON.stringify(list));
     }
   } catch {}
 }
 
 export function unmarkThreadDeleted(email: string) {
   try {
-    const list = getDeletedThreads()
+    const list = getDeletedThreads();
 
-    const clean = email.toLowerCase().trim()
+    const clean = email.toLowerCase().trim();
 
-    const updated = list.filter((e) => e !== clean)
+    const updated = list.filter((e) => e !== clean);
 
-    localStorage.setItem("brgy_deleted_threads", JSON.stringify(updated))
+    localStorage.setItem("brgy_deleted_threads", JSON.stringify(updated));
   } catch {}
 }
 
 export function isThreadDeleted(email: string): boolean {
-  return getDeletedThreads().includes(email.toLowerCase().trim())
+  return getDeletedThreads().includes(email.toLowerCase().trim());
 }
 
 export function getCachedThreads(): Record<string, Msg[]> {
-  const deleted = getDeletedThreads()
+  const deleted = getDeletedThreads();
 
   try {
-    const raw = localStorage.getItem("barangay_message_threads")
+    const raw = localStorage.getItem("barangay_message_threads");
 
     if (raw) {
-      const parsed = JSON.parse(raw)
+      const parsed = JSON.parse(raw);
 
       if (parsed && typeof parsed === "object") {
-        const cleaned: Record<string, Msg[]> = {}
+        const cleaned: Record<string, Msg[]> = {};
 
         Object.keys(parsed).forEach((k) => {
           if (!deleted.includes(k.toLowerCase().trim())) {
-            cleaned[k] = parsed[k]
+            cleaned[k] = parsed[k];
           }
-        })
+        });
 
-        return cleaned
+        return cleaned;
       }
     }
   } catch {}
 
-  return {}
+  return {};
 }
 
 export function saveCachedThreads(threads: Record<string, Msg[]>) {
   try {
-    localStorage.setItem("barangay_message_threads", JSON.stringify(threads))
+    localStorage.setItem("barangay_message_threads", JSON.stringify(threads));
 
     window.dispatchEvent(
       new CustomEvent("barangay_threads_updated", { detail: threads }),
-    )
+    );
   } catch {}
 }
 
-export type RequestStatus = "Pending" | "Approved" | "Ready for Pickup" | "Released" | "Received" | "Declined"
+export type RequestStatus =
+  | "Pending"
+  | "Approved"
+  | "Ready for Pickup"
+  | "Released"
+  | "Received"
+  | "Declined";
 
-export type PaymentStatus = "Unpaid" | "Paid at Counter" | "Waived"
+export type PaymentStatus = "Unpaid" | "Paid at Counter" | "Waived";
 
 export type DocumentRequest = {
-  id: string
+  id: string;
 
-  trackingNo: string
+  trackingNo: string;
 
-  residentId: string
+  residentId: string;
 
-  residentName: string
+  residentName: string;
 
-  residentEmail: string
+  residentEmail: string;
 
-  residentMobile: string
+  residentMobile: string;
 
-  residentAddress: string
+  residentAddress: string;
 
-  purok: string
+  purok: string;
 
-  docType: string
+  docType: string;
 
-  purpose: string
+  purpose: string;
 
-  notes?: string
+  notes?: string;
 
-  fee: string
+  fee: string;
 
-  paymentStatus: PaymentStatus
+  paymentStatus: PaymentStatus;
 
-  status: RequestStatus
+  status: RequestStatus;
 
-  dateFiled: string
+  dateFiled: string;
 
-  timeFiled: string
+  timeFiled: string;
 
-  createdAt: string
+  createdAt: string;
 
-  updatedAt: string
+  updatedAt: string;
 
-  adminFeedback?: string
+  adminFeedback?: string;
 
-  pickupWindow?: string
+  pickupWindow?: string;
 
-  releasedDate?: string
+  releasedDate?: string;
 
-  controlNo: string
-}
+  controlNo: string;
+};
 
-export const initialDocumentRequests: DocumentRequest[] = []
+export const initialDocumentRequests: DocumentRequest[] = [];
 
 export function cleanLegacyPlaceholderCaches() {
   try {
-    const cleanedFlag = "brgy_cleaned_placeholders_reset_v18"
+    const cleanedFlag = "brgy_cleaned_placeholders_reset_v18";
 
-    if (localStorage.getItem(cleanedFlag)) return
+    if (localStorage.getItem(cleanedFlag)) return;
 
-    localStorage.removeItem("brgy_announcements_seeded")
-    localStorage.removeItem("brgy_announcements_cache")
-    localStorage.removeItem("barangay_document_requests")
-    localStorage.removeItem("barangay_incidents_cache")
-    localStorage.removeItem("brgy_events_cache")
-    localStorage.removeItem("brgy_residents_cache")
-    localStorage.removeItem("brgy_deleted_threads")
-    localStorage.removeItem("barangay_message_threads")
-    localStorage.removeItem("brgy_promoted_admins")
-    localStorage.removeItem("brgy_temp_passwords")
-    localStorage.removeItem("brgy_pw_reset_requests")
-    localStorage.removeItem("barangay_info")
-    localStorage.setItem("brgy_master_admin_email", "admin@baranggay.conn.gov.ph")
+    localStorage.removeItem("brgy_announcements_seeded");
+    localStorage.removeItem("brgy_announcements_cache");
+    localStorage.removeItem("barangay_document_requests");
+    localStorage.removeItem("barangay_incidents_cache");
+    localStorage.removeItem("brgy_events_cache");
+    localStorage.removeItem("brgy_residents_cache");
+    localStorage.removeItem("brgy_deleted_threads");
+    localStorage.removeItem("barangay_message_threads");
+    localStorage.removeItem("brgy_promoted_admins");
+    localStorage.removeItem("brgy_temp_passwords");
+    localStorage.removeItem("brgy_pw_reset_requests");
+    localStorage.removeItem("barangay_info");
+    localStorage.setItem(
+      "brgy_master_admin_email",
+      "admin@baranggay.conn.gov.ph",
+    );
 
     // Purge legacy placeholder accounts so they never linger in cache
     const legacyOldAccounts = [
@@ -1346,40 +1385,43 @@ export function cleanLegacyPlaceholderCaches() {
       "admin@barangay.gov.ph",
       "admin@sanisidro.ph",
       "admin@gov.ph",
-    ]
+    ];
     try {
-      const purgedRaw = localStorage.getItem("barangay_purged_resident_ids") || "[]"
-      let purgedList: string[] = JSON.parse(purgedRaw)
+      const purgedRaw =
+        localStorage.getItem("barangay_purged_resident_ids") || "[]";
+      let purgedList: string[] = JSON.parse(purgedRaw);
       // NEVER allow official admin emails to be purged
       purgedList = purgedList.filter(
         (x) =>
-          x !== "admin@sanisidro.gov.ph" &&
-          x !== "admin@baranggay.conn.gov.ph"
-      )
+          x !== "admin@sanisidro.gov.ph" && x !== "admin@baranggay.conn.gov.ph",
+      );
       legacyOldAccounts.forEach((em) => {
-        if (!purgedList.includes(em)) purgedList.push(em)
-      })
-      localStorage.setItem("barangay_purged_resident_ids", JSON.stringify(purgedList))
+        if (!purgedList.includes(em)) purgedList.push(em);
+      });
+      localStorage.setItem(
+        "barangay_purged_resident_ids",
+        JSON.stringify(purgedList),
+      );
     } catch {}
 
-    localStorage.setItem(cleanedFlag, "true")
+    localStorage.setItem(cleanedFlag, "true");
   } catch {}
 }
 
-cleanLegacyPlaceholderCaches()
+cleanLegacyPlaceholderCaches();
 
 export function getCachedDocumentRequests(): DocumentRequest[] {
   try {
-    const raw = localStorage.getItem("barangay_document_requests")
+    const raw = localStorage.getItem("barangay_document_requests");
 
     if (raw) {
-      const parsed = JSON.parse(raw)
+      const parsed = JSON.parse(raw);
 
-      if (Array.isArray(parsed)) return parsed
+      if (Array.isArray(parsed)) return parsed;
     }
   } catch {}
 
-  return []
+  return [];
 }
 
 export function saveCachedDocumentRequests(requests: DocumentRequest[]) {
@@ -1388,92 +1430,86 @@ export function saveCachedDocumentRequests(requests: DocumentRequest[]) {
       "barangay_document_requests",
 
       JSON.stringify(requests),
-    )
+    );
 
     window.dispatchEvent(
       new CustomEvent("barangay_requests_updated", { detail: requests }),
-    )
+    );
   } catch {}
 }
 
 export function getPromotedAdminEmails(): string[] {
   try {
-    const raw = localStorage.getItem("brgy_promoted_admins")
+    const raw = localStorage.getItem("brgy_promoted_admins");
 
     if (raw) {
-      const parsed = JSON.parse(raw)
+      const parsed = JSON.parse(raw);
 
       if (Array.isArray(parsed))
-        return parsed.map((e: string) => String(e).toLowerCase().trim())
+        return parsed.map((e: string) => String(e).toLowerCase().trim());
     }
   } catch {}
 
-  return []
+  return [];
 }
 
 export function savePromotedAdminEmails(emails: string[]) {
   try {
-    localStorage.setItem("brgy_promoted_admins", JSON.stringify(emails))
+    localStorage.setItem("brgy_promoted_admins", JSON.stringify(emails));
   } catch {}
 }
 
 export function isPromotedAdmin(email?: string, list?: string[]): boolean {
-  if (!email) return false
+  if (!email) return false;
 
-  const e = email.toLowerCase().trim()
+  const e = email.toLowerCase().trim();
 
-  const adminList = list || getPromotedAdminEmails()
+  const adminList = list || getPromotedAdminEmails();
 
-  return adminList.some((adm) => adm.toLowerCase().trim() === e)
+  return adminList.some((adm) => adm.toLowerCase().trim() === e);
 }
 
 export function getSavedMasterAdminEmail(): string | null {
   try {
-    const saved = localStorage.getItem("brgy_master_admin_email")
-    if (saved) return saved.toLowerCase().trim()
+    const saved = localStorage.getItem("brgy_master_admin_email");
+    if (saved) return saved.toLowerCase().trim();
   } catch {}
-  return "admin@baranggay.conn.gov.ph"
+  return "admin@baranggay.conn.gov.ph";
 }
 
 export function saveMasterAdminEmail(email: string) {
   try {
-    localStorage.setItem("brgy_master_admin_email", email.toLowerCase().trim())
+    localStorage.setItem("brgy_master_admin_email", email.toLowerCase().trim());
   } catch {}
 }
 
 export function parseMasterAdminFromDesc(desc?: string): string | null {
-  if (!desc) return null
-  const match = desc.match(/<!--\s*MASTER_ADMIN:\s*([^\s>]+)\s*-->/)
+  if (!desc) return null;
+  const match = desc.match(/<!--\s*MASTER_ADMIN:\s*([^\s>]+)\s*-->/);
   if (match && match[1]) {
-    return match[1].toLowerCase().trim()
+    return match[1].toLowerCase().trim();
   }
-  return null
+  return null;
 }
 
 export function isProtectedAdminEmail(email?: string): boolean {
-  if (!email) return false
-  const e = email.toLowerCase().trim()
-  return (
-    e === "admin@baranggay.conn.gov.ph" ||
-    e === "admin@sanisidro.gov.ph"
-  )
+  if (!email) return false;
+  const e = email.toLowerCase().trim();
+  return e === "admin@baranggay.conn.gov.ph" || e === "admin@sanisidro.gov.ph";
 }
 
 export function isRootMasterAdmin(email?: string, desc?: string): boolean {
-  if (!email) return false
+  if (!email) return false;
 
-  const e = email.toLowerCase().trim()
+  const e = email.toLowerCase().trim();
 
-  const saved = getSavedMasterAdminEmail()
-  if (saved && e === saved) return true
+  const saved = getSavedMasterAdminEmail();
+  if (saved && e === saved) return true;
 
-  const fromDesc = parseMasterAdminFromDesc(desc)
-  if (fromDesc && e === fromDesc) return true
+  const fromDesc = parseMasterAdminFromDesc(desc);
+  if (fromDesc && e === fromDesc) return true;
 
-  return (
-    e === "admin@baranggay.conn.gov.ph" ||
-    e === "admin@sanisidro.gov.ph"
-  )
+  return e === "admin@baranggay.conn.gov.ph" || e === "admin@sanisidro.gov.ph";
 }
 
 export function checkIsAdmin(
@@ -1481,38 +1517,38 @@ export function checkIsAdmin(
   promotedAdminsList?: string[],
   desc?: string,
 ): boolean {
-  if (!user || !user.email) return false
+  if (!user || !user.email) return false;
 
-  const email = user.email.toLowerCase().trim()
+  const email = user.email.toLowerCase().trim();
 
-  if (isProtectedAdminEmail(email)) return true
+  if (isProtectedAdminEmail(email)) return true;
 
-  if (user.role === "admin") return true
+  if (user.role === "admin") return true;
 
-  if (isRootMasterAdmin(email, desc)) return true
+  if (isRootMasterAdmin(email, desc)) return true;
 
-  return isPromotedAdmin(email, promotedAdminsList)
+  return isPromotedAdmin(email, promotedAdminsList);
 }
 
 export function parsePromotedAdminsFromDesc(desc?: string): string[] {
-  if (!desc) return []
+  if (!desc) return [];
 
-  const match = desc.match(/<!--\s*ADMIN_ROLES:\s*(\[.*?\])\s*-->/)
+  const match = desc.match(/<!--\s*ADMIN_ROLES:\s*(\[.*?\])\s*-->/);
 
   if (match) {
     try {
-      const parsed = JSON.parse(match[1])
+      const parsed = JSON.parse(match[1]);
 
       if (Array.isArray(parsed))
-        return parsed.map((e: string) => String(e).toLowerCase().trim())
+        return parsed.map((e: string) => String(e).toLowerCase().trim());
     } catch {}
   }
 
-  return []
+  return [];
 }
 
 export function cleanBarangayDescription(desc?: string): string {
-  if (!desc) return ""
+  if (!desc) return "";
 
   return desc
 
@@ -1522,40 +1558,40 @@ export function cleanBarangayDescription(desc?: string): string {
 
     .replace(/<!--\s*SCHEDULE:\s*\[.*?\]\s*-->/g, "")
 
-    .trim()
+    .trim();
 }
 
 export function parseScheduleFromDesc(desc?: string): OperatingDay[] | null {
-  if (!desc) return null
+  if (!desc) return null;
 
-  const match = desc.match(/<!--\s*SCHEDULE:\s*(\[.*?\])\s*-->/)
+  const match = desc.match(/<!--\s*SCHEDULE:\s*(\[.*?\])\s*-->/);
 
-  if (!match) return null
+  if (!match) return null;
 
   try {
-    const parsed = JSON.parse(match[1])
+    const parsed = JSON.parse(match[1]);
 
-    if (Array.isArray(parsed) && parsed.length > 0) return parsed
+    if (Array.isArray(parsed) && parsed.length > 0) return parsed;
 
-    return null
+    return null;
   } catch {
-    return null
+    return null;
   }
 }
 
 export function parseActiveResetsFromDesc(
   desc?: string,
 ): Record<string, { tempPassword: string; resetAt: string }> {
-  if (!desc) return {}
+  if (!desc) return {};
 
-  const match = desc.match(/<!--\s*ACTIVE_RESETS:\s*(\{.*?\})\s*-->/)
+  const match = desc.match(/<!--\s*ACTIVE_RESETS:\s*(\{.*?\})\s*-->/);
 
-  if (!match) return {}
+  if (!match) return {};
 
   try {
-    return JSON.parse(match[1])
+    return JSON.parse(match[1]);
   } catch {
-    return {}
+    return {};
   }
 }
 
@@ -1564,22 +1600,22 @@ export async function syncActiveReset(
 
   tempPassword: string | null,
 ): Promise<void> {
-  const cleanEmail = email.toLowerCase().trim()
+  const cleanEmail = email.toLowerCase().trim();
 
-  if (!cleanEmail) return
+  if (!cleanEmail) return;
 
   try {
     const tempMap = JSON.parse(
       localStorage.getItem("brgy_temp_passwords") || "{}",
-    )
+    );
 
     if (tempPassword) {
-      tempMap[cleanEmail] = { tempPassword, resetAt: new Date().toISOString() }
+      tempMap[cleanEmail] = { tempPassword, resetAt: new Date().toISOString() };
     } else {
-      delete tempMap[cleanEmail]
+      delete tempMap[cleanEmail];
     }
 
-    localStorage.setItem("brgy_temp_passwords", JSON.stringify(tempMap))
+    localStorage.setItem("brgy_temp_passwords", JSON.stringify(tempMap));
   } catch {}
 
   try {
@@ -1591,45 +1627,45 @@ export async function syncActiveReset(
 
       .eq("id", 1)
 
-      .maybeSingle()
+      .maybeSingle();
 
-    const currentDesc = dbSettings?.description || ""
+    const currentDesc = dbSettings?.description || "";
 
-    const cleanDesc = cleanBarangayDescription(currentDesc)
+    const cleanDesc = cleanBarangayDescription(currentDesc);
 
     const adminRolesMatch = currentDesc.match(
       /<!--\s*ADMIN_ROLES:\s*(\[.*?\])\s*-->/,
-    )
+    );
 
-    const activeResets = parseActiveResetsFromDesc(currentDesc)
+    const activeResets = parseActiveResetsFromDesc(currentDesc);
 
     if (tempPassword) {
       activeResets[cleanEmail] = {
         tempPassword,
 
         resetAt: new Date().toISOString(),
-      }
+      };
     } else {
-      delete activeResets[cleanEmail]
+      delete activeResets[cleanEmail];
     }
 
-    let updatedDesc = cleanDesc
+    let updatedDesc = cleanDesc;
 
     if (adminRolesMatch) {
-      updatedDesc += `\n<!-- ADMIN_ROLES: ${adminRolesMatch[1]} -->`
+      updatedDesc += `\n<!-- ADMIN_ROLES: ${adminRolesMatch[1]} -->`;
     }
 
     if (Object.keys(activeResets).length > 0) {
-      updatedDesc += `\n<!-- ACTIVE_RESETS: ${JSON.stringify(activeResets)} -->`
+      updatedDesc += `\n<!-- ACTIVE_RESETS: ${JSON.stringify(activeResets)} -->`;
     }
 
     await supabase
 
       .from("barangay_settings")
 
-      .upsert({ id: 1, description: updatedDesc })
+      .upsert({ id: 1, description: updatedDesc });
   } catch (err) {
-    console.warn("Failed to sync active resets to Supabase:", err)
+    console.warn("Failed to sync active resets to Supabase:", err);
   }
 }
 
@@ -1638,26 +1674,26 @@ export async function syncPromotedAdminEmail(
 
   isPromote: boolean,
 ): Promise<string[]> {
-  const cleanEmail = email.toLowerCase().trim()
+  const cleanEmail = email.toLowerCase().trim();
 
-  if (!cleanEmail) return getPromotedAdminEmails()
+  if (!cleanEmail) return getPromotedAdminEmails();
 
-  const current = getPromotedAdminEmails()
+  const current = getPromotedAdminEmails();
 
-  let nextList: string[]
+  let nextList: string[];
 
   if (isPromote) {
-    nextList = Array.from(new Set([...current, cleanEmail]))
+    nextList = Array.from(new Set([...current, cleanEmail]));
   } else {
-    nextList = current.filter((e) => e !== cleanEmail)
+    nextList = current.filter((e) => e !== cleanEmail);
   }
 
   try {
-    localStorage.setItem("brgy_promoted_admins", JSON.stringify(nextList))
+    localStorage.setItem("brgy_promoted_admins", JSON.stringify(nextList));
 
     window.dispatchEvent(
       new CustomEvent("brgy_promoted_admins_updated", { detail: nextList }),
-    )
+    );
   } catch {}
 
   // Sync to Supabase barangay_settings row 1
@@ -1671,37 +1707,37 @@ export async function syncPromotedAdminEmail(
 
       .eq("id", 1)
 
-      .maybeSingle()
+      .maybeSingle();
 
     const currentDesc =
-      dbSettings?.description || defaultBarangayInfo.description
+      dbSettings?.description || defaultBarangayInfo.description;
 
-    const cleanDesc = cleanBarangayDescription(currentDesc)
+    const cleanDesc = cleanBarangayDescription(currentDesc);
 
     const activeResetsMatch = currentDesc.match(
       /<!--\s*ACTIVE_RESETS:\s*(\{.*?\})\s*-->/,
-    )
+    );
 
-    let updatedDesc = `${cleanDesc}\n<!-- ADMIN_ROLES: ${JSON.stringify(nextList)} -->`
+    let updatedDesc = `${cleanDesc}\n<!-- ADMIN_ROLES: ${JSON.stringify(nextList)} -->`;
 
     if (activeResetsMatch) {
-      updatedDesc += `\n<!-- ACTIVE_RESETS: ${activeResetsMatch[1]} -->`
+      updatedDesc += `\n<!-- ACTIVE_RESETS: ${activeResetsMatch[1]} -->`;
     }
 
     await supabase
 
       .from("barangay_settings")
 
-      .upsert({ id: 1, description: updatedDesc })
+      .upsert({ id: 1, description: updatedDesc });
   } catch (err) {
-    console.warn("Failed to sync admin roles to Supabase:", err)
+    console.warn("Failed to sync admin roles to Supabase:", err);
   }
 
-  return nextList
+  return nextList;
 }
 
 export function parseDbDocRequest(row: any): DocumentRequest {
-  let meta: any = {}
+  let meta: any = {};
 
   if (
     row.feedback &&
@@ -1709,17 +1745,17 @@ export function parseDbDocRequest(row: any): DocumentRequest {
     row.feedback.trim().startsWith("{")
   ) {
     try {
-      meta = JSON.parse(row.feedback)
+      meta = JSON.parse(row.feedback);
     } catch {}
   }
 
-  const idStr = String(row.id)
+  const idStr = String(row.id);
 
-  const padId = idStr.padStart(4, "0")
+  const padId = idStr.padStart(4, "0");
 
-  const email = (row.email || meta.email || "").toLowerCase().trim()
+  const email = (row.email || meta.email || "").toLowerCase().trim();
 
-  const resMeta = resolveResidentMeta(email, row.name || meta.name)
+  const resMeta = resolveResidentMeta(email, row.name || meta.name);
 
   const docPrefixMap: Record<string, string> = {
     "Barangay Clearance": "BC",
@@ -1733,24 +1769,24 @@ export function parseDbDocRequest(row: any): DocumentRequest {
     "Barangay ID": "BID",
 
     "Good Moral Certificate": "GM",
-  }
+  };
 
-  const docType = row.doc || meta.docType || "Barangay Clearance"
+  const docType = row.doc || meta.docType || "Barangay Clearance";
 
-  const code = docPrefixMap[docType] || "DC"
+  const code = docPrefixMap[docType] || "DC";
 
-  const rawFeedback = row.feedback
+  const rawFeedback = row.feedback;
 
-  let adminRemarks = ""
+  let adminRemarks = "";
 
   if (meta.feedback !== undefined) {
-    adminRemarks = meta.feedback
+    adminRemarks = meta.feedback;
   } else if (
     rawFeedback &&
     typeof rawFeedback === "string" &&
     !rawFeedback.startsWith("{")
   ) {
-    adminRemarks = rawFeedback
+    adminRemarks = rawFeedback;
   }
 
   return {
@@ -1779,7 +1815,7 @@ export function parseDbDocRequest(row: any): DocumentRequest {
     fee: meta.fee || "₱ 50",
 
     paymentStatus:
-      meta.paymentStatus as PaymentStatus ||
+      (meta.paymentStatus as PaymentStatus) ||
       (row.status === "Released" || row.status === "Received"
         ? "Paid at Counter"
         : "Unpaid"),
@@ -1789,7 +1825,7 @@ export function parseDbDocRequest(row: any): DocumentRequest {
         ? "Received"
         : row.status === "Ready for Pickup"
           ? "Approved"
-          : row.status as RequestStatus || "Pending",
+          : (row.status as RequestStatus) || "Pending",
 
     dateFiled:
       row.date ||
@@ -1824,27 +1860,33 @@ export function parseDbDocRequest(row: any): DocumentRequest {
     releasedDate: meta.releasedDate,
 
     controlNo: meta.controlNo || `${code}-2026-${padId}`,
-  }
+  };
 }
 
-export function getResidentDirectory(): Record<string, {
-  name: string
-  purok: string
-  phone: string
-  address: string
-}> {
-  const dir: Record<string, {
-    name: string
-    purok: string
-    phone: string
-    address: string
-  }> = {}
+export function getResidentDirectory(): Record<
+  string,
+  {
+    name: string;
+    purok: string;
+    phone: string;
+    address: string;
+  }
+> {
+  const dir: Record<
+    string,
+    {
+      name: string;
+      purok: string;
+      phone: string;
+      address: string;
+    }
+  > = {};
 
   try {
-    const raw = localStorage.getItem("brgy_residents_cache")
+    const raw = localStorage.getItem("brgy_residents_cache");
 
     if (raw) {
-      const parsed = JSON.parse(raw)
+      const parsed = JSON.parse(raw);
 
       if (Array.isArray(parsed)) {
         parsed.forEach((r: any) => {
@@ -1857,14 +1899,14 @@ export function getResidentDirectory(): Record<string, {
               phone: r.mobile || r.phone || "",
 
               address: r.address || "Barangay Jurisdiction",
-            }
+            };
           }
-        })
+        });
       }
     }
   } catch {}
 
-  return dir
+  return dir;
 }
 
 export function resolveResidentMeta(
@@ -1872,24 +1914,23 @@ export function resolveResidentMeta(
 
   fallbackName?: string,
 ): { name: string; purok: string; phone: string; address: string } {
-  const dir = getResidentDirectory()
+  const dir = getResidentDirectory();
 
-  const lower = email.toLowerCase().trim()
+  const lower = email.toLowerCase().trim();
 
-  if (dir[lower]) return dir[lower]
+  if (dir[lower]) return dir[lower];
 
   const name =
     fallbackName ||
     lower
 
       .split("@")[0]
-
       .split(/[._-]/)
 
       .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
 
       .join(" ") ||
-    "Resident"
+    "Resident";
 
   return {
     name,
@@ -1899,130 +1940,145 @@ export function resolveResidentMeta(
     phone: "0917-000-0000",
 
     address: "Barangay Jurisdiction",
-  }
+  };
 }
 
-export type IncidentCategory = "Dispute / Noise" | "Street Hazard" | "Theft / Security" | "Sanitation" | "Emergency / Medical" | "Physical Altercation" | "Boundary Dispute" | "Domestic Concern" | "Other"
+export type IncidentCategory =
+  | "Dispute / Noise"
+  | "Street Hazard"
+  | "Theft / Security"
+  | "Sanitation"
+  | "Emergency / Medical"
+  | "Physical Altercation"
+  | "Boundary Dispute"
+  | "Domestic Concern"
+  | "Other";
 
-export type IncidentStatus = "Under Review" | "Scheduled Hearing" | "In Mediation" | "Resolved" | "Dismissed" | "Deleted"
+export type IncidentStatus =
+  | "Under Review"
+  | "Scheduled Hearing"
+  | "In Mediation"
+  | "Resolved"
+  | "Dismissed"
+  | "Deleted";
 
 export type IncidentMeta = {
-  respondentName?: string
+  respondentName?: string;
 
-  respondentAddress?: string
+  respondentAddress?: string;
 
-  respondentContact?: string
+  respondentContact?: string;
 
-  hearingStage?: string
+  hearingStage?: string;
 
-  hearingVenue?: string
+  hearingVenue?: string;
 
-  assignedOfficer?: string
+  assignedOfficer?: string;
 
-  deletedAt?: string
+  deletedAt?: string;
 
-  previousStatus?: string
-}
+  previousStatus?: string;
+};
 
 export function getIncidentMetaMap(): Record<string, IncidentMeta> {
   try {
-    const raw = localStorage.getItem("barangay_incidents_meta")
+    const raw = localStorage.getItem("barangay_incidents_meta");
 
-    if (raw) return JSON.parse(raw)
+    if (raw) return JSON.parse(raw);
   } catch {}
 
-  return {}
+  return {};
 }
 
 export function saveIncidentMeta(id: string, meta: Partial<IncidentMeta>) {
   try {
-    const current = getIncidentMetaMap()
+    const current = getIncidentMetaMap();
 
-    current[id] = { ...(current[id] || {}), ...meta }
+    current[id] = { ...(current[id] || {}), ...meta };
 
-    localStorage.setItem("barangay_incidents_meta", JSON.stringify(current))
+    localStorage.setItem("barangay_incidents_meta", JSON.stringify(current));
   } catch {}
 }
 
 export function removeIncidentDeletedMeta(id: string) {
   try {
-    const current = getIncidentMetaMap()
+    const current = getIncidentMetaMap();
 
     if (current[id]) {
-      delete current[id].deletedAt
+      delete current[id].deletedAt;
 
-      localStorage.setItem("barangay_incidents_meta", JSON.stringify(current))
+      localStorage.setItem("barangay_incidents_meta", JSON.stringify(current));
     }
   } catch {}
 }
 
 export function deleteIncidentMeta(id: string) {
   try {
-    const current = getIncidentMetaMap()
+    const current = getIncidentMetaMap();
 
-    delete current[id]
+    delete current[id];
 
-    localStorage.setItem("barangay_incidents_meta", JSON.stringify(current))
+    localStorage.setItem("barangay_incidents_meta", JSON.stringify(current));
   } catch {}
 }
 
 export type IncidentReport = {
-  id: string
+  id: string;
 
-  complainantName: string
+  complainantName: string;
 
-  complainantEmail: string
+  complainantEmail: string;
 
-  category: IncidentCategory
+  category: IncidentCategory;
 
-  purok: string
+  purok: string;
 
-  description: string
+  description: string;
 
-  date: string
+  date: string;
 
-  status: IncidentStatus
+  status: IncidentStatus;
 
-  hearingDate?: string
+  hearingDate?: string;
 
-  officerNotes?: string
+  officerNotes?: string;
 
-  isUrgent?: boolean
+  isUrgent?: boolean;
 
-  respondentName?: string
+  respondentName?: string;
 
-  respondentAddress?: string
+  respondentAddress?: string;
 
-  respondentContact?: string
+  respondentContact?: string;
 
-  hearingStage?: string
+  hearingStage?: string;
 
-  hearingVenue?: string
+  hearingVenue?: string;
 
-  assignedOfficer?: string
+  assignedOfficer?: string;
 
-  deletedAt?: string
-}
+  deletedAt?: string;
+};
 
-const initialIncidents: IncidentReport[] = []
+const initialIncidents: IncidentReport[] = [];
 
 export type EmergencyHotline = {
-  id: string
+  id: string;
 
-  name: string
+  name: string;
 
-  subtitle: string
+  subtitle: string;
 
-  number: string
+  number: string;
 
-  altNumber: string
+  altNumber: string;
 
-  tag: string
+  tag: string;
 
-  tone: "green" | "blue" | "amber" | "red" | "purple" | "cyan"
+  tone: "green" | "blue" | "amber" | "red" | "purple" | "cyan";
 
-  icon: IconName
-}
+  icon: IconName;
+};
 
 const initialEmergencyHotlines: EmergencyHotline[] = [
   {
@@ -2132,7 +2188,7 @@ const initialEmergencyHotlines: EmergencyHotline[] = [
 
     icon: "phone",
   },
-]
+];
 
 // ─── User Profile Modal ──────────────────────────────────────────────────────
 
@@ -2143,153 +2199,153 @@ function UserProfileModal({
   onToast,
   onUpdateEmail,
 }: {
-  user: Account
+  user: Account;
 
-  onClose: () => void
+  onClose: () => void;
 
-  onSave: (updated: { name: string; photoUrl: string }) => void
+  onSave: (updated: { name: string; photoUrl: string }) => void;
 
-  onToast?: (msg: string) => void
+  onToast?: (msg: string) => void;
 
   onUpdateEmail?: (
     newEmail: string,
     verifyPassword?: string,
-  ) => Promise<{ success: boolean; error?: string }>
+  ) => Promise<{ success: boolean; error?: string }>;
 }) {
   const storedPhoto = (() => {
     try {
-      return localStorage.getItem(`brgy_profile_photo_${user.id}`) || ""
+      return localStorage.getItem(`brgy_profile_photo_${user.id}`) || "";
     } catch {
-      return ""
+      return "";
     }
-  })()
+  })();
 
   const [activeTab, setActiveTab] = useState<"profile" | "email" | "password">(
     "profile",
-  )
+  );
 
   // Profile state
 
-  const [name, setName] = useState(user.name)
+  const [name, setName] = useState(user.name);
 
   const [mobile, setMobile] = useState(() => {
     try {
-      return localStorage.getItem(`brgy_profile_mobile_${user.id}`) || ""
+      return localStorage.getItem(`brgy_profile_mobile_${user.id}`) || "";
     } catch {
-      return ""
+      return "";
     }
-  })
+  });
 
   const [address, setAddress] = useState(() => {
     try {
-      return localStorage.getItem(`brgy_profile_address_${user.id}`) || ""
+      return localStorage.getItem(`brgy_profile_address_${user.id}`) || "";
     } catch {
-      return ""
+      return "";
     }
-  })
+  });
 
-  const [photoUrl, setPhotoUrl] = useState(storedPhoto)
+  const [photoUrl, setPhotoUrl] = useState(storedPhoto);
 
-  const [saving, setSaving] = useState(false)
+  const [saving, setSaving] = useState(false);
 
-  const fileRef = useRef<HTMLInputElement>(null)
+  const fileRef = useRef<HTMLInputElement>(null);
 
   // Email state
-  const [newEmail, setNewEmail] = useState("")
-  const [verifyEmailPassword, setVerifyEmailPassword] = useState("")
-  const [showVerifyEmailPassword, setShowVerifyEmailPassword] = useState(false)
-  const [emailLoading, setEmailLoading] = useState(false)
-  const [emailError, setEmailError] = useState("")
-  const [emailSuccess, setEmailSuccess] = useState("")
+  const [newEmail, setNewEmail] = useState("");
+  const [verifyEmailPassword, setVerifyEmailPassword] = useState("");
+  const [showVerifyEmailPassword, setShowVerifyEmailPassword] = useState(false);
+  const [emailLoading, setEmailLoading] = useState(false);
+  const [emailError, setEmailError] = useState("");
+  const [emailSuccess, setEmailSuccess] = useState("");
 
   async function handleEmailSubmit() {
     if (!newEmail.trim() || !newEmail.includes("@")) {
-      setEmailError("Please enter a valid email address.")
-      return
+      setEmailError("Please enter a valid email address.");
+      return;
     }
     if (newEmail.trim().toLowerCase() === user.email.toLowerCase()) {
-      setEmailError("New email must be different from your current email.")
-      return
+      setEmailError("New email must be different from your current email.");
+      return;
     }
-    setEmailLoading(true)
-    setEmailError("")
-    setEmailSuccess("")
+    setEmailLoading(true);
+    setEmailError("");
+    setEmailSuccess("");
     try {
       if (onUpdateEmail) {
         const res = await onUpdateEmail(
           newEmail.trim().toLowerCase(),
           verifyEmailPassword || undefined,
-        )
+        );
         if (!res.success) {
-          setEmailError(res.error || "Failed to update email.")
-          return
+          setEmailError(res.error || "Failed to update email.");
+          return;
         }
       }
       setEmailSuccess(
         `Email updated successfully to ${newEmail.trim().toLowerCase()}! ✅`,
-      )
-      setNewEmail("")
-      setVerifyEmailPassword("")
-      if (onToast) onToast("Email updated successfully! ✅")
+      );
+      setNewEmail("");
+      setVerifyEmailPassword("");
+      if (onToast) onToast("Email updated successfully! ✅");
     } catch (err: any) {
-      setEmailError(err?.message || "Failed to update email.")
+      setEmailError(err?.message || "Failed to update email.");
     } finally {
-      setEmailLoading(false)
+      setEmailLoading(false);
     }
   }
 
   // Password state
 
-  const [currentPassword, setCurrentPassword] = useState("")
+  const [currentPassword, setCurrentPassword] = useState("");
 
-  const [newPassword, setNewPassword] = useState("")
+  const [newPassword, setNewPassword] = useState("");
 
-  const [confirmPassword, setConfirmPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("");
 
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false)
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
 
-  const [showNewPassword, setShowNewPassword] = useState(false)
+  const [showNewPassword, setShowNewPassword] = useState(false);
 
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const [passwordLoading, setPasswordLoading] = useState(false)
+  const [passwordLoading, setPasswordLoading] = useState(false);
 
-  const [passwordError, setPasswordError] = useState("")
+  const [passwordError, setPasswordError] = useState("");
 
-  const [passwordSuccess, setPasswordSuccess] = useState("")
+  const [passwordSuccess, setPasswordSuccess] = useState("");
 
   function handlePhotoUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
+    const file = e.target.files?.[0];
 
-    if (!file) return
+    if (!file) return;
 
-    const reader = new FileReader()
+    const reader = new FileReader();
 
     reader.onload = (ev) => {
-      const res = ev.target?.result as string
+      const res = ev.target?.result as string;
 
-      if (res) setPhotoUrl(res)
-    }
+      if (res) setPhotoUrl(res);
+    };
 
-    reader.readAsDataURL(file)
+    reader.readAsDataURL(file);
   }
 
   async function handleSaveProfile() {
-    if (!name.trim()) return
+    if (!name.trim()) return;
 
-    setSaving(true)
+    setSaving(true);
 
     try {
       try {
         if (photoUrl)
-          localStorage.setItem(`brgy_profile_photo_${user.id}`, photoUrl)
-        else localStorage.removeItem(`brgy_profile_photo_${user.id}`)
+          localStorage.setItem(`brgy_profile_photo_${user.id}`, photoUrl);
+        else localStorage.removeItem(`brgy_profile_photo_${user.id}`);
 
         if (mobile)
-          localStorage.setItem(`brgy_profile_mobile_${user.id}`, mobile)
+          localStorage.setItem(`brgy_profile_mobile_${user.id}`, mobile);
 
         if (address)
-          localStorage.setItem(`brgy_profile_address_${user.id}`, address)
+          localStorage.setItem(`brgy_profile_address_${user.id}`, address);
       } catch {}
 
       await supabase
@@ -2298,58 +2354,58 @@ function UserProfileModal({
 
         .update({ full_name: name.trim() })
 
-        .eq("id", user.id)
+        .eq("id", user.id);
 
-      onSave({ name: name.trim(), photoUrl })
+      onSave({ name: name.trim(), photoUrl });
     } catch (e) {
-      console.error("Profile save error:", e)
+      console.error("Profile save error:", e);
 
-      onSave({ name: name.trim(), photoUrl })
+      onSave({ name: name.trim(), photoUrl });
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
   }
 
   async function handlePasswordChange(e: React.FormEvent) {
-    e.preventDefault()
+    e.preventDefault();
 
-    setPasswordError("")
+    setPasswordError("");
 
-    setPasswordSuccess("")
+    setPasswordSuccess("");
 
     if (!currentPassword) {
-      setPasswordError("Please enter your current password.")
+      setPasswordError("Please enter your current password.");
 
-      return
+      return;
     }
 
     if (!newPassword) {
-      setPasswordError("Please enter your new password.")
+      setPasswordError("Please enter your new password.");
 
-      return
+      return;
     }
 
     if (newPassword.length < 8) {
-      setPasswordError("New password must be at least 8 characters long.")
+      setPasswordError("New password must be at least 8 characters long.");
 
-      return
+      return;
     }
 
     if (newPassword !== confirmPassword) {
-      setPasswordError("New passwords do not match.")
+      setPasswordError("New passwords do not match.");
 
-      return
+      return;
     }
 
     if (newPassword === currentPassword) {
       setPasswordError(
         "New password must be different from your current password.",
-      )
+      );
 
-      return
+      return;
     }
 
-    setPasswordLoading(true)
+    setPasswordLoading(true);
 
     try {
       // 1. Verify current password by authenticating against Supabase
@@ -2359,32 +2415,32 @@ function UserProfileModal({
           email: user.email.trim().toLowerCase(),
 
           password: currentPassword,
-        })
+        });
 
       if (signInError || !signInData.user) {
         setPasswordError(
           "Current password is incorrect. Please verify and try again.",
-        )
+        );
 
-        setPasswordLoading(false)
+        setPasswordLoading(false);
 
-        return
+        return;
       }
 
       // 2. Current password verified successfully! Now update to new password
 
       const { error: updateError } = await supabase.auth.updateUser({
         password: newPassword,
-      })
+      });
 
       if (updateError) {
         setPasswordError(
           updateError.message || "Failed to update password. Please try again.",
-        )
+        );
 
-        setPasswordLoading(false)
+        setPasswordLoading(false);
 
-        return
+        return;
       }
 
       // 3. Password successfully updated — also clear any active temp-password reset
@@ -2392,28 +2448,28 @@ function UserProfileModal({
       //    so the admin-issued temporary password can no longer be used to log in.
 
       try {
-        await syncActiveReset(user.email.trim().toLowerCase(), null)
+        await syncActiveReset(user.email.trim().toLowerCase(), null);
       } catch {
         // non-fatal: temp-password entry will expire naturally
       }
 
-      setPasswordSuccess("Password changed successfully! 🔒")
+      setPasswordSuccess("Password changed successfully! 🔒");
 
-      setCurrentPassword("")
+      setCurrentPassword("");
 
-      setNewPassword("")
+      setNewPassword("");
 
-      setConfirmPassword("")
+      setConfirmPassword("");
 
       if (onToast) {
-        onToast("Password changed successfully! ✅")
+        onToast("Password changed successfully! ✅");
       }
     } catch (err: any) {
       setPasswordError(
         err?.message || "An unexpected error occurred while updating password.",
-      )
+      );
     } finally {
-      setPasswordLoading(false)
+      setPasswordLoading(false);
     }
   }
 
@@ -2435,11 +2491,11 @@ function UserProfileModal({
           <button
             type="button"
             onClick={() => {
-              setActiveTab("profile")
+              setActiveTab("profile");
 
-              setPasswordError("")
+              setPasswordError("");
 
-              setPasswordSuccess("")
+              setPasswordSuccess("");
             }}
             style={{
               padding: "7px 14px",
@@ -2472,11 +2528,11 @@ function UserProfileModal({
           <button
             type="button"
             onClick={() => {
-              setActiveTab("email")
+              setActiveTab("email");
 
-              setEmailError("")
+              setEmailError("");
 
-              setEmailSuccess("")
+              setEmailSuccess("");
             }}
             style={{
               padding: "7px 14px",
@@ -2509,11 +2565,11 @@ function UserProfileModal({
           <button
             type="button"
             onClick={() => {
-              setActiveTab("password")
+              setActiveTab("password");
 
-              setPasswordError("")
+              setPasswordError("");
 
-              setPasswordSuccess("")
+              setPasswordSuccess("");
             }}
             style={{
               padding: "7px 14px",
@@ -2988,14 +3044,9 @@ function UserProfileModal({
                   aria-label={
                     showNewPassword ? "Hide password" : "Show password"
                   }
-                  title={
-                    showNewPassword ? "Hide password" : "Show password"
-                  }
+                  title={showNewPassword ? "Hide password" : "Show password"}
                 >
-                  <Icon
-                    name={showNewPassword ? "eyeOff" : "eye"}
-                    size={18}
-                  />
+                  <Icon name={showNewPassword ? "eyeOff" : "eye"} size={18} />
                 </button>
               </div>
             </label>
@@ -3058,180 +3109,186 @@ function UserProfileModal({
         )}
       </div>
     </Modal>
-  )
+  );
 }
 
 export default function App() {
-  const [user, setUser] = useState<Account | null>(null)
+  const [user, setUser] = useState<Account | null>(null);
 
   const [loading, setLoading] = useState<"startup" | "login" | "logout" | null>(
     "startup",
-  )
+  );
 
-  const [barangay, setBarangay] = useState<BarangayInfo>(getCachedBarangayInfo)
+  const [barangay, setBarangay] = useState<BarangayInfo>(getCachedBarangayInfo);
 
-  const [pendingResidents, setPendingResidents] = useState(1)
+  const [pendingResidents, setPendingResidents] = useState(1);
 
-  const [active, setActive] = useState("announcements")
+  const [active, setActive] = useState("announcements");
 
-  const [notifOpen, setNotifOpen] = useState(false)
+  const [notifOpen, setNotifOpen] = useState(false);
 
-  const [acctOpen, setAcctOpen] = useState(false)
+  const [acctOpen, setAcctOpen] = useState(false);
 
-  const [profileSettingsOpen, setProfileSettingsOpen] = useState(false)
+  const [profileSettingsOpen, setProfileSettingsOpen] = useState(false);
 
-  const [composerOpen, setComposerOpen] = useState(false)
+  const [composerOpen, setComposerOpen] = useState(false);
 
-  const [requestOpen, setRequestOpen] = useState(false)
+  const [requestOpen, setRequestOpen] = useState(false);
 
-  const [postText, setPostText] = useState("")
+  const [postText, setPostText] = useState("");
 
-  const [postTitle, setPostTitle] = useState("")
+  const [postTitle, setPostTitle] = useState("");
 
-  const [postTag, setPostTag] = useState("Community Advisory")
+  const [postTag, setPostTag] = useState("Community Advisory");
 
-  const [postAccent, setPostAccent] = useState("")
+  const [postAccent, setPostAccent] = useState("");
 
-  const [postAccentDate, setPostAccentDate] = useState("")
+  const [postAccentDate, setPostAccentDate] = useState("");
 
   const [announcements, setAnnouncements] = useState<Announcement[]>(() => {
     try {
-      const cached = localStorage.getItem("brgy_announcements_cache")
+      const cached = localStorage.getItem("brgy_announcements_cache");
 
       if (cached) {
-        const list = JSON.parse(cached)
+        const list = JSON.parse(cached);
 
         if (Array.isArray(list)) {
-          return list.filter((a) => !isAnnouncementDeleted(a.id, a.title))
+          return list.filter((a) => !isAnnouncementDeleted(a.id, a.title));
         }
       }
     } catch {}
 
     return initialAnnouncements.filter(
       (a) => !isAnnouncementDeleted(a.id, a.title),
-    )
-  })
+    );
+  });
 
   // Announcement management state
 
   const [editingAnnouncement, setEditingAnnouncement] =
-    useState<Announcement | null>(null)
+    useState<Announcement | null>(null);
 
   const [deleteAnnouncementItem, setDeleteAnnouncementItem] =
-    useState<Announcement | null>(null)
+    useState<Announcement | null>(null);
 
   const [viewAnnouncementItem, setViewAnnouncementItem] =
-    useState<Announcement | null>(null)
+    useState<Announcement | null>(null);
 
-  const [announcementFilter, setAnnouncementFilter] = useState("all")
+  const [announcementFilter, setAnnouncementFilter] = useState("all");
 
-  const [announcementSearch, setAnnouncementSearch] = useState("")
+  const [announcementSearch, setAnnouncementSearch] = useState("");
 
-  const [announcementMoreMenu, setAnnouncementMoreMenu] =
-    useState<number | null>(null)
+  const [announcementMoreMenu, setAnnouncementMoreMenu] = useState<
+    number | null
+  >(null);
 
-  const [postImageUrl, setPostImageUrl] = useState("")
+  const [postImageUrl, setPostImageUrl] = useState("");
 
-  const [postPinned, setPostPinned] = useState(false)
+  const [postPinned, setPostPinned] = useState(false);
 
   const [postAuthor, setPostAuthor] = useState(() =>
     barangay?.name
-      ? (barangay.name.toLowerCase().startsWith("barangay")
-          ? `${barangay.name} Administration`
-          : `Barangay ${barangay.name} Administration`)
+      ? barangay.name.toLowerCase().startsWith("barangay")
+        ? `${barangay.name} Administration`
+        : `Barangay ${barangay.name} Administration`
       : "Barangay Administration",
-  )
+  );
 
-  const [postScheduledAt, setPostScheduledAt] = useState("")
+  const [postScheduledAt, setPostScheduledAt] = useState("");
 
-  const [isSchedulingEnabled, setIsSchedulingEnabled] = useState(false)
+  const [isSchedulingEnabled, setIsSchedulingEnabled] = useState(false);
 
-  const [showPresetPicker, setShowPresetPicker] = useState(false)
+  const [showPresetPicker, setShowPresetPicker] = useState(false);
 
   const [inquiryModalPost, setInquiryModalPost] = useState<Announcement | null>(
     null,
-  )
+  );
 
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [activeFilterTab, setActiveFilterTab] =
-    useState<"all" | "pinned" | "saved">("all")
+  const [activeFilterTab, setActiveFilterTab] = useState<
+    "all" | "pinned" | "saved"
+  >("all");
 
   const [savedPostIds, setSavedPostIds] = useState<number[]>(() => {
     try {
-      return JSON.parse(localStorage.getItem("brgy_saved_posts") || "[]")
+      return JSON.parse(localStorage.getItem("brgy_saved_posts") || "[]");
     } catch {
-      return []
+      return [];
     }
-  })
+  });
 
   const [acknowledgedPostIds, setAcknowledgedPostIds] = useState<number[]>(
     () => {
       try {
-        return JSON.parse(localStorage.getItem("brgy_user_ack") || "[]")
+        return JSON.parse(localStorage.getItem("brgy_user_ack") || "[]");
       } catch {
-        return [1]
+        return [1];
       }
     },
-  )
+  );
 
-  const [commentsMap, setCommentsMap] =
-    useState<Record<number, AnnouncementComment[]>>(() => {
-      try {
-        const stored = localStorage.getItem("brgy_announcement_comments")
+  const [commentsMap, setCommentsMap] = useState<
+    Record<number, AnnouncementComment[]>
+  >(() => {
+    try {
+      const stored = localStorage.getItem("brgy_announcement_comments");
 
-        return stored ? JSON.parse(stored) : initialComments
-      } catch {
-        return initialComments
-      }
-    })
+      return stored ? JSON.parse(stored) : initialComments;
+    } catch {
+      return initialComments;
+    }
+  });
 
-  const [expandedCommentPostId, setExpandedCommentPostId] =
-    useState<number | null>(null)
+  const [expandedCommentPostId, setExpandedCommentPostId] = useState<
+    number | null
+  >(null);
 
-  const [commentInput, setCommentInput] = useState("")
+  const [commentInput, setCommentInput] = useState("");
 
-  const [toast, setToast] = useState("")
+  const [toast, setToast] = useState("");
 
   const [threads, setThreads] =
-    useState<Record<string, Msg[]>>(getCachedThreads)
+    useState<Record<string, Msg[]>>(getCachedThreads);
 
   const [requests, setRequests] = useState<DocumentRequest[]>(
     getCachedDocumentRequests,
-  )
+  );
 
   const [promotedAdmins, setPromotedAdmins] = useState<string[]>(
     getPromotedAdminEmails,
-  )
+  );
 
-  const [incidents, setIncidents] = useState<IncidentReport[]>(initialIncidents)
+  const [incidents, setIncidents] =
+    useState<IncidentReport[]>(initialIncidents);
 
   const [hotlines, setHotlines] = useState<EmergencyHotline[]>(
     initialEmergencyHotlines,
-  )
+  );
 
   // For admin: which resident thread is open
 
-  const [activeThread, setActiveThread] = useState<string | null>(null)
+  const [activeThread, setActiveThread] = useState<string | null>(null);
 
-  const [allRegisteredResidents, setAllRegisteredResidents] =
-    useState<ResidentRecord[]>(() => {
-      try {
-        const cached = localStorage.getItem("brgy_residents_cache")
+  const [allRegisteredResidents, setAllRegisteredResidents] = useState<
+    ResidentRecord[]
+  >(() => {
+    try {
+      const cached = localStorage.getItem("brgy_residents_cache");
 
-        if (cached) {
-          const list = JSON.parse(cached)
+      if (cached) {
+        const list = JSON.parse(cached);
 
-          if (Array.isArray(list)) return list
-        }
-      } catch {}
+        if (Array.isArray(list)) return list;
+      }
+    } catch {}
 
-      return []
-    })
+    return [];
+  });
 
-  const announcementsChannelRef = useRef<any>(null)
+  const announcementsChannelRef = useRef<any>(null);
 
-  const settingsChannelRef = useRef<any>(null)
+  const settingsChannelRef = useRef<any>(null);
 
   function notifyRolesChange(newAdminList: string[]) {
     try {
@@ -3239,14 +3296,14 @@ export default function App() {
         "brgy_promoted_admins",
 
         JSON.stringify(newAdminList),
-      )
+      );
     } catch {}
 
     window.dispatchEvent(
       new CustomEvent("brgy_promoted_admins_updated", {
         detail: newAdminList,
       }),
-    )
+    );
 
     try {
       settingsChannelRef.current?.send({
@@ -3255,7 +3312,7 @@ export default function App() {
         event: "roles_updated",
 
         payload: { adminEmails: newAdminList },
-      })
+      });
     } catch {}
   }
 
@@ -3266,11 +3323,11 @@ export default function App() {
           "brgy_announcements_cache",
 
           JSON.stringify(newList),
-        )
+        );
       } catch {}
     }
 
-    window.dispatchEvent(new CustomEvent("barangay_announcements_updated"))
+    window.dispatchEvent(new CustomEvent("barangay_announcements_updated"));
 
     try {
       announcementsChannelRef.current?.send({
@@ -3279,114 +3336,114 @@ export default function App() {
         event: "announcements_updated",
 
         payload: { timestamp: Date.now() },
-      })
+      });
     } catch {}
   }
 
   const [viewingRequest, setViewingRequest] = useState<DocumentRequest | null>(
     null,
-  )
+  );
 
-  const [presetMessageDraft, setPresetMessageDraft] = useState<string>("")
+  const [presetMessageDraft, setPresetMessageDraft] = useState<string>("");
 
   const [selectedDocForModal, setSelectedDocForModal] =
-    useState<string>("Barangay Clearance")
+    useState<string>("Barangay Clearance");
 
-  const [newRequestPurpose, setNewRequestPurpose] = useState<string>("")
+  const [newRequestPurpose, setNewRequestPurpose] = useState<string>("");
 
   const [newRequestCustomPurpose, setNewRequestCustomPurpose] =
-    useState<string>("")
+    useState<string>("");
 
-  const [newRequestNotes, setNewRequestNotes] = useState<string>("")
+  const [newRequestNotes, setNewRequestNotes] = useState<string>("");
 
-  const [newRequestPhone, setNewRequestPhone] = useState<string>("")
+  const [newRequestPhone, setNewRequestPhone] = useState<string>("");
 
-  const [newRequestAddress, setNewRequestAddress] = useState<string>("")
+  const [newRequestAddress, setNewRequestAddress] = useState<string>("");
 
   // ── Dynamic Live Notifications State ─────────────────────────────────────
 
   const [readNotifIds, setReadNotifIds] = useState<string[]>(() => {
     try {
-      return JSON.parse(localStorage.getItem("brgy_read_notifs") || "[]")
+      return JSON.parse(localStorage.getItem("brgy_read_notifs") || "[]");
     } catch {
-      return []
+      return [];
     }
-  })
+  });
 
   function markNotifRead(id: string) {
     setReadNotifIds((prev) => {
-      if (prev.includes(id)) return prev
+      if (prev.includes(id)) return prev;
 
-      const next = [...prev, id]
+      const next = [...prev, id];
 
       try {
-        localStorage.setItem("brgy_read_notifs", JSON.stringify(next))
+        localStorage.setItem("brgy_read_notifs", JSON.stringify(next));
       } catch {}
 
-      return next
-    })
+      return next;
+    });
   }
 
   // ── Events Calendar State ───────────────────────────────────────────────
 
   const [calendarEvents, setCalendarEvents] = useState<CommunityEvent[]>(() => {
     try {
-      const stored = localStorage.getItem("brgy_events_cache")
+      const stored = localStorage.getItem("brgy_events_cache");
 
-      return stored ? JSON.parse(stored) : initialEvents
+      return stored ? JSON.parse(stored) : initialEvents;
     } catch {
-      return initialEvents
+      return initialEvents;
     }
-  })
+  });
 
-  const [viewingEvent, setViewingEvent] = useState<CommunityEvent | null>(null)
+  const [viewingEvent, setViewingEvent] = useState<CommunityEvent | null>(null);
 
   const [userRsvps, setUserRsvps] = useState<number[]>(() => {
     try {
-      return JSON.parse(localStorage.getItem("brgy_user_event_rsvps") || "[]")
+      return JSON.parse(localStorage.getItem("brgy_user_event_rsvps") || "[]");
     } catch {
-      return [1, 4]
+      return [1, 4];
     }
-  })
+  });
 
   function handleToggleRsvp(eventId: number) {
     setUserRsvps((prev) => {
-      const exists = prev.includes(eventId)
+      const exists = prev.includes(eventId);
 
       const next = exists
         ? prev.filter((id) => id !== eventId)
-        : [...prev, eventId]
+        : [...prev, eventId];
 
       try {
-        localStorage.setItem("brgy_user_event_rsvps", JSON.stringify(next))
+        localStorage.setItem("brgy_user_event_rsvps", JSON.stringify(next));
       } catch {}
 
       showToast(
         exists
           ? "Removed from your attending schedule."
           : "Marked as attending! Added to your schedule.",
-      )
+      );
 
-      return next
-    })
+      return next;
+    });
   }
 
   async function handleAddEvent(ev: Omit<CommunityEvent, "id">) {
-    const tempId = Date.now()
+    const tempId = Date.now();
 
-    const newEvent: CommunityEvent = { ...ev, id: tempId }
+    const newEvent: CommunityEvent = { ...ev, id: tempId };
 
     setCalendarEvents((prev) => {
-      const next = [...prev, newEvent]
+      const next = [...prev, newEvent];
 
       try {
-        localStorage.setItem("brgy_events_cache", JSON.stringify(next))
+        localStorage.setItem("brgy_events_cache", JSON.stringify(next));
       } catch {}
 
-      return next
-    })
+      return next;
+    });
 
-    showToast("Community event added to the calendar!")
+    showToast("Community event added to the calendar!");
 
     try {
       const dbPayload = {
@@ -3401,7 +3458,7 @@ export default function App() {
         type: ev.type,
 
         description: `[DATE:${ev.date}] ${ev.description.trim()}`,
-      }
+      };
 
       const { data: inserted, error } = await supabase
 
@@ -3411,36 +3468,36 @@ export default function App() {
 
         .select()
 
-        .single()
+        .single();
 
       if (inserted && !error) {
-        const parsed = parseDbEvent(inserted)
+        const parsed = parseDbEvent(inserted);
 
         setCalendarEvents((prev) =>
           prev.map((e) => (e.id === tempId ? parsed : e)),
-        )
+        );
       }
     } catch (e) {
-      console.error("Failed to insert event to Supabase", e)
+      console.error("Failed to insert event to Supabase", e);
     }
   }
 
   async function handleUpdateEvent(ev: CommunityEvent) {
     setCalendarEvents((prev) => {
-      const next = prev.map((e) => (e.id === ev.id ? ev : e))
+      const next = prev.map((e) => (e.id === ev.id ? ev : e));
 
       try {
-        localStorage.setItem("brgy_events_cache", JSON.stringify(next))
+        localStorage.setItem("brgy_events_cache", JSON.stringify(next));
       } catch {}
 
-      return next
-    })
+      return next;
+    });
 
     if (viewingEvent && viewingEvent.id === ev.id) {
-      setViewingEvent(ev)
+      setViewingEvent(ev);
     }
 
-    showToast("Event updated successfully!")
+    showToast("Event updated successfully!");
 
     try {
       const dbPayload = {
@@ -3455,44 +3512,44 @@ export default function App() {
         type: ev.type,
 
         description: `[DATE:${ev.date}] ${ev.description.trim()}`,
-      }
+      };
 
-      await supabase.from("events").update(dbPayload).eq("id", ev.id)
+      await supabase.from("events").update(dbPayload).eq("id", ev.id);
     } catch (e) {
-      console.error("Failed to update event in Supabase", e)
+      console.error("Failed to update event in Supabase", e);
     }
   }
 
   async function handleDeleteEvent(id: number) {
     setCalendarEvents((prev) => {
-      const next = prev.filter((e) => e.id !== id)
+      const next = prev.filter((e) => e.id !== id);
 
       try {
-        localStorage.setItem("brgy_events_cache", JSON.stringify(next))
+        localStorage.setItem("brgy_events_cache", JSON.stringify(next));
       } catch {}
 
-      return next
-    })
+      return next;
+    });
 
     if (viewingEvent && viewingEvent.id === id) {
-      setViewingEvent(null)
+      setViewingEvent(null);
     }
 
-    showToast("Event removed from calendar.")
+    showToast("Event removed from calendar.");
 
     try {
-      await supabase.from("events").delete().eq("id", id)
+      await supabase.from("events").delete().eq("id", id);
     } catch (e) {
-      console.error("Failed to delete event from Supabase", e)
+      console.error("Failed to delete event from Supabase", e);
     }
   }
 
   // Resolve an auth user session → Account object
 
   async function resolveAccount(authUser: {
-    id: string
+    id: string;
 
-    email?: string
+    email?: string;
   }): Promise<Account | null> {
     try {
       const { data: profile, error } = await supabase
@@ -3503,18 +3560,18 @@ export default function App() {
 
         .eq("id", authUser.id)
 
-        .single()
+        .single();
 
       // If query fails (network, RLS, etc.) fall back to auth data so the user
 
       // stays logged in instead of being silently kicked out.
 
       if (error || !profile) {
-        const cachedName = authUser.email || "User"
+        const cachedName = authUser.email || "User";
 
-        const email = (authUser.email ?? "").toLowerCase().trim()
+        const email = (authUser.email ?? "").toLowerCase().trim();
 
-        const isAdm = isRootMasterAdmin(email) || isPromotedAdmin(email)
+        const isAdm = isRootMasterAdmin(email) || isPromotedAdmin(email);
 
         return {
           id: authUser.id,
@@ -3526,7 +3583,7 @@ export default function App() {
           name: cachedName,
 
           initials: getInitials(cachedName),
-        }
+        };
       }
 
       // Block access only for explicitly restricted statuses.
@@ -3538,18 +3595,18 @@ export default function App() {
         profile.status === "deleted" ||
         profile.status === "pending"
       ) {
-        return null // non-active accounts cannot maintain a session
+        return null; // non-active accounts cannot maintain a session
       }
 
-      const name = profile.full_name || authUser.email || "User"
+      const name = profile.full_name || authUser.email || "User";
 
-      const email = (authUser.email ?? "").toLowerCase().trim()
+      const email = (authUser.email ?? "").toLowerCase().trim();
 
       const isAdm =
         profile.role === "admin" ||
         isProtectedAdminEmail(email) ||
         isRootMasterAdmin(email) ||
-        isPromotedAdmin(email)
+        isPromotedAdmin(email);
 
       return {
         id: authUser.id,
@@ -3561,18 +3618,18 @@ export default function App() {
         name,
 
         initials: getInitials(name),
-      }
+      };
     } catch {
       // Last-resort fallback: keep the user logged in with minimal info.
 
-      const cachedName = authUser.email || "User"
+      const cachedName = authUser.email || "User";
 
-      const email = (authUser.email ?? "").toLowerCase().trim()
+      const email = (authUser.email ?? "").toLowerCase().trim();
 
       const isAdm =
         isProtectedAdminEmail(email) ||
         isRootMasterAdmin(email) ||
-        isPromotedAdmin(email)
+        isPromotedAdmin(email);
 
       return {
         id: authUser.id,
@@ -3584,7 +3641,7 @@ export default function App() {
         name: cachedName,
 
         initials: getInitials(cachedName),
-      }
+      };
     }
   }
 
@@ -3593,29 +3650,29 @@ export default function App() {
 
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session?.user) {
-        const account = await resolveAccount(session.user)
+        const account = await resolveAccount(session.user);
 
-        setUser(account)
+        setUser(account);
       } else {
         // Fallback: check custom session (e.g. for temporary password logins)
 
         try {
           const customSession = JSON.parse(
             localStorage.getItem("brgy_auth_session") || "null",
-          )
+          );
 
           if (customSession?.user) {
-            setUser(customSession.user)
+            setUser(customSession.user);
           } else {
-            setUser(null)
+            setUser(null);
           }
         } catch {
-          setUser(null)
+          setUser(null);
         }
       }
 
-      setLoading(null)
-    })
+      setLoading(null);
+    });
 
     // ── 2. Listen for auth state changes ────────────────────────────────
 
@@ -3630,21 +3687,21 @@ export default function App() {
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === "SIGNED_IN") {
         if (session?.user) {
-          const account = await resolveAccount(session.user)
+          const account = await resolveAccount(session.user);
 
-          setUser(account)
+          setUser(account);
         }
       } else if (event === "SIGNED_OUT") {
         try {
-          localStorage.removeItem("brgy_auth_session")
+          localStorage.removeItem("brgy_auth_session");
         } catch {}
 
-        setUser(null)
+        setUser(null);
       } else if (event === "TOKEN_REFRESHED" || event === "INITIAL_SESSION") {
         // Session is still valid — do nothing to avoid flickering logout.
         // getSession() on mount already handled INITIAL_SESSION.
       }
-    })
+    });
 
     // ── 3. Load community data & pending accounts ────────────────────────
 
@@ -3656,10 +3713,10 @@ export default function App() {
 
           .select("*")
 
-          .order("id", { ascending: false })
+          .order("id", { ascending: false });
 
         if (!error && dbDocs && dbDocs.length > 0) {
-          const parsed = dbDocs.map(parseDbDocRequest)
+          const parsed = dbDocs.map(parseDbDocRequest);
 
           setRequests((prev) => {
             // Keep local-only optimistic items (temp ids like "req-{timestamp}")
@@ -3683,23 +3740,23 @@ export default function App() {
                   "req-105",
                 ].includes(p.id) &&
                 !parsed.some((db) => db.trackingNo === p.trackingNo),
-            )
+            );
 
-            const merged = [...localOnly, ...parsed]
+            const merged = [...localOnly, ...parsed];
 
-            saveCachedDocumentRequests(merged)
+            saveCachedDocumentRequests(merged);
 
-            return merged
-          })
+            return merged;
+          });
         } else if (!error && dbDocs && dbDocs.length === 0) {
           // No requests in DB yet: show empty list
 
-          setRequests([])
+          setRequests([]);
 
-          saveCachedDocumentRequests([])
+          saveCachedDocumentRequests([]);
         }
       } catch (err) {
-        console.warn("fetchLiveDocumentRequests error:", err)
+        console.warn("fetchLiveDocumentRequests error:", err);
       }
     }
 
@@ -3708,61 +3765,67 @@ export default function App() {
         const { data: dbMsgs, error } = await supabase
           .from("messages")
           .select("*")
-          .order("created_at", { ascending: true })
+          .order("created_at", { ascending: true });
 
         if (!error && dbMsgs && dbMsgs.length > 0) {
-          const deleted = getDeletedThreads()
-          const newThreads: Record<string, Msg[]> = {}
-          const currentEmail = (user?.email || "").toLowerCase().trim()
+          const deleted = getDeletedThreads();
+          const newThreads: Record<string, Msg[]> = {};
+          const currentEmail = (user?.email || "").toLowerCase().trim();
 
           dbMsgs.forEach((row: any) => {
-            const rowEmail = (row.resident_email || "").toLowerCase().trim()
-            if (!rowEmail) return
+            const rowEmail = (row.resident_email || "").toLowerCase().trim();
+            if (!rowEmail) return;
 
-            const senderRaw = (row.sender || "").trim()
+            const senderRaw = (row.sender || "").trim();
             const isSenderAdminWithEmail =
-              senderRaw.startsWith("admin:") && senderRaw.includes("@")
+              senderRaw.startsWith("admin:") && senderRaw.includes("@");
             const senderAdminEmail = isSenderAdminWithEmail
-              ? senderRaw.replace(/^admin:/, "").toLowerCase().trim()
-              : null
+              ? senderRaw
+                  .replace(/^admin:/, "")
+                  .toLowerCase()
+                  .trim()
+              : null;
 
-            let threadKey = rowEmail
-            let fromDirection: "admin" | "resident" =
-              senderRaw.startsWith("admin") ? "admin" : "resident"
+            let threadKey = rowEmail;
+            let fromDirection: "admin" | "resident" = senderRaw.startsWith(
+              "admin",
+            )
+              ? "admin"
+              : "resident";
 
             if (senderAdminEmail && currentEmail) {
               if (currentEmail === senderAdminEmail) {
                 // Sent by current user to rowEmail
-                threadKey = rowEmail
-                fromDirection = "admin"
+                threadKey = rowEmail;
+                fromDirection = "admin";
               } else if (currentEmail === rowEmail) {
                 // Received by current user from senderAdminEmail
-                threadKey = senderAdminEmail
-                fromDirection = "resident"
+                threadKey = senderAdminEmail;
+                fromDirection = "resident";
               } else {
-                threadKey = rowEmail
-                fromDirection = "admin"
+                threadKey = rowEmail;
+                fromDirection = "admin";
               }
             }
 
-            if (deleted.includes(threadKey)) return
-            if (!newThreads[threadKey]) newThreads[threadKey] = []
+            if (deleted.includes(threadKey)) return;
+            if (!newThreads[threadKey]) newThreads[threadKey] = [];
 
-            const d = new Date(row.created_at)
+            const d = new Date(row.created_at);
 
             const dateStr = isNaN(d.getTime())
               ? "Today"
               : d.toLocaleDateString("en-US", {
                   month: "short",
                   day: "numeric",
-                })
+                });
 
             const timeStr = isNaN(d.getTime())
               ? "Just now"
               : d.toLocaleTimeString("en-US", {
                   hour: "numeric",
                   minute: "2-digit",
-                })
+                });
 
             newThreads[threadKey].push({
               from: fromDirection,
@@ -3771,31 +3834,31 @@ export default function App() {
               timestamp: isNaN(d.getTime()) ? Date.now() : d.getTime(),
               dbId: row.id,
               senderEmail: senderAdminEmail || undefined,
-            })
-          })
+            });
+          });
 
           setThreads((prev) => {
-            const merged: Record<string, Msg[]> = {}
+            const merged: Record<string, Msg[]> = {};
 
             Object.keys(prev).forEach((em) => {
               if (!deleted.includes(em)) {
-                merged[em] = prev[em]
+                merged[em] = prev[em];
               }
-            })
+            });
 
             Object.keys(newThreads).forEach((em) => {
               if (!deleted.includes(em)) {
-                merged[em] = newThreads[em]
+                merged[em] = newThreads[em];
               }
-            })
+            });
 
-            saveCachedThreads(merged)
+            saveCachedThreads(merged);
 
-            return merged
-          })
+            return merged;
+          });
         }
       } catch (err) {
-        console.warn("fetchLiveMessages error:", err)
+        console.warn("fetchLiveMessages error:", err);
       }
     }
 
@@ -3809,51 +3872,51 @@ export default function App() {
 
           .eq("id", 1)
 
-          .maybeSingle()
+          .maybeSingle();
 
         if (!error && dbSettings) {
           const adminEmails = parsePromotedAdminsFromDesc(
             dbSettings.description,
-          )
+          );
 
           setPromotedAdmins((prev) => {
             if (JSON.stringify(prev) === JSON.stringify(adminEmails))
-              return prev
+              return prev;
 
-            return adminEmails
-          })
+            return adminEmails;
+          });
 
           try {
             localStorage.setItem(
               "brgy_promoted_admins",
 
               JSON.stringify(adminEmails),
-            )
+            );
           } catch {}
 
           // Synchronize active resets from description into local storage
 
           const activeResets = parseActiveResetsFromDesc(
             dbSettings.description,
-          )
+          );
 
           if (Object.keys(activeResets).length > 0) {
             try {
               const currentLocal = JSON.parse(
                 localStorage.getItem("brgy_temp_passwords") || "{}",
-              )
+              );
 
-              const merged = { ...currentLocal, ...activeResets }
+              const merged = { ...currentLocal, ...activeResets };
 
               localStorage.setItem(
                 "brgy_temp_passwords",
 
                 JSON.stringify(merged),
-              )
+              );
             } catch {}
           }
 
-          const cleanDesc = cleanBarangayDescription(dbSettings.description)
+          const cleanDesc = cleanBarangayDescription(dbSettings.description);
 
           const loadedInfo: BarangayInfo = {
             name: dbSettings.name || defaultBarangayInfo.name,
@@ -3880,14 +3943,14 @@ export default function App() {
 
             sundayHours:
               dbSettings.sunday_hours || defaultBarangayInfo.sundayHours,
-          }
+          };
 
           // Sync operating schedule from DB description to local state
 
-          const remoteSchedule = parseScheduleFromDesc(dbSettings.description)
+          const remoteSchedule = parseScheduleFromDesc(dbSettings.description);
 
           if (remoteSchedule) {
-            saveCachedSchedule(remoteSchedule)
+            saveCachedSchedule(remoteSchedule);
 
             // Dispatch a custom event so BarangaySettingsPage can re-read it
 
@@ -3895,7 +3958,7 @@ export default function App() {
               new CustomEvent("barangay_schedule_updated", {
                 detail: remoteSchedule,
               }),
-            )
+            );
           }
 
           setBarangay((prev) => {
@@ -3912,18 +3975,18 @@ export default function App() {
               prev.saturdayHours === loadedInfo.saturdayHours &&
               prev.sundayHours === loadedInfo.sundayHours
             ) {
-              return prev // keep identical reference so no re-renders or clobbering!
+              return prev; // keep identical reference so no re-renders or clobbering!
             }
 
             try {
-              localStorage.setItem("barangay_info", JSON.stringify(loadedInfo))
+              localStorage.setItem("barangay_info", JSON.stringify(loadedInfo));
             } catch {}
 
-            return loadedInfo
-          })
+            return loadedInfo;
+          });
         }
       } catch (err) {
-        console.warn("fetchLiveSettingsAndRoles error:", err)
+        console.warn("fetchLiveSettingsAndRoles error:", err);
       }
     }
 
@@ -3935,33 +3998,33 @@ export default function App() {
 
           .select("*")
 
-          .order("created_at", { ascending: false })
+          .order("created_at", { ascending: false });
 
         if (dbAnnouncements) {
           const parsed = dbAnnouncements
 
             .map(parseDbAnnouncement)
 
-            .filter((a) => !isAnnouncementDeleted(a.id, a.title))
+            .filter((a) => !isAnnouncementDeleted(a.id, a.title));
 
-          setAnnouncements(parsed)
+          setAnnouncements(parsed);
 
           try {
             localStorage.setItem(
               "brgy_announcements_cache",
 
               JSON.stringify(parsed),
-            )
+            );
           } catch {}
         } else {
-          setAnnouncements([])
+          setAnnouncements([]);
 
           try {
-            localStorage.setItem("brgy_announcements_cache", "[]")
+            localStorage.setItem("brgy_announcements_cache", "[]");
           } catch {}
         }
       } catch (err) {
-        console.warn("fetchLiveAnnouncements error:", err)
+        console.warn("fetchLiveAnnouncements error:", err);
       }
     }
 
@@ -3975,49 +4038,48 @@ export default function App() {
 
           .select("*")
 
-          .order("created_at", { ascending: false })
+          .order("created_at", { ascending: false });
 
         if (dbAccounts) {
           const pending = dbAccounts.filter(
             (a: any) => a.status === "pending",
-          ).length
+          ).length;
 
-          setPendingResidents(pending)
+          setPendingResidents(pending);
 
-          const meta = getResidentMeta()
+          const meta = getResidentMeta();
 
-          const purged = getPurgedIds()
+          const purged = getPurgedIds();
 
           const mappedResidents: ResidentRecord[] = dbAccounts
             .filter((row: any) => {
-              const em = (row.email || "").toLowerCase().trim()
-              if (isProtectedAdminEmail(em)) return true
-              return !purged.includes(String(row.id)) && !purged.includes(em)
+              const em = (row.email || "").toLowerCase().trim();
+              if (isProtectedAdminEmail(em)) return true;
+              return !purged.includes(String(row.id)) && !purged.includes(em);
             })
             .map((row: any) => {
-              const rowMeta = meta[row.id] || {}
+              const rowMeta = meta[row.id] || {};
 
               let finalStatus = (
                 rowMeta.statusOverride ||
                 row.status ||
                 "active"
-              )
-                .toLowerCase() as any
+              ).toLowerCase() as any;
 
-              if (finalStatus === "verified") finalStatus = "active"
+              if (finalStatus === "verified") finalStatus = "active";
 
-              const address = row.address || "Barangay Labangan"
+              const address = row.address || "Barangay Labangan";
 
-              let purok = row.purok || "Purok 1"
+              let purok = row.purok || "Purok 1";
 
-              const purokMatch = address.match(/Purok\s*\d+/i)
+              const purokMatch = address.match(/Purok\s*\d+/i);
 
-              if (purokMatch) purok = purokMatch[0]
+              if (purokMatch) purok = purokMatch[0];
 
-              const rowEmail = (row.email || "").toLowerCase().trim()
+              const rowEmail = (row.email || "").toLowerCase().trim();
               const rowRole = isProtectedAdminEmail(rowEmail)
                 ? "admin"
-                : ((row.role as any) || "resident")
+                : (row.role as any) || "resident";
 
               return {
                 id: String(row.id),
@@ -4041,29 +4103,29 @@ export default function App() {
                 registered: formatResidentDate(row.created_at),
 
                 isOnline: false,
-              }
-            })
+              };
+            });
 
-          setAllRegisteredResidents(mappedResidents)
+          setAllRegisteredResidents(mappedResidents);
 
           try {
             localStorage.setItem(
               "brgy_residents_cache",
 
               JSON.stringify(mappedResidents),
-            )
+            );
           } catch {}
         }
 
         // Live Barangay Settings & Roles
 
-        await fetchLiveSettingsAndRoles()
+        await fetchLiveSettingsAndRoles();
 
         // Live Document Requests & Messages from Supabase
 
-        await fetchLiveDocumentRequests()
+        await fetchLiveDocumentRequests();
 
-        await fetchLiveMessages()
+        await fetchLiveMessages();
 
         // Clean any legacy mock announcements that were previously seeded
 
@@ -4078,12 +4140,12 @@ export default function App() {
               "Scheduled Water Interruption",
 
               "Free Medical and Dental Mission",
-            ])
+            ]);
         } catch {}
 
         // Announcements
 
-        await fetchLiveAnnouncements()
+        await fetchLiveAnnouncements();
 
         // Hotlines
 
@@ -4093,7 +4155,7 @@ export default function App() {
 
           .select("*")
 
-          .order("sort_order", { ascending: true })
+          .order("sort_order", { ascending: true });
 
         if (dbHotlines && dbHotlines.length > 0) {
           setHotlines(
@@ -4114,7 +4176,7 @@ export default function App() {
 
               icon: h.icon || "phone",
             })),
-          )
+          );
         }
 
         // Incidents
@@ -4125,14 +4187,14 @@ export default function App() {
 
           .select("*")
 
-          .order("created_at", { ascending: false })
+          .order("created_at", { ascending: false });
 
         if (dbIncidents && dbIncidents.length > 0) {
-          const meta = getIncidentMetaMap()
+          const meta = getIncidentMetaMap();
 
           setIncidents(
             dbIncidents.map((i: any) => {
-              const m = meta[i.id] || {}
+              const m = meta[i.id] || {};
 
               return {
                 id: i.id,
@@ -4149,7 +4211,7 @@ export default function App() {
 
                 date: i.date,
 
-                status: i.status as IncidentStatus || "Under Review",
+                status: (i.status as IncidentStatus) || "Under Review",
 
                 hearingDate: i.hearing_date || "",
 
@@ -4175,9 +4237,9 @@ export default function App() {
                 deletedAt:
                   m.deletedAt ||
                   (i.status === "Deleted" ? "Archived" : undefined),
-              }
+              };
             }),
-          )
+          );
         }
 
         // Load Events
@@ -4188,23 +4250,23 @@ export default function App() {
 
           .select("*")
 
-          .order("day", { ascending: true })
+          .order("day", { ascending: true });
 
         if (dbEvents && dbEvents.length > 0) {
-          const parsed = dbEvents.map(parseDbEvent)
+          const parsed = dbEvents.map(parseDbEvent);
 
-          setCalendarEvents(parsed)
+          setCalendarEvents(parsed);
 
           try {
-            localStorage.setItem("brgy_events_cache", JSON.stringify(parsed))
+            localStorage.setItem("brgy_events_cache", JSON.stringify(parsed));
           } catch {}
         }
       } catch (err) {
-        console.error("Supabase load error:", err)
+        console.error("Supabase load error:", err);
       }
     }
 
-    loadLiveData()
+    loadLiveData();
 
     // ── 4. Real-time channels for live data synchronization ──────────────
 
@@ -4222,14 +4284,14 @@ export default function App() {
 
             .from("accounts")
 
-            .select("id, status")
+            .select("id, status");
 
           if (dbAccounts) {
             const pending = dbAccounts.filter(
               (a: any) => a.status === "pending",
-            ).length
+            ).length;
 
-            setPendingResidents(pending)
+            setPendingResidents(pending);
           }
 
           // Re-resolve role for the currently logged-in user if their record changed
@@ -4237,25 +4299,25 @@ export default function App() {
           // This ensures promoted admins get privileges immediately in the other browser
 
           setUser((currentUser) => {
-            if (!currentUser) return currentUser
+            if (!currentUser) return currentUser;
 
-            const changedRecord = payload?.new
+            const changedRecord = payload?.new;
 
             if (changedRecord && changedRecord.id === currentUser.id) {
               const newRole =
-                changedRecord.role === "admin" ? "admin" : "resident"
+                changedRecord.role === "admin" ? "admin" : "resident";
 
               if (newRole !== currentUser.role) {
-                return { ...currentUser, role: newRole }
+                return { ...currentUser, role: newRole };
               }
             }
 
-            return currentUser
-          })
+            return currentUser;
+          });
         },
       )
 
-      .subscribe()
+      .subscribe();
 
     const incidentsChannel = supabase
 
@@ -4273,14 +4335,14 @@ export default function App() {
 
             .select("*")
 
-            .order("created_at", { ascending: false })
+            .order("created_at", { ascending: false });
 
           if (dbIncidents) {
-            const meta = getIncidentMetaMap()
+            const meta = getIncidentMetaMap();
 
             setIncidents(
               dbIncidents.map((i: any) => {
-                const m = meta[i.id] || {}
+                const m = meta[i.id] || {};
 
                 return {
                   id: i.id,
@@ -4297,7 +4359,7 @@ export default function App() {
 
                   date: i.date,
 
-                  status: i.status as IncidentStatus || "Under Review",
+                  status: (i.status as IncidentStatus) || "Under Review",
 
                   hearingDate: i.hearing_date || "",
 
@@ -4323,14 +4385,14 @@ export default function App() {
                   deletedAt:
                     m.deletedAt ||
                     (i.status === "Deleted" ? "Archived" : undefined),
-                }
+                };
               }),
-            )
+            );
           }
         },
       )
 
-      .subscribe()
+      .subscribe();
 
     const hotlinesChannel = supabase
 
@@ -4348,7 +4410,7 @@ export default function App() {
 
             .select("*")
 
-            .order("sort_order", { ascending: true })
+            .order("sort_order", { ascending: true });
 
           if (dbHotlines) {
             setHotlines(
@@ -4369,19 +4431,19 @@ export default function App() {
 
                 icon: h.icon || "phone",
               })),
-            )
+            );
           }
         },
       )
 
-      .subscribe()
+      .subscribe();
 
     const announcementsChannel = supabase
 
       .channel("announcements_sync_channel")
 
       .on("broadcast", { event: "announcements_updated" }, () => {
-        fetchLiveAnnouncements()
+        fetchLiveAnnouncements();
       })
 
       .on(
@@ -4390,13 +4452,13 @@ export default function App() {
         { event: "*", schema: "public", table: "announcements" },
 
         async () => {
-          fetchLiveAnnouncements()
+          fetchLiveAnnouncements();
         },
       )
 
-      .subscribe()
+      .subscribe();
 
-    announcementsChannelRef.current = announcementsChannel
+    announcementsChannelRef.current = announcementsChannel;
 
     const eventsChannel = supabase
 
@@ -4414,21 +4476,21 @@ export default function App() {
 
             .select("*")
 
-            .order("day", { ascending: true })
+            .order("day", { ascending: true });
 
           if (dbEvents) {
-            const parsed = dbEvents.map(parseDbEvent)
+            const parsed = dbEvents.map(parseDbEvent);
 
-            setCalendarEvents(parsed)
+            setCalendarEvents(parsed);
 
             try {
-              localStorage.setItem("brgy_events_cache", JSON.stringify(parsed))
+              localStorage.setItem("brgy_events_cache", JSON.stringify(parsed));
             } catch {}
           }
         },
       )
 
-      .subscribe()
+      .subscribe();
 
     const docsChannel = supabase
 
@@ -4440,11 +4502,11 @@ export default function App() {
         { event: "*", schema: "public", table: "document_requests" },
 
         () => {
-          fetchLiveDocumentRequests()
+          fetchLiveDocumentRequests();
         },
       )
 
-      .subscribe()
+      .subscribe();
 
     const messagesChannel = supabase
 
@@ -4456,11 +4518,11 @@ export default function App() {
         { event: "*", schema: "public", table: "messages" },
 
         () => {
-          fetchLiveMessages()
+          fetchLiveMessages();
         },
       )
 
-      .subscribe()
+      .subscribe();
 
     const settingsChannel = supabase
 
@@ -4473,16 +4535,16 @@ export default function App() {
         ) {
           const list = payload.payload.adminEmails.map((e: string) =>
             String(e).toLowerCase().trim(),
-          )
+          );
 
-          setPromotedAdmins(list)
+          setPromotedAdmins(list);
 
           try {
-            localStorage.setItem("brgy_promoted_admins", JSON.stringify(list))
+            localStorage.setItem("brgy_promoted_admins", JSON.stringify(list));
           } catch {}
         }
 
-        fetchLiveSettingsAndRoles()
+        fetchLiveSettingsAndRoles();
       })
 
       .on(
@@ -4491,149 +4553,150 @@ export default function App() {
         { event: "*", schema: "public", table: "barangay_settings" },
 
         () => {
-          fetchLiveSettingsAndRoles()
+          fetchLiveSettingsAndRoles();
         },
       )
 
-      .subscribe()
+      .subscribe();
 
-    settingsChannelRef.current = settingsChannel
+    settingsChannelRef.current = settingsChannel;
 
     // Heartbeat for cross-browser multi-device instant sync (every 1.5s)
 
     const liveHeartbeat = setInterval(() => {
-      fetchLiveDocumentRequests()
+      fetchLiveDocumentRequests();
 
-      fetchLiveMessages()
+      fetchLiveMessages();
 
-      fetchLiveSettingsAndRoles()
+      fetchLiveSettingsAndRoles();
 
-      fetchLiveAnnouncements()
-    }, 1500)
+      fetchLiveAnnouncements();
+    }, 1500);
 
     // Dedicated fast-poll for messages only (every 1s) — makes chat feel near-instant
 
     const messageFastPoll = setInterval(() => {
-      fetchLiveMessages()
-    }, 1000)
+      fetchLiveMessages();
+    }, 1000);
 
     const handleStorageUpdate = (e: StorageEvent) => {
       if (e.key === "barangay_message_threads") {
-        setThreads(getCachedThreads())
+        setThreads(getCachedThreads());
       }
 
       if (e.key === "barangay_document_requests") {
-        setRequests(getCachedDocumentRequests())
+        setRequests(getCachedDocumentRequests());
       }
 
       if (e.key === "brgy_promoted_admins") {
-        setPromotedAdmins(getPromotedAdminEmails())
+        setPromotedAdmins(getPromotedAdminEmails());
       }
 
       if (e.key === "brgy_announcements_cache") {
-        fetchLiveAnnouncements()
+        fetchLiveAnnouncements();
       }
-    }
+    };
 
-    const handleCustomThreads = () => setThreads(getCachedThreads())
+    const handleCustomThreads = () => setThreads(getCachedThreads());
 
-    const handleCustomRequests = () => setRequests(getCachedDocumentRequests())
+    const handleCustomRequests = () => setRequests(getCachedDocumentRequests());
 
-    const handleCustomAdmins = () => setPromotedAdmins(getPromotedAdminEmails())
+    const handleCustomAdmins = () =>
+      setPromotedAdmins(getPromotedAdminEmails());
 
-    const handleCustomAnnouncements = () => fetchLiveAnnouncements()
+    const handleCustomAnnouncements = () => fetchLiveAnnouncements();
 
-    window.addEventListener("storage", handleStorageUpdate)
+    window.addEventListener("storage", handleStorageUpdate);
 
-    window.addEventListener("barangay_threads_updated", handleCustomThreads)
+    window.addEventListener("barangay_threads_updated", handleCustomThreads);
 
-    window.addEventListener("barangay_requests_updated", handleCustomRequests)
+    window.addEventListener("barangay_requests_updated", handleCustomRequests);
 
-    window.addEventListener("brgy_promoted_admins_updated", handleCustomAdmins)
+    window.addEventListener("brgy_promoted_admins_updated", handleCustomAdmins);
 
     window.addEventListener(
       "barangay_announcements_updated",
 
       handleCustomAnnouncements,
-    )
+    );
 
     return () => {
-      clearInterval(liveHeartbeat)
+      clearInterval(liveHeartbeat);
 
-      clearInterval(messageFastPoll)
+      clearInterval(messageFastPoll);
 
-      window.removeEventListener("storage", handleStorageUpdate)
+      window.removeEventListener("storage", handleStorageUpdate);
 
       window.removeEventListener(
         "barangay_threads_updated",
 
         handleCustomThreads,
-      )
+      );
 
       window.removeEventListener(
         "barangay_requests_updated",
 
         handleCustomRequests,
-      )
+      );
 
       window.removeEventListener(
         "brgy_promoted_admins_updated",
 
         handleCustomAdmins,
-      )
+      );
 
       window.removeEventListener(
         "barangay_announcements_updated",
 
         handleCustomAnnouncements,
-      )
+      );
 
-      subscription.unsubscribe()
+      subscription.unsubscribe();
 
-      accountsChannel.unsubscribe()
+      accountsChannel.unsubscribe();
 
-      incidentsChannel.unsubscribe()
+      incidentsChannel.unsubscribe();
 
-      hotlinesChannel.unsubscribe()
+      hotlinesChannel.unsubscribe();
 
-      announcementsChannel.unsubscribe()
+      announcementsChannel.unsubscribe();
 
-      eventsChannel.unsubscribe()
+      eventsChannel.unsubscribe();
 
-      docsChannel.unsubscribe()
+      docsChannel.unsubscribe();
 
-      messagesChannel.unsubscribe()
+      messagesChannel.unsubscribe();
 
-      settingsChannel.unsubscribe()
-    }
-  }, [])
+      settingsChannel.unsubscribe();
+    };
+  }, []);
 
   // ── Active User Presence Heartbeat ──────────────────────────────
 
   useEffect(() => {
-    if (!user) return
+    if (!user) return;
 
-    const uid = String(user.id || "")
+    const uid = String(user.id || "");
 
-    const uemail = (user.email || "").toLowerCase()
+    const uemail = (user.email || "").toLowerCase();
 
-    recordPresenceHeartbeat(uid, uemail)
+    recordPresenceHeartbeat(uid, uemail);
 
     const presenceChan = supabase.channel("brgy_presence_sync", {
       config: { broadcast: { self: false } },
-    })
+    });
 
     presenceChan
 
       .on("broadcast", { event: "ping" }, ({ payload }: any) => {
         if (payload?.id || payload?.email) {
-          recordPresenceHeartbeat(payload.id, payload.email)
+          recordPresenceHeartbeat(payload.id, payload.email);
         }
       })
 
       .on("broadcast", { event: "leave" }, ({ payload }: any) => {
         if (payload?.id || payload?.email) {
-          removePresenceHeartbeat(payload.id, payload.email)
+          removePresenceHeartbeat(payload.id, payload.email);
         }
       })
 
@@ -4644,7 +4707,7 @@ export default function App() {
           event: "ping",
 
           payload: { id: uid, email: uemail },
-        })
+        });
       })
 
       .subscribe((status) => {
@@ -4655,12 +4718,12 @@ export default function App() {
             event: "ping",
 
             payload: { id: uid, email: uemail },
-          })
+          });
         }
-      })
+      });
 
     const interval = setInterval(() => {
-      recordPresenceHeartbeat(uid, uemail)
+      recordPresenceHeartbeat(uid, uemail);
 
       presenceChan.send({
         type: "broadcast",
@@ -4668,11 +4731,11 @@ export default function App() {
         event: "ping",
 
         payload: { id: uid, email: uemail },
-      })
-    }, 15000)
+      });
+    }, 15000);
 
     const handleUnload = () => {
-      removePresenceHeartbeat(uid, uemail)
+      removePresenceHeartbeat(uid, uemail);
 
       try {
         presenceChan.send({
@@ -4681,18 +4744,18 @@ export default function App() {
           event: "leave",
 
           payload: { id: uid, email: uemail },
-        })
+        });
       } catch {}
-    }
+    };
 
-    window.addEventListener("beforeunload", handleUnload)
+    window.addEventListener("beforeunload", handleUnload);
 
     return () => {
-      clearInterval(interval)
+      clearInterval(interval);
 
-      window.removeEventListener("beforeunload", handleUnload)
+      window.removeEventListener("beforeunload", handleUnload);
 
-      removePresenceHeartbeat(uid, uemail)
+      removePresenceHeartbeat(uid, uemail);
 
       try {
         presenceChan.send({
@@ -4701,12 +4764,12 @@ export default function App() {
           event: "leave",
 
           payload: { id: uid, email: uemail },
-        })
+        });
       } catch {}
 
-      presenceChan.unsubscribe()
-    }
-  }, [user])
+      presenceChan.unsubscribe();
+    };
+  }, [user]);
 
   const todayLabel = useMemo(
     () =>
@@ -4719,103 +4782,103 @@ export default function App() {
       }).format(new Date()),
 
     [],
-  )
+  );
 
   function showToast(msg: string) {
-    setToast(msg)
+    setToast(msg);
 
-    window.setTimeout(() => setToast(""), 2600)
+    window.setTimeout(() => setToast(""), 2600);
   }
 
   function openComposer(ann?: Announcement) {
     if (ann) {
       // Edit mode
 
-      setEditingAnnouncement(ann)
+      setEditingAnnouncement(ann);
 
-      setPostTitle(ann.title)
+      setPostTitle(ann.title);
 
-      setPostTag(ann.tag)
+      setPostTag(ann.tag);
 
-      setPostText(ann.body)
+      setPostText(ann.body);
 
-      setPostAccent(ann.accent)
+      setPostAccent(ann.accent);
 
-      setPostAccentDate(ann.accentText)
+      setPostAccentDate(ann.accentText);
 
-      setPostImageUrl(ann.imageUrl || "")
+      setPostImageUrl(ann.imageUrl || "");
 
-      setPostPinned(!!ann.pinned)
+      setPostPinned(!!ann.pinned);
 
       setPostAuthor(
         ann.author ||
           (barangay.name
             ? `${barangay.name} Administration`
             : "Barangay Administration"),
-      )
+      );
 
       if (ann.scheduledAt) {
-        setIsSchedulingEnabled(true)
+        setIsSchedulingEnabled(true);
 
         try {
-          const d = new Date(ann.scheduledAt)
+          const d = new Date(ann.scheduledAt);
 
           const localIso = new Date(d.getTime() - d.getTimezoneOffset() * 60000)
 
             .toISOString()
 
-            .slice(0, 16)
+            .slice(0, 16);
 
-          setPostScheduledAt(localIso)
+          setPostScheduledAt(localIso);
         } catch {
-          setPostScheduledAt("")
+          setPostScheduledAt("");
         }
       } else {
-        setIsSchedulingEnabled(false)
+        setIsSchedulingEnabled(false);
 
-        setPostScheduledAt("")
+        setPostScheduledAt("");
       }
     } else {
       // Create mode
 
-      setEditingAnnouncement(null)
+      setEditingAnnouncement(null);
 
-      setPostTitle("")
+      setPostTitle("");
 
-      setPostTag("Community Advisory")
+      setPostTag("Community Advisory");
 
-      setPostText("")
+      setPostText("");
 
-      setPostAccent("")
+      setPostAccent("");
 
-      setPostAccentDate("")
+      setPostAccentDate("");
 
-      setPostImageUrl("")
+      setPostImageUrl("");
 
-      setPostPinned(false)
+      setPostPinned(false);
 
       setPostAuthor(
         barangay.name
-          ? (barangay.name.toLowerCase().startsWith("barangay")
-              ? `${barangay.name} Administration`
-              : `Barangay ${barangay.name} Administration`)
+          ? barangay.name.toLowerCase().startsWith("barangay")
+            ? `${barangay.name} Administration`
+            : `Barangay ${barangay.name} Administration`
           : "Barangay Administration",
-      )
+      );
 
-      setIsSchedulingEnabled(false)
+      setIsSchedulingEnabled(false);
 
-      setPostScheduledAt("")
+      setPostScheduledAt("");
     }
 
-    setShowPresetPicker(false)
+    setShowPresetPicker(false);
 
-    setComposerOpen(true)
+    setComposerOpen(true);
 
-    setAnnouncementMoreMenu(null)
+    setAnnouncementMoreMenu(null);
   }
 
   async function publish() {
-    if (!postText.trim() || !postTitle.trim()) return
+    if (!postText.trim() || !postTitle.trim()) return;
 
     const nowLabel = new Intl.DateTimeFormat("en-PH", {
       month: "short",
@@ -4827,12 +4890,12 @@ export default function App() {
       hour: "numeric",
 
       minute: "2-digit",
-    }).format(new Date())
+    }).format(new Date());
 
     const scheduledIso =
       isSchedulingEnabled && postScheduledAt
         ? new Date(postScheduledAt).toISOString()
-        : undefined
+        : undefined;
 
     const cleanAccentText = (postAccentDate || "Posted · " + nowLabel)
 
@@ -4840,16 +4903,16 @@ export default function App() {
 
       .replace(/\[SCHEDULED:[^\]]+\]\s*/g, "")
 
-      .trim()
+      .trim();
 
     const formattedAccentText =
       (postPinned ? "[PINNED] " : "") +
       (scheduledIso ? `[SCHEDULED:${scheduledIso}] ` : "") +
-      cleanAccentText
+      cleanAccentText;
 
     const formattedAccent = postImageUrl.trim()
       ? `[IMG:${postImageUrl.trim()}]${postAccent.trim() || "Official announcement"}`
-      : postAccent.trim() || "Official announcement"
+      : postAccent.trim() || "Official announcement";
 
     if (editingAnnouncement) {
       // Update existing
@@ -4874,35 +4937,35 @@ export default function App() {
         pinned: postPinned,
 
         scheduledAt: scheduledIso,
-      }
+      };
 
       setAnnouncements((prev) => {
-        const next = prev.map((a) => (a.id === updated.id ? updated : a))
+        const next = prev.map((a) => (a.id === updated.id ? updated : a));
 
-        notifyAnnouncementChange(next)
+        notifyAnnouncementChange(next);
 
-        return next
-      })
+        return next;
+      });
 
-      setComposerOpen(false)
+      setComposerOpen(false);
 
-      setEditingAnnouncement(null)
+      setEditingAnnouncement(null);
 
-      setPostText("")
+      setPostText("");
 
-      setPostTitle("")
+      setPostTitle("");
 
-      setPostAccent("")
+      setPostAccent("");
 
-      setPostAccentDate("")
+      setPostAccentDate("");
 
-      setPostImageUrl("")
+      setPostImageUrl("");
 
-      setPostScheduledAt("")
+      setPostScheduledAt("");
 
-      setIsSchedulingEnabled(false)
+      setIsSchedulingEnabled(false);
 
-      showToast("Announcement updated successfully!")
+      showToast("Announcement updated successfully!");
 
       try {
         await supabase
@@ -4923,12 +4986,12 @@ export default function App() {
             accent_text: formattedAccentText,
           })
 
-          .eq("id", updated.id)
+          .eq("id", updated.id);
       } catch (e) {
-        console.error("Failed to update announcement", e)
+        console.error("Failed to update announcement", e);
       }
 
-      return
+      return;
     }
 
     // Create new
@@ -4937,9 +5000,9 @@ export default function App() {
       author:
         postAuthor.trim() ||
         (barangay.name
-          ? (barangay.name.toLowerCase().startsWith("barangay")
-              ? barangay.name
-              : `Barangay ${barangay.name}`)
+          ? barangay.name.toLowerCase().startsWith("barangay")
+            ? barangay.name
+            : `Barangay ${barangay.name}`
           : "Barangay Administration"),
 
       initials: getInitials(
@@ -4957,23 +5020,23 @@ export default function App() {
       accent_text: formattedAccentText,
 
       reactions: 0,
-    }
+    };
 
-    setComposerOpen(false)
+    setComposerOpen(false);
 
-    setPostText("")
+    setPostText("");
 
-    setPostTitle("")
+    setPostTitle("");
 
-    setPostAccent("")
+    setPostAccent("");
 
-    setPostAccentDate("")
+    setPostAccentDate("");
 
-    setPostImageUrl("")
+    setPostImageUrl("");
 
-    setPostScheduledAt("")
+    setPostScheduledAt("");
 
-    setIsSchedulingEnabled(false)
+    setIsSchedulingEnabled(false);
 
     try {
       const { data: inserted, error } = await supabase
@@ -4984,18 +5047,18 @@ export default function App() {
 
         .select()
 
-        .single()
+        .single();
 
       if (inserted && !error) {
-        const parsed = parseDbAnnouncement(inserted)
+        const parsed = parseDbAnnouncement(inserted);
 
         setAnnouncements((prev) => {
-          const next = [parsed, ...prev.filter((a) => a.id !== parsed.id)]
+          const next = [parsed, ...prev.filter((a) => a.id !== parsed.id)];
 
-          notifyAnnouncementChange(next)
+          notifyAnnouncementChange(next);
 
-          return next
-        })
+          return next;
+        });
       } else {
         const fallback: Announcement = {
           id: Date.now(),
@@ -5025,26 +5088,26 @@ export default function App() {
           scheduledAt: scheduledIso,
 
           createdAt: new Date().toISOString(),
-        }
+        };
 
         setAnnouncements((prev) => {
-          const next = [fallback, ...prev]
+          const next = [fallback, ...prev];
 
-          notifyAnnouncementChange(next)
+          notifyAnnouncementChange(next);
 
-          return next
-        })
+          return next;
+        });
       }
 
       showToast(
         scheduledIso
           ? "Announcement scheduled successfully!"
           : "Announcement published live to community!",
-      )
+      );
     } catch (e) {
-      console.error("Failed to save announcement to Supabase", e)
+      console.error("Failed to save announcement to Supabase", e);
 
-      showToast("Announcement saved locally.")
+      showToast("Announcement saved locally.");
     }
   }
 
@@ -5053,9 +5116,9 @@ export default function App() {
 
       .replace(/\[SCHEDULED:[^\]]+\]\s*/g, "")
 
-      .trim()
+      .trim();
 
-    const updatedAccentText = (ann.pinned ? "[PINNED] " : "") + cleanAccentText
+    const updatedAccentText = (ann.pinned ? "[PINNED] " : "") + cleanAccentText;
 
     const updated: Announcement = {
       ...ann,
@@ -5063,23 +5126,23 @@ export default function App() {
       scheduledAt: undefined,
 
       accentText: cleanAccentText,
-    }
+    };
 
     setAnnouncements((prev) => {
-      const next = prev.map((a) => (a.id === ann.id ? updated : a))
+      const next = prev.map((a) => (a.id === ann.id ? updated : a));
 
-      notifyAnnouncementChange(next)
+      notifyAnnouncementChange(next);
 
-      return next
-    })
+      return next;
+    });
 
     if (viewAnnouncementItem && viewAnnouncementItem.id === ann.id) {
-      setViewAnnouncementItem(updated)
+      setViewAnnouncementItem(updated);
     }
 
-    setAnnouncementMoreMenu(null)
+    setAnnouncementMoreMenu(null);
 
-    showToast(`"${ann.title}" is now published live to residents!`)
+    showToast(`"${ann.title}" is now published live to residents!`);
 
     try {
       await supabase
@@ -5088,22 +5151,22 @@ export default function App() {
 
         .update({ accent_text: updatedAccentText })
 
-        .eq("id", ann.id)
+        .eq("id", ann.id);
     } catch (e) {
-      console.error("Failed to publish now", e)
+      console.error("Failed to publish now", e);
     }
   }
 
   async function togglePinAnnouncement(ann: Announcement) {
-    const newPinned = !ann.pinned
+    const newPinned = !ann.pinned;
 
     const cleanAccentText = (ann.accentText || "").replace(
       /^\[PINNED\]\s*/,
 
       "",
-    )
+    );
 
-    const updatedAccentText = (newPinned ? "[PINNED] " : "") + cleanAccentText
+    const updatedAccentText = (newPinned ? "[PINNED] " : "") + cleanAccentText;
 
     const updated: Announcement = {
       ...ann,
@@ -5111,27 +5174,27 @@ export default function App() {
       pinned: newPinned,
 
       accentText: cleanAccentText,
-    }
+    };
 
     setAnnouncements((prev) => {
-      const next = prev.map((a) => (a.id === ann.id ? updated : a))
+      const next = prev.map((a) => (a.id === ann.id ? updated : a));
 
-      notifyAnnouncementChange(next)
+      notifyAnnouncementChange(next);
 
-      return next
-    })
+      return next;
+    });
 
     if (viewAnnouncementItem && viewAnnouncementItem.id === ann.id) {
-      setViewAnnouncementItem(updated)
+      setViewAnnouncementItem(updated);
     }
 
-    setAnnouncementMoreMenu(null)
+    setAnnouncementMoreMenu(null);
 
     showToast(
       newPinned
         ? `"${ann.title}" pinned to top of feed`
         : `"${ann.title}" unpinned`,
-    )
+    );
 
     try {
       await supabase
@@ -5140,22 +5203,22 @@ export default function App() {
 
         .update({ accent_text: updatedAccentText })
 
-        .eq("id", ann.id)
+        .eq("id", ann.id);
     } catch (e) {
-      console.error("Failed to pin/unpin", e)
+      console.error("Failed to pin/unpin", e);
     }
   }
 
   async function confirmDeleteAnnouncement() {
-    if (!deleteAnnouncementItem) return
+    if (!deleteAnnouncementItem) return;
 
-    const id = deleteAnnouncementItem.id
+    const id = deleteAnnouncementItem.id;
 
-    const title = deleteAnnouncementItem.title
+    const title = deleteAnnouncementItem.title;
 
     // 1. Mark permanently deleted locally so it never reappears
 
-    markAnnouncementDeleted(id, title)
+    markAnnouncementDeleted(id, title);
 
     // 2. Filter local state immediately
 
@@ -5165,25 +5228,25 @@ export default function App() {
           a.id !== id &&
           (!title ||
             a.title.toLowerCase().trim() !== title.toLowerCase().trim()),
-      )
+      );
 
-      notifyAnnouncementChange(updated)
+      notifyAnnouncementChange(updated);
 
-      return updated
-    })
+      return updated;
+    });
 
-    if (viewAnnouncementItem?.id === id) setViewAnnouncementItem(null)
+    if (viewAnnouncementItem?.id === id) setViewAnnouncementItem(null);
 
-    setDeleteAnnouncementItem(null)
+    setDeleteAnnouncementItem(null);
 
-    setAnnouncementMoreMenu(null)
+    setAnnouncementMoreMenu(null);
 
-    showToast("Announcement deleted.")
+    showToast("Announcement deleted.");
 
     // 3. Delete from Supabase by ID and by title
 
     try {
-      await supabase.from("announcements").delete().eq("id", id)
+      await supabase.from("announcements").delete().eq("id", id);
 
       if (title) {
         await supabase
@@ -5192,56 +5255,56 @@ export default function App() {
 
           .delete()
 
-          .ilike("title", title.trim())
+          .ilike("title", title.trim());
       }
     } catch (e) {
-      console.error("Failed to delete announcement", e)
+      console.error("Failed to delete announcement", e);
     }
   }
 
   async function handleToggleReaction(postId: number) {
-    const isAlreadyAcknowledged = acknowledgedPostIds.includes(postId)
+    const isAlreadyAcknowledged = acknowledgedPostIds.includes(postId);
 
-    const post = announcements.find((a) => a.id === postId)
+    const post = announcements.find((a) => a.id === postId);
 
-    if (!post) return
+    if (!post) return;
 
-    let newCount = post.reactions
+    let newCount = post.reactions;
 
-    let nextAcknowledged: number[]
+    let nextAcknowledged: number[];
 
     if (isAlreadyAcknowledged) {
-      newCount = Math.max(0, post.reactions - 1)
+      newCount = Math.max(0, post.reactions - 1);
 
-      nextAcknowledged = acknowledgedPostIds.filter((id) => id !== postId)
+      nextAcknowledged = acknowledgedPostIds.filter((id) => id !== postId);
 
-      showToast("Acknowledgment removed.")
+      showToast("Acknowledgment removed.");
     } else {
-      newCount = post.reactions + 1
+      newCount = post.reactions + 1;
 
-      nextAcknowledged = [...acknowledgedPostIds, postId]
+      nextAcknowledged = [...acknowledgedPostIds, postId];
 
-      showToast("Thank you! You acknowledged this announcement.")
+      showToast("Thank you! You acknowledged this announcement.");
     }
 
-    setAcknowledgedPostIds(nextAcknowledged)
+    setAcknowledgedPostIds(nextAcknowledged);
 
     try {
-      localStorage.setItem("brgy_user_ack", JSON.stringify(nextAcknowledged))
+      localStorage.setItem("brgy_user_ack", JSON.stringify(nextAcknowledged));
     } catch {}
 
     setAnnouncements((prev) => {
       const next = prev.map((a) =>
         a.id === postId ? { ...a, reactions: newCount } : a,
-      )
+      );
 
-      notifyAnnouncementChange(next)
+      notifyAnnouncementChange(next);
 
-      return next
-    })
+      return next;
+    });
 
     if (viewAnnouncementItem && viewAnnouncementItem.id === postId) {
-      setViewAnnouncementItem({ ...viewAnnouncementItem, reactions: newCount })
+      setViewAnnouncementItem({ ...viewAnnouncementItem, reactions: newCount });
     }
 
     try {
@@ -5251,39 +5314,39 @@ export default function App() {
 
         .update({ reactions: newCount })
 
-        .eq("id", postId)
+        .eq("id", postId);
     } catch (e) {
-      console.error("Failed to update reactions in Supabase", e)
+      console.error("Failed to update reactions in Supabase", e);
     }
   }
 
   function handleToggleBookmark(postId: number) {
-    const isSaved = savedPostIds.includes(postId)
+    const isSaved = savedPostIds.includes(postId);
 
     const nextSaved = isSaved
       ? savedPostIds.filter((id) => id !== postId)
-      : [...savedPostIds, postId]
+      : [...savedPostIds, postId];
 
-    setSavedPostIds(nextSaved)
+    setSavedPostIds(nextSaved);
 
     try {
-      localStorage.setItem("brgy_saved_posts", JSON.stringify(nextSaved))
+      localStorage.setItem("brgy_saved_posts", JSON.stringify(nextSaved));
     } catch {}
 
     showToast(
       isSaved
         ? "Announcement removed from saved bookmarks."
         : "Announcement saved to bookmarks!",
-    )
+    );
   }
 
   async function handleShareAnnouncement(post: Announcement) {
     const bName = barangay.name
-      ? (barangay.name.toLowerCase().startsWith("barangay")
-          ? barangay.name
-          : `Barangay ${barangay.name}`)
-      : "Barangay Office"
-    const shareText = `📢 [${bName} Official Advisory]\n📌 ${post.title}\n🏷️ Category: ${post.tag}\n📍 Venue: ${post.accent}\n📅 Schedule: ${post.accentText}\n\n${post.body}\n\nShared via Barangay Connect Portal`
+      ? barangay.name.toLowerCase().startsWith("barangay")
+        ? barangay.name
+        : `Barangay ${barangay.name}`
+      : "Barangay Office";
+    const shareText = `📢 [${bName} Official Advisory]\n📌 ${post.title}\n🏷️ Category: ${post.tag}\n📍 Venue: ${post.accent}\n📅 Schedule: ${post.accentText}\n\n${post.body}\n\nShared via Barangay Connect Portal`;
 
     if (navigator.share) {
       try {
@@ -5291,27 +5354,27 @@ export default function App() {
           title: post.title,
 
           text: shareText,
-        })
+        });
 
-        showToast("Shared successfully!")
+        showToast("Shared successfully!");
 
-        return
+        return;
       } catch {
         // Fallback to clipboard
       }
     }
 
     try {
-      await copyToClipboard(shareText)
+      await copyToClipboard(shareText);
 
-      showToast("Announcement details copied to clipboard!")
+      showToast("Announcement details copied to clipboard!");
     } catch {
-      showToast("Advisory text ready to copy.")
+      showToast("Advisory text ready to copy.");
     }
   }
 
   function handleAddComment(postId: number) {
-    if (!commentInput.trim()) return
+    if (!commentInput.trim()) return;
 
     const newComment: AnnouncementComment = {
       id: "c-" + Date.now(),
@@ -5329,51 +5392,51 @@ export default function App() {
       time: "Just now",
 
       timestamp: Date.now(),
-    }
+    };
 
-    const currentList = commentsMap[postId] || []
+    const currentList = commentsMap[postId] || [];
 
     const updatedMap = {
       ...commentsMap,
 
       [postId]: [...currentList, newComment],
-    }
+    };
 
-    setCommentsMap(updatedMap)
+    setCommentsMap(updatedMap);
 
-    setCommentInput("")
+    setCommentInput("");
 
     try {
       localStorage.setItem(
         "brgy_announcement_comments",
 
         JSON.stringify(updatedMap),
-      )
+      );
     } catch {}
 
-    showToast("Question/comment posted!")
+    showToast("Question/comment posted!");
   }
 
   function handleDeleteComment(postId: number, commentId: string) {
-    const currentList = commentsMap[postId] || []
+    const currentList = commentsMap[postId] || [];
 
     const updatedMap = {
       ...commentsMap,
 
       [postId]: currentList.filter((c) => c.id !== commentId),
-    }
+    };
 
-    setCommentsMap(updatedMap)
+    setCommentsMap(updatedMap);
 
     try {
       localStorage.setItem(
         "brgy_announcement_comments",
 
         JSON.stringify(updatedMap),
-      )
+      );
     } catch {}
 
-    showToast("Comment deleted.")
+    showToast("Comment deleted.");
   }
 
   async function deleteMessage(
@@ -5383,13 +5446,13 @@ export default function App() {
 
     timestamp: number | undefined,
   ) {
-    const cleanEmail = email.toLowerCase().trim()
+    const cleanEmail = email.toLowerCase().trim();
 
     const msgToDelete = (threads[cleanEmail] ?? []).find(
       (m) =>
         (dbId !== undefined && m.dbId === dbId) ||
         (timestamp !== undefined && m.timestamp === timestamp),
-    )
+    );
 
     // Optimistic remove from local state
 
@@ -5400,20 +5463,20 @@ export default function App() {
         [cleanEmail]: (prev[cleanEmail] ?? []).filter((m) =>
           dbId !== undefined ? m.dbId !== dbId : m.timestamp !== timestamp,
         ),
-      }
+      };
 
-      saveCachedThreads(updated)
+      saveCachedThreads(updated);
 
-      return updated
-    })
+      return updated;
+    });
 
-    showToast("Message deleted.")
+    showToast("Message deleted.");
 
     // Delete from Supabase
 
     try {
       if (dbId !== undefined) {
-        await supabase.from("messages").delete().eq("id", dbId)
+        await supabase.from("messages").delete().eq("id", dbId);
       } else if (msgToDelete?.text) {
         await supabase
 
@@ -5423,58 +5486,58 @@ export default function App() {
 
           .eq("resident_email", cleanEmail)
 
-          .eq("text", msgToDelete.text.trim())
+          .eq("text", msgToDelete.text.trim());
       }
     } catch (err) {
-      console.warn("Supabase message delete error:", err)
+      console.warn("Supabase message delete error:", err);
     }
   }
 
   async function deleteThread(email: string) {
-    const cleanEmail = email.toLowerCase().trim()
+    const cleanEmail = email.toLowerCase().trim();
 
     // 1. Mark permanently deleted in storage
 
-    markThreadDeleted(cleanEmail)
+    markThreadDeleted(cleanEmail);
 
     // 2. Remove the thread key completely from state and cache
 
     setThreads((prev) => {
-      const updated = { ...prev }
+      const updated = { ...prev };
 
-      delete updated[cleanEmail]
+      delete updated[cleanEmail];
 
-      saveCachedThreads(updated)
+      saveCachedThreads(updated);
 
-      return updated
-    })
+      return updated;
+    });
 
     // 3. Clear activeThread if it was this one
 
     setActiveThread((prev) =>
       prev?.toLowerCase().trim() === cleanEmail ? null : prev,
-    )
+    );
 
-    showToast("Conversation deleted.")
+    showToast("Conversation deleted.");
 
     // 4. Delete all messages for this email in Supabase
 
     try {
-      await supabase.from("messages").delete().eq("resident_email", cleanEmail)
+      await supabase.from("messages").delete().eq("resident_email", cleanEmail);
       if (user?.email) {
         await supabase
           .from("messages")
           .delete()
           .eq("resident_email", user.email.toLowerCase().trim())
-          .eq("sender", `admin:${cleanEmail}`)
+          .eq("sender", `admin:${cleanEmail}`);
       }
     } catch (err) {
-      console.warn("Supabase delete thread messages error:", err)
+      console.warn("Supabase delete thread messages error:", err);
     }
   }
 
   async function clearThread(email: string) {
-    await deleteThread(email)
+    await deleteThread(email);
   }
 
   async function sendMessage(
@@ -5484,27 +5547,27 @@ export default function App() {
 
     from: "admin" | "resident",
   ) {
-    const cleanEmail = email.toLowerCase().trim()
+    const cleanEmail = email.toLowerCase().trim();
 
     // Un-delete thread if it was previously marked deleted
 
-    unmarkThreadDeleted(cleanEmail)
+    unmarkThreadDeleted(cleanEmail);
 
-    const now = new Date()
+    const now = new Date();
 
     const timeStr =
       now.toLocaleDateString("en-US", { month: "short", day: "numeric" }) +
       " · " +
-      now.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })
+      now.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
 
-    const msgTimestamp = Date.now()
+    const msgTimestamp = Date.now();
 
     const senderTag =
       from === "admin"
         ? user?.email
           ? `admin:${user.email.toLowerCase().trim()}`
           : "admin"
-        : "resident"
+        : "resident";
 
     const msg: Msg = {
       from,
@@ -5512,7 +5575,7 @@ export default function App() {
       time: timeStr,
       timestamp: msgTimestamp,
       senderEmail: user?.email ? user.email.toLowerCase().trim() : undefined,
-    }
+    };
 
     // 1. Update local state immediately for instant feedback
 
@@ -5521,12 +5584,12 @@ export default function App() {
         ...prev,
 
         [cleanEmail]: [...(prev[cleanEmail] ?? []), msg],
-      }
+      };
 
-      saveCachedThreads(updated)
+      saveCachedThreads(updated);
 
-      return updated
-    })
+      return updated;
+    });
 
     // 2. Sync to Supabase messages table for cross-browser live chat
 
@@ -5545,27 +5608,27 @@ export default function App() {
           },
         ])
 
-        .select("id")
+        .select("id");
 
       if (insertedMsg && insertedMsg[0]?.id) {
-        const assignedId = insertedMsg[0].id
+        const assignedId = insertedMsg[0].id;
 
         setThreads((prev) => {
-          const list = prev[cleanEmail] ?? []
+          const list = prev[cleanEmail] ?? [];
 
           const updatedList = list.map((m) =>
             m.timestamp === msgTimestamp ? { ...m, dbId: assignedId } : m,
-          )
+          );
 
-          const updated = { ...prev, [cleanEmail]: updatedList }
+          const updated = { ...prev, [cleanEmail]: updatedList };
 
-          saveCachedThreads(updated)
+          saveCachedThreads(updated);
 
-          return updated
-        })
+          return updated;
+        });
       }
     } catch (err) {
-      console.warn("Supabase messages insert error:", err)
+      console.warn("Supabase messages insert error:", err);
     }
   }
 
@@ -5573,41 +5636,41 @@ export default function App() {
     newEmail: string,
     verifyPassword?: string,
   ): Promise<{ success: boolean; error?: string }> {
-    const cleanNewEmail = newEmail.trim().toLowerCase()
-    const currentEmail = (user?.email || "").trim().toLowerCase()
+    const cleanNewEmail = newEmail.trim().toLowerCase();
+    const currentEmail = (user?.email || "").trim().toLowerCase();
 
     if (!cleanNewEmail || !cleanNewEmail.includes("@")) {
-      return { success: false, error: "Please enter a valid email address." }
+      return { success: false, error: "Please enter a valid email address." };
     }
     if (cleanNewEmail === currentEmail) {
       return {
         success: false,
         error: "New email is the same as your current email.",
-      }
+      };
     }
 
     if (verifyPassword) {
       const { error: verifyErr } = await supabase.auth.signInWithPassword({
         email: currentEmail,
         password: verifyPassword,
-      })
+      });
       if (verifyErr) {
         return {
           success: false,
           error: "Current password is incorrect. Verification failed.",
-        }
+        };
       }
     }
 
     try {
       const { error: authErr } = await supabase.auth.updateUser({
         email: cleanNewEmail,
-      })
+      });
       if (authErr) {
-        console.warn("supabase.auth.updateUser:", authErr.message)
+        console.warn("supabase.auth.updateUser:", authErr.message);
       }
     } catch (e: any) {
-      console.warn("auth.updateUser catch:", e)
+      console.warn("auth.updateUser catch:", e);
     }
 
     try {
@@ -5615,94 +5678,97 @@ export default function App() {
         await supabase
           .from("accounts")
           .update({ email: cleanNewEmail })
-          .eq("id", user.id)
+          .eq("id", user.id);
       }
       await supabase
         .from("accounts")
         .update({ email: cleanNewEmail })
-        .eq("email", currentEmail)
+        .eq("email", currentEmail);
     } catch (err) {
-      console.warn("accounts update email error:", err)
+      console.warn("accounts update email error:", err);
     }
 
     if (isRootMasterAdmin(currentEmail)) {
-      saveMasterAdminEmail(cleanNewEmail)
+      saveMasterAdminEmail(cleanNewEmail);
       try {
         const { data: dbSettings } = await supabase
           .from("barangay_settings")
           .select("*")
           .eq("id", 1)
-          .maybeSingle()
+          .maybeSingle();
         if (dbSettings) {
-          const currentDesc = dbSettings.description || ""
+          const currentDesc = dbSettings.description || "";
           const updatedDesc =
             currentDesc.replace(/<!--\s*MASTER_ADMIN:.*-->/g, "").trim() +
-            ` <!-- MASTER_ADMIN: ${cleanNewEmail} -->`
+            ` <!-- MASTER_ADMIN: ${cleanNewEmail} -->`;
           await supabase
             .from("barangay_settings")
             .update({ description: updatedDesc })
-            .eq("id", 1)
+            .eq("id", 1);
         }
       } catch (err) {
-        console.warn("sync master admin email to settings error:", err)
+        console.warn("sync master admin email to settings error:", err);
       }
     }
 
     if (promotedAdmins.some((e) => e.toLowerCase().trim() === currentEmail)) {
       const nextList = promotedAdmins.map((e) =>
         e.toLowerCase().trim() === currentEmail ? cleanNewEmail : e,
-      )
-      setPromotedAdmins(nextList)
-      savePromotedAdminEmails(nextList)
+      );
+      setPromotedAdmins(nextList);
+      savePromotedAdminEmails(nextList);
       try {
         const { data: dbSettings } = await supabase
           .from("barangay_settings")
           .select("*")
           .eq("id", 1)
-          .maybeSingle()
+          .maybeSingle();
         if (dbSettings) {
-          const cleanDesc = cleanBarangayDescription(dbSettings.description)
-          const adminRolesTag = `<!-- ADMIN_ROLES: ${JSON.stringify(nextList)} -->`
-          const finalDesc = `${cleanDesc} ${adminRolesTag}`.trim()
+          const cleanDesc = cleanBarangayDescription(dbSettings.description);
+          const adminRolesTag = `<!-- ADMIN_ROLES: ${JSON.stringify(nextList)} -->`;
+          const finalDesc = `${cleanDesc} ${adminRolesTag}`.trim();
           await supabase
             .from("barangay_settings")
             .update({ description: finalDesc })
-            .eq("id", 1)
+            .eq("id", 1);
         }
       } catch (err) {
-        console.warn("persistPromotedAdmins error:", err)
+        console.warn("persistPromotedAdmins error:", err);
       }
     }
 
-    setUser((prev) => (prev ? { ...prev, email: cleanNewEmail } : null))
+    setUser((prev) => (prev ? { ...prev, email: cleanNewEmail } : null));
 
     try {
       const customSession = JSON.parse(
         localStorage.getItem("brgy_auth_session") || "null",
-      )
+      );
       if (customSession?.user) {
-        customSession.user.email = cleanNewEmail
-        localStorage.setItem("brgy_auth_session", JSON.stringify(customSession))
+        customSession.user.email = cleanNewEmail;
+        localStorage.setItem(
+          "brgy_auth_session",
+          JSON.stringify(customSession),
+        );
       }
     } catch {}
 
     try {
       const cached = JSON.parse(
         localStorage.getItem("brgy_residents_cache") || "[]",
-      )
+      );
       if (Array.isArray(cached)) {
         const updated = cached.map((r: any) =>
           (r.email || "").toLowerCase().trim() === currentEmail
             ? { ...r, email: cleanNewEmail }
             : r,
-        )
-        localStorage.setItem("brgy_residents_cache", JSON.stringify(updated))
-        setAllRegisteredResidents(updated)
+        );
+        localStorage.setItem("brgy_residents_cache", JSON.stringify(updated));
+        setAllRegisteredResidents(updated);
       }
     } catch {}
 
-    showToast(`Email updated to ${cleanNewEmail}! ✅`)
-    return { success: true }
+    showToast(`Email updated to ${cleanNewEmail}! ✅`);
+    return { success: true };
   }
 
   async function handleCreateRequest(
@@ -5716,9 +5782,9 @@ export default function App() {
 
     address?: string,
   ) {
-    if (!user) return
+    if (!user) return;
 
-    const now = new Date()
+    const now = new Date();
 
     const dateFiled = now.toLocaleDateString("en-US", {
       month: "short",
@@ -5726,25 +5792,25 @@ export default function App() {
       day: "numeric",
 
       year: "numeric",
-    })
+    });
 
     const timeFiled = now.toLocaleTimeString("en-US", {
       hour: "numeric",
 
       minute: "2-digit",
-    })
+    });
 
-    const randomNum = Math.floor(1000 + Math.random() * 9000)
+    const randomNum = Math.floor(1000 + Math.random() * 9000);
 
-    const trackingNo = `BRGY-${now.getFullYear()}-${randomNum}`
+    const trackingNo = `BRGY-${now.getFullYear()}-${randomNum}`;
 
-    const allServices = getCachedDocumentServices()
+    const allServices = getCachedDocumentServices();
 
-    const service = allServices.find((s) => s.name === docType)
+    const service = allServices.find((s) => s.name === docType);
 
-    const fee = service ? service.fee : "₱ 50"
+    const fee = service ? service.fee : "₱ 50";
 
-    const resMeta = resolveResidentMeta(user.email, user.name)
+    const resMeta = resolveResidentMeta(user.email, user.name);
 
     const docPrefixMap: Record<string, string> = {
       "Barangay Clearance": "BC",
@@ -5758,11 +5824,11 @@ export default function App() {
       "Barangay ID": "BID",
 
       "Good Moral Certificate": "GM",
-    }
+    };
 
-    const code = docPrefixMap[docType] || "DC"
+    const code = docPrefixMap[docType] || "DC";
 
-    const controlNo = `${code}-${now.getFullYear()}-${randomNum}`
+    const controlNo = `${code}-${now.getFullYear()}-${randomNum}`;
 
     const newReq: DocumentRequest = {
       id: `req-${Date.now()}`,
@@ -5802,27 +5868,27 @@ export default function App() {
       updatedAt: now.toISOString(),
 
       controlNo,
-    }
+    };
 
     setRequests((prev) => {
-      const updated = [newReq, ...prev]
+      const updated = [newReq, ...prev];
 
-      saveCachedDocumentRequests(updated)
+      saveCachedDocumentRequests(updated);
 
-      return updated
-    })
+      return updated;
+    });
 
-    setRequestOpen(false)
+    setRequestOpen(false);
 
-    setNewRequestPurpose("")
+    setNewRequestPurpose("");
 
-    setNewRequestCustomPurpose("")
+    setNewRequestCustomPurpose("");
 
-    setNewRequestNotes("")
+    setNewRequestNotes("");
 
-    showToast(`Request submitted! Tracking: ${trackingNo}`)
+    showToast(`Request submitted! Tracking: ${trackingNo}`);
 
-    setActive("documents")
+    setActive("documents");
 
     // Persist to Supabase document_requests table for cross-browser synchronization
 
@@ -5849,7 +5915,7 @@ export default function App() {
         feedback: "",
 
         timeFiled,
-      }
+      };
 
       const { data: dbInserted, error } = await supabase
 
@@ -5875,21 +5941,21 @@ export default function App() {
 
         .select()
 
-        .single()
+        .single();
 
       if (dbInserted?.id) {
         setRequests((prev) => {
           const updated = prev.map((r) =>
             r.id === newReq.id ? { ...r, id: String(dbInserted.id) } : r,
-          )
+          );
 
-          saveCachedDocumentRequests(updated)
+          saveCachedDocumentRequests(updated);
 
-          return updated
-        })
+          return updated;
+        });
       }
     } catch (err) {
-      console.warn("Supabase document_requests insert error:", err)
+      console.warn("Supabase document_requests insert error:", err);
     }
   }
 
@@ -5898,7 +5964,7 @@ export default function App() {
 
     updates: Partial<DocumentRequest>,
   ) {
-    let targetReq: DocumentRequest | null = null
+    let targetReq: DocumentRequest | null = null;
 
     setRequests((prev) => {
       const updated = prev.map((r) => {
@@ -5909,25 +5975,25 @@ export default function App() {
             ...updates,
 
             updatedAt: new Date().toISOString(),
-          }
+          };
 
-          targetReq = reqUpdated
+          targetReq = reqUpdated;
 
-          return reqUpdated
+          return reqUpdated;
         }
 
-        return r
-      })
+        return r;
+      });
 
-      saveCachedDocumentRequests(updated)
+      saveCachedDocumentRequests(updated);
 
-      return updated
-    })
+      return updated;
+    });
 
     try {
-      const numId = parseInt(id, 10)
+      const numId = parseInt(id, 10);
 
-      const target = targetReq || requests.find((r) => r.id === id)
+      const target = targetReq || requests.find((r) => r.id === id);
 
       if (target) {
         const metaPayload = {
@@ -5956,13 +6022,13 @@ export default function App() {
           releasedDate: target.releasedDate,
 
           updatedAt: new Date().toISOString(),
-        }
+        };
 
         const dbPayload: any = {
           feedback: JSON.stringify(metaPayload),
-        }
+        };
 
-        if (updates.status) dbPayload.status = updates.status
+        if (updates.status) dbPayload.status = updates.status;
 
         if (!isNaN(numId)) {
           await supabase
@@ -5971,7 +6037,7 @@ export default function App() {
 
             .update(dbPayload)
 
-            .eq("id", numId)
+            .eq("id", numId);
         } else if (target.trackingNo) {
           await supabase
 
@@ -5981,34 +6047,34 @@ export default function App() {
 
             .eq("email", target.residentEmail)
 
-            .eq("doc", target.docType)
+            .eq("doc", target.docType);
         }
       }
     } catch (err) {
-      console.warn("Supabase document_requests update error:", err)
+      console.warn("Supabase document_requests update error:", err);
     }
   }
 
   async function handleDeleteDocumentRequest(id: string) {
-    let targetReq: DocumentRequest | null = null
+    let targetReq: DocumentRequest | null = null;
 
     setRequests((prev) => {
-      targetReq = prev.find((r) => r.id === id) || null
+      targetReq = prev.find((r) => r.id === id) || null;
 
-      const updated = prev.filter((r) => r.id !== id)
+      const updated = prev.filter((r) => r.id !== id);
 
-      saveCachedDocumentRequests(updated)
+      saveCachedDocumentRequests(updated);
 
-      return updated
-    })
+      return updated;
+    });
 
     try {
-      const numId = parseInt(id, 10)
+      const numId = parseInt(id, 10);
 
       if (!isNaN(numId)) {
-        await supabase.from("document_requests").delete().eq("id", numId)
+        await supabase.from("document_requests").delete().eq("id", numId);
       } else if (targetReq) {
-        const t = targetReq as DocumentRequest
+        const t = targetReq as DocumentRequest;
 
         if (t.trackingNo) {
           await supabase
@@ -6019,89 +6085,95 @@ export default function App() {
 
             .eq("email", t.residentEmail)
 
-            .eq("doc", t.docType)
+            .eq("doc", t.docType);
         }
       }
     } catch (err) {
-      console.warn("Supabase document_requests delete error:", err)
+      console.warn("Supabase document_requests delete error:", err);
     }
 
-    showToast("Document request removed.")
+    showToast("Document request removed.");
   }
 
   type LiveNotification = {
-    id: string
+    id: string;
 
-    title: string
+    title: string;
 
-    body: string
+    body: string;
 
-    time: string
+    time: string;
 
-    icon: IconName
+    icon: IconName;
 
-    targetTab: string
+    targetTab: string;
 
-    onAction?: () => void
-  }
+    onAction?: () => void;
+  };
 
-  const isAdmin = checkIsAdmin(user, promotedAdmins)
+  const isAdmin = checkIsAdmin(user, promotedAdmins);
 
-  const userEmail = user?.email || ""
+  const userEmail = user?.email || "";
 
   // Dynamic role synchronization: automatically grant privileges when promoted, or revoke/retrieve privileges when demoted
 
   useEffect(() => {
-    if (!user?.email) return
+    if (!user?.email) return;
 
-    const email = user.email.toLowerCase().trim()
+    const email = user.email.toLowerCase().trim();
 
-    const isProtected = isProtectedAdminEmail(email)
+    const isProtected = isProtectedAdminEmail(email);
 
-    const isRoot = isProtected || isRootMasterAdmin(email)
+    const isRoot = isProtected || isRootMasterAdmin(email);
 
-    const hasAdminRights = isProtected || isRoot || isPromotedAdmin(email, promotedAdmins)
+    const hasAdminRights =
+      isProtected || isRoot || isPromotedAdmin(email, promotedAdmins);
 
     if (hasAdminRights && user.role !== "admin") {
       setUser((prev) => {
-        if (!prev) return null
+        if (!prev) return null;
 
-        const updated = { ...prev, role: "admin" as const }
+        const updated = { ...prev, role: "admin" as const };
 
         try {
           localStorage.setItem(
             "brgy_auth_session",
 
             JSON.stringify({ user: updated, timestamp: Date.now() }),
-          )
+          );
         } catch {}
 
-        return updated
-      })
+        return updated;
+      });
 
       showToast(
         "👑 Your account was granted Barangay Administrator privileges!",
-      )
-    } else if (!hasAdminRights && user.role === "admin" && !isRoot && !isProtected) {
+      );
+    } else if (
+      !hasAdminRights &&
+      user.role === "admin" &&
+      !isRoot &&
+      !isProtected
+    ) {
       setUser((prev) => {
-        if (!prev) return null
+        if (!prev) return null;
 
-        const updated = { ...prev, role: "resident" as const }
+        const updated = { ...prev, role: "resident" as const };
 
         try {
           localStorage.setItem(
             "brgy_auth_session",
 
             JSON.stringify({ user: updated, timestamp: Date.now() }),
-          )
+          );
         } catch {}
 
-        return updated
-      })
+        return updated;
+      });
 
       showToast(
         "Your administrator privileges have been revoked. Switched to Resident view.",
-      )
+      );
 
       setActive((currentTab) => {
         if (
@@ -6109,18 +6181,18 @@ export default function App() {
           currentTab === "settings" ||
           currentTab === "incidents"
         ) {
-          return "announcements"
+          return "announcements";
         }
 
-        return currentTab
-      })
+        return currentTab;
+      });
     }
-  }, [promotedAdmins, user?.email, user?.role])
+  }, [promotedAdmins, user?.email, user?.role]);
 
   const activeNotifications: LiveNotification[] = useMemo(() => {
-    if (!user) return []
+    if (!user) return [];
 
-    const list: LiveNotification[] = []
+    const list: LiveNotification[] = [];
 
     if (isAdmin) {
       // Admin: Pending registrations
@@ -6140,15 +6212,15 @@ export default function App() {
           icon: "users",
 
           targetTab: "users",
-        })
+        });
       }
 
       // Admin: Pending document requests
 
-      const pendingDocRequests = requests.filter((r) => r.status === "Pending")
+      const pendingDocRequests = requests.filter((r) => r.status === "Pending");
 
       if (pendingDocRequests.length > 0) {
-        const latestDoc = pendingDocRequests[0]
+        const latestDoc = pendingDocRequests[0];
 
         list.push({
           id: `admin-pending-docs-${pendingDocRequests.length}`,
@@ -6162,21 +6234,21 @@ export default function App() {
           icon: "document",
 
           targetTab: "documents",
-        })
+        });
       }
 
       // Admin: Unread messages from residents
 
       const unreadThreads = Object.entries(threads).filter(
         ([_, msgs]) => msgs.at(-1)?.from === "resident",
-      )
+      );
 
       if (unreadThreads.length > 0) {
-        const latestThread = unreadThreads[0]
+        const latestThread = unreadThreads[0];
 
-        const lastMsg = latestThread[1].at(-1)
+        const lastMsg = latestThread[1].at(-1);
 
-        const residentName = resolveResidentMeta(latestThread[0]).name
+        const residentName = resolveResidentMeta(latestThread[0]).name;
 
         list.push({
           id: `admin-msg-${latestThread[0]}-${lastMsg?.text?.slice(0, 10)}`,
@@ -6192,18 +6264,18 @@ export default function App() {
           targetTab: "messages",
 
           onAction: () => setActiveThread(latestThread[0]),
-        })
+        });
       }
     } else {
       // Resident: Document status updates
 
       const myDocs = requests.filter(
         (r) => r.residentEmail === userEmail || r.residentId === user.id,
-      )
+      );
 
       const readyDoc = myDocs.find(
         (r) => r.status === "Approved" || r.status === "Ready for Pickup",
-      )
+      );
 
       if (readyDoc) {
         list.push({
@@ -6218,7 +6290,7 @@ export default function App() {
           icon: "check",
 
           targetTab: "documents",
-        })
+        });
       }
 
       // Resident: Latest announcements (up to 3)
@@ -6240,8 +6312,8 @@ export default function App() {
           targetTab: "announcements",
 
           onAction: () => setViewAnnouncementItem(ann),
-        })
-      })
+        });
+      });
 
       // Resident: Upcoming community events (next 2)
 
@@ -6260,14 +6332,14 @@ export default function App() {
           targetTab: "calendar",
 
           onAction: () => setViewingEvent(ev),
-        })
-      })
+        });
+      });
 
       // Resident: Direct reply from barangay admin in messages
 
-      const myThread = threads[userEmail] ?? []
+      const myThread = threads[userEmail] ?? [];
 
-      const lastResidentMsg = myThread.at(-1)
+      const lastResidentMsg = myThread.at(-1);
 
       if (lastResidentMsg && lastResidentMsg.from === "admin") {
         list.push({
@@ -6282,11 +6354,11 @@ export default function App() {
           icon: "message",
 
           targetTab: "messages",
-        })
+        });
       }
     }
 
-    return list
+    return list;
   }, [
     user,
 
@@ -6303,19 +6375,19 @@ export default function App() {
     calendarEvents,
 
     userEmail,
-  ])
+  ]);
 
   const unreadNotifCount = activeNotifications.filter(
     (n) => !readNotifIds.includes(n.id),
-  ).length
+  ).length;
 
   function markAllNotifsRead() {
-    const allIds = activeNotifications.map((n) => n.id)
+    const allIds = activeNotifications.map((n) => n.id);
 
-    setReadNotifIds(allIds)
+    setReadNotifIds(allIds);
 
     try {
-      localStorage.setItem("brgy_read_notifs", JSON.stringify(allIds))
+      localStorage.setItem("brgy_read_notifs", JSON.stringify(allIds));
     } catch {}
   }
 
@@ -6330,22 +6402,22 @@ export default function App() {
               : "Connecting your community"
         }
       />
-    )
+    );
 
   if (!user) {
     return (
       <LoginView
         barangay={barangay}
         onLoginSuccess={(u) => {
-          setUser(u)
+          setUser(u);
 
-          setActive("announcements")
+          setActive("announcements");
         }}
       />
-    )
+    );
   }
 
-  const navItems = isAdmin ? adminNavItems : residentNavItems
+  const navItems = isAdmin ? adminNavItems : residentNavItems;
 
   return (
     <div className="app-shell">
@@ -6378,9 +6450,9 @@ export default function App() {
                 key={item.id}
                 className={active === item.id ? "nav-item active" : "nav-item"}
                 onClick={() => {
-                  setActive(item.id)
+                  setActive(item.id);
 
-                  setActiveThread(null)
+                  setActiveThread(null);
                 }}
               >
                 <Icon name={item.icon} />
@@ -6516,9 +6588,9 @@ export default function App() {
                     return (
                       localStorage.getItem(`brgy_profile_photo_${user.id}`) ||
                       undefined
-                    )
+                    );
                   } catch {
-                    return undefined
+                    return undefined;
                   }
                 })()}
               />
@@ -6541,18 +6613,18 @@ export default function App() {
                   <>
                     <button
                       onClick={() => {
-                        setAcctOpen(false)
+                        setAcctOpen(false);
 
-                        setProfileSettingsOpen(true)
+                        setProfileSettingsOpen(true);
                       }}
                     >
                       <Icon name="userCheck" /> My profile settings
                     </button>
                     <button
                       onClick={() => {
-                        setAcctOpen(false)
+                        setAcctOpen(false);
 
-                        setActive("settings")
+                        setActive("settings");
                       }}
                     >
                       <Icon name="settings" /> Barangay settings
@@ -6561,9 +6633,9 @@ export default function App() {
                 ) : (
                   <button
                     onClick={() => {
-                      setAcctOpen(false)
+                      setAcctOpen(false);
 
-                      setProfileSettingsOpen(true)
+                      setProfileSettingsOpen(true);
                     }}
                   >
                     <Icon name="userCheck" /> My profile settings
@@ -6571,25 +6643,25 @@ export default function App() {
                 )}
                 <button
                   onClick={async () => {
-                    setAcctOpen(false)
+                    setAcctOpen(false);
 
-                    setLoading("logout")
+                    setLoading("logout");
 
                     if (user) {
-                      removePresenceHeartbeat(user.id, user.email)
+                      removePresenceHeartbeat(user.id, user.email);
                     }
 
                     try {
-                      localStorage.removeItem("brgy_auth_session")
+                      localStorage.removeItem("brgy_auth_session");
                     } catch {}
 
-                    await supabase.auth.signOut()
+                    await supabase.auth.signOut();
 
-                    setUser(null)
+                    setUser(null);
 
-                    setActive("announcements")
+                    setActive("announcements");
 
-                    setLoading(null)
+                    setLoading(null);
                   }}
                 >
                   <Icon name="x" /> Sign out
@@ -6824,9 +6896,9 @@ export default function App() {
                       className="composer-image"
                       aria-label="Add image"
                       onClick={(e) => {
-                        e.stopPropagation()
+                        e.stopPropagation();
 
-                        openComposer()
+                        openComposer();
                       }}
                     >
                       <Icon name="image" />
@@ -6844,28 +6916,28 @@ export default function App() {
 
                 {/* Announcements feed */}
                 {(() => {
-                  let filtered = announcements
+                  let filtered = announcements;
 
                   // Filter out scheduled announcements that haven't arrived yet for residents
 
                   if (!isAdmin) {
-                    const now = Date.now()
+                    const now = Date.now();
 
                     filtered = filtered.filter(
                       (p) =>
                         !p.scheduledAt ||
                         new Date(p.scheduledAt).getTime() <= now,
-                    )
+                    );
                   }
 
                   // Tab filter
 
                   if (activeFilterTab === "pinned") {
-                    filtered = filtered.filter((p) => p.pinned)
+                    filtered = filtered.filter((p) => p.pinned);
                   } else if (activeFilterTab === "saved") {
                     filtered = filtered.filter((p) =>
                       savedPostIds.includes(p.id as number),
-                    )
+                    );
                   }
 
                   // Category filter
@@ -6873,13 +6945,13 @@ export default function App() {
                   if (announcementFilter !== "all") {
                     filtered = filtered.filter(
                       (p) => p.tag === announcementFilter,
-                    )
+                    );
                   }
 
                   // Search filter
 
                   if (announcementSearch.trim()) {
-                    const q = announcementSearch.toLowerCase()
+                    const q = announcementSearch.toLowerCase();
 
                     filtered = filtered.filter(
                       (p) =>
@@ -6888,18 +6960,18 @@ export default function App() {
                         p.tag.toLowerCase().includes(q) ||
                         p.accent.toLowerCase().includes(q) ||
                         p.accentText.toLowerCase().includes(q),
-                    )
+                    );
                   }
 
                   // Sort: pinned first, then newest
 
                   filtered = [...filtered].sort((a, b) => {
-                    if (a.pinned && !b.pinned) return -1
+                    if (a.pinned && !b.pinned) return -1;
 
-                    if (!a.pinned && b.pinned) return 1
+                    if (!a.pinned && b.pinned) return 1;
 
-                    return b.id as number - a.id as number
-                  })
+                    return ((b.id as number) - a.id) as number;
+                  });
 
                   if (filtered.length === 0) {
                     return (
@@ -6950,28 +7022,28 @@ export default function App() {
                           <button
                             className="row-action"
                             onClick={() => {
-                              setAnnouncementFilter("all")
+                              setAnnouncementFilter("all");
 
-                              setAnnouncementSearch("")
+                              setAnnouncementSearch("");
 
-                              setActiveFilterTab("all")
+                              setActiveFilterTab("all");
                             }}
                           >
                             Reset filters
                           </button>
                         )}
                       </div>
-                    )
+                    );
                   }
 
                   return filtered.map((post) => {
-                    const postId = post.id as number
+                    const postId = post.id as number;
 
-                    const isAcknowledged = acknowledgedPostIds.includes(postId)
+                    const isAcknowledged = acknowledgedPostIds.includes(postId);
 
-                    const isSaved = savedPostIds.includes(postId)
+                    const isSaved = savedPostIds.includes(postId);
 
-                    const postComments = commentsMap[postId] || []
+                    const postComments = commentsMap[postId] || [];
 
                     return (
                       <article
@@ -7090,13 +7162,13 @@ export default function App() {
                             <button
                               className="icon-button"
                               onClick={(e) => {
-                                e.stopPropagation()
+                                e.stopPropagation();
 
                                 setAnnouncementMoreMenu(
                                   announcementMoreMenu === postId
                                     ? null
                                     : postId,
-                                )
+                                );
                               }}
                               aria-label="More options"
                             >
@@ -7135,9 +7207,9 @@ export default function App() {
                                 <button
                                   className="dropdown-item"
                                   onClick={() => {
-                                    setViewAnnouncementItem(post)
+                                    setViewAnnouncementItem(post);
 
-                                    setAnnouncementMoreMenu(null)
+                                    setAnnouncementMoreMenu(null);
                                   }}
                                 >
                                   <Icon name="document" size={14} /> View full
@@ -7146,9 +7218,9 @@ export default function App() {
                                 <button
                                   className="dropdown-item"
                                   onClick={() => {
-                                    handleToggleBookmark(postId)
+                                    handleToggleBookmark(postId);
 
-                                    setAnnouncementMoreMenu(null)
+                                    setAnnouncementMoreMenu(null);
                                   }}
                                 >
                                   <span>{isSaved ? "★" : "☆"}</span>{" "}
@@ -7159,9 +7231,9 @@ export default function App() {
                                 <button
                                   className="dropdown-item"
                                   onClick={() => {
-                                    handleShareAnnouncement(post)
+                                    handleShareAnnouncement(post);
 
-                                    setAnnouncementMoreMenu(null)
+                                    setAnnouncementMoreMenu(null);
                                   }}
                                 >
                                   <Icon name="send" size={14} /> Share advisory
@@ -7189,9 +7261,9 @@ export default function App() {
                                     <button
                                       className="dropdown-item danger"
                                       onClick={() => {
-                                        setDeleteAnnouncementItem(post)
+                                        setDeleteAnnouncementItem(post);
 
-                                        setAnnouncementMoreMenu(null)
+                                        setAnnouncementMoreMenu(null);
                                       }}
                                     >
                                       <Icon name="trash" size={14} /> Delete
@@ -7213,8 +7285,8 @@ export default function App() {
                             onClick={() => setViewAnnouncementItem(post)}
                             loading="lazy"
                             onError={(e) => {
-                              ;(e.currentTarget as HTMLElement).style.display =
-                                "none"
+                              (e.currentTarget as HTMLElement).style.display =
+                                "none";
                             }}
                           />
                         )}
@@ -7274,9 +7346,9 @@ export default function App() {
                           <button
                             className="post-action-btn"
                             onClick={() => {
-                              setInquiryModalPost(post)
+                              setInquiryModalPost(post);
 
-                              setCommentInput("")
+                              setCommentInput("");
                             }}
                             title="Open resident inquiries & questions modal"
                           >
@@ -7287,8 +7359,8 @@ export default function App() {
                           </button>
                         </div>
                       </article>
-                    )
-                  })
+                    );
+                  });
                 })()}
               </section>
               <aside className="right-rail">
@@ -7310,7 +7382,7 @@ export default function App() {
                   {calendarEvents.slice(0, 3).map((event) => {
                     const evDate = event.date
                       ? new Date(event.date + "T00:00:00")
-                      : null
+                      : null;
 
                     const monthLabel = evDate
                       ? evDate
@@ -7318,10 +7390,10 @@ export default function App() {
                           .toLocaleString("en-US", { month: "short" })
 
                           .toUpperCase()
-                      : "OCT"
+                      : "OCT";
 
                     const dayLabel =
-                      event.day || (evDate ? evDate.getDate() : 1)
+                      event.day || (evDate ? evDate.getDate() : 1);
 
                     return (
                       <div
@@ -7329,9 +7401,9 @@ export default function App() {
                         key={event.id}
                         style={{ cursor: "pointer" }}
                         onClick={() => {
-                          setViewingEvent(event)
+                          setViewingEvent(event);
 
-                          setActive("calendar")
+                          setActive("calendar");
                         }}
                         title="Click to view details"
                       >
@@ -7349,7 +7421,7 @@ export default function App() {
                           </small>
                         </span>
                       </div>
-                    )
+                    );
                   })}
                   {calendarEvents.length === 0 && (
                     <p
@@ -7378,7 +7450,6 @@ export default function App() {
                     </div>
                   </div>
                   {getCachedDocumentServices()
-
                     .filter((d) => d.enabled)
 
                     .slice(0, 3)
@@ -7387,9 +7458,9 @@ export default function App() {
                       <button
                         key={doc.id}
                         onClick={() => {
-                          setSelectedDocForModal(doc.name)
+                          setSelectedDocForModal(doc.name);
 
-                          setRequestOpen(true)
+                          setRequestOpen(true);
                         }}
                       >
                         <span>{doc.name}</span>
@@ -7426,9 +7497,9 @@ export default function App() {
                       <button
                         className="rail-hotline-btn"
                         onClick={() => {
-                          copyToClipboard(hl.number)
+                          copyToClipboard(hl.number);
 
-                          showToast(`Copied ${hl.name}: ${hl.number}`)
+                          showToast(`Copied ${hl.name}: ${hl.number}`);
                         }}
                       >
                         Call / Copy
@@ -7477,9 +7548,9 @@ export default function App() {
               onDeleteRequest={handleDeleteDocumentRequest}
               onToast={showToast}
               onOpenChat={(email) => {
-                setActiveThread(email)
+                setActiveThread(email);
 
-                setActive("messages")
+                setActive("messages");
               }}
               onViewDetails={(req) => setViewingRequest(req)}
             />
@@ -7497,9 +7568,9 @@ export default function App() {
               onOpenChat={(doc) => {
                 setPresetMessageDraft(
                   `Good day po! Follow-up inquiry regarding my ${doc.docType} (Tracking No. ${doc.trackingNo}).`,
-                )
+                );
 
-                setActive("messages")
+                setActive("messages");
               }}
               onViewDetails={(req) => setViewingRequest(req)}
             />
@@ -7518,7 +7589,7 @@ export default function App() {
               onDeleteThread={(email) => deleteThread(email)}
               allRequests={requests}
               onViewDocRequest={(req) => {
-                setViewingRequest(req)
+                setViewingRequest(req);
               }}
               currentUser={user || undefined}
               registeredResidents={allRegisteredResidents}
@@ -7551,9 +7622,9 @@ export default function App() {
             hotlines={hotlines}
             barangayInfo={barangay}
             onAddHotline={async (newHl) => {
-              setHotlines((prev) => [newHl, ...prev])
+              setHotlines((prev) => [newHl, ...prev]);
 
-              showToast("New hotline added to directory")
+              showToast("New hotline added to directory");
 
               try {
                 await supabase.from("hotlines").insert([
@@ -7574,17 +7645,17 @@ export default function App() {
 
                     icon: newHl.icon,
                   },
-                ])
+                ]);
               } catch (e) {
-                console.error(e)
+                console.error(e);
               }
             }}
             onEditHotline={async (updated) => {
               setHotlines((prev) =>
                 prev.map((h) => (h.id === updated.id ? updated : h)),
-              )
+              );
 
-              showToast("Hotline details updated")
+              showToast("Hotline details updated");
 
               try {
                 await supabase
@@ -7607,24 +7678,24 @@ export default function App() {
                     icon: updated.icon,
                   })
 
-                  .eq("id", updated.id)
+                  .eq("id", updated.id);
               } catch (e) {
-                console.error(e)
+                console.error(e);
               }
             }}
             onDeleteHotline={async (id) => {
-              setHotlines((prev) => prev.filter((h) => h.id !== id))
+              setHotlines((prev) => prev.filter((h) => h.id !== id));
 
-              showToast("Hotline removed from directory")
+              showToast("Hotline removed from directory");
 
               try {
-                await supabase.from("hotlines").delete().eq("id", id)
+                await supabase.from("hotlines").delete().eq("id", id);
               } catch (e) {
-                console.error(e)
+                console.error(e);
               }
             }}
             onAddIncident={async (report) => {
-              setIncidents((prev) => [report, ...prev])
+              setIncidents((prev) => [report, ...prev]);
 
               saveIncidentMeta(report.id, {
                 respondentName: report.respondentName,
@@ -7638,9 +7709,9 @@ export default function App() {
                 hearingVenue: report.hearingVenue,
 
                 assignedOfficer: report.assignedOfficer,
-              })
+              });
 
-              showToast("Official blotter report logged successfully")
+              showToast("Official blotter report logged successfully");
 
               try {
                 await supabase.from("incidents").insert([
@@ -7667,15 +7738,15 @@ export default function App() {
 
                     is_urgent: report.isUrgent || false,
                   },
-                ])
+                ]);
               } catch (e) {
-                console.error(e)
+                console.error(e);
               }
             }}
             onUpdateIncident={async (updated) => {
               setIncidents((prev) =>
                 prev.map((item) => (item.id === updated.id ? updated : item)),
-              )
+              );
 
               saveIncidentMeta(updated.id, {
                 respondentName: updated.respondentName,
@@ -7691,9 +7762,9 @@ export default function App() {
                 assignedOfficer: updated.assignedOfficer,
 
                 deletedAt: updated.deletedAt,
-              })
+              });
 
-              showToast(`Blotter record ${updated.id} updated`)
+              showToast(`Blotter record ${updated.id} updated`);
 
               try {
                 await supabase
@@ -7708,9 +7779,9 @@ export default function App() {
                     officer_notes: updated.officerNotes || "",
                   })
 
-                  .eq("id", updated.id)
+                  .eq("id", updated.id);
               } catch (e) {
-                console.error(e)
+                console.error(e);
               }
             }}
             onDeleteIncident={async (id) => {
@@ -7724,17 +7795,17 @@ export default function App() {
                 hour: "numeric",
 
                 minute: "2-digit",
-              }).format(new Date())
+              }).format(new Date());
 
-              saveIncidentMeta(id, { deletedAt: now })
+              saveIncidentMeta(id, { deletedAt: now });
 
               setIncidents((prev) =>
                 prev.map((i) =>
                   i.id === id ? { ...i, status: "Deleted", deletedAt: now } : i,
                 ),
-              )
+              );
 
-              showToast(`Blotter ${id} moved to Archived Cases`)
+              showToast(`Blotter ${id} moved to Archived Cases`);
 
               try {
                 await supabase
@@ -7743,13 +7814,13 @@ export default function App() {
 
                   .update({ status: "Deleted" })
 
-                  .eq("id", id)
+                  .eq("id", id);
               } catch (e) {
-                console.error(e)
+                console.error(e);
               }
             }}
             onRestoreIncident={async (id) => {
-              removeIncidentDeletedMeta(id)
+              removeIncidentDeletedMeta(id);
 
               setIncidents((prev) =>
                 prev.map((i) =>
@@ -7757,9 +7828,9 @@ export default function App() {
                     ? { ...i, status: "Under Review", deletedAt: undefined }
                     : i,
                 ),
-              )
+              );
 
-              showToast(`Blotter ${id} restored to Active Records`)
+              showToast(`Blotter ${id} restored to Active Records`);
 
               try {
                 await supabase
@@ -7768,22 +7839,22 @@ export default function App() {
 
                   .update({ status: "Under Review" })
 
-                  .eq("id", id)
+                  .eq("id", id);
               } catch (e) {
-                console.error(e)
+                console.error(e);
               }
             }}
             onPurgeIncident={async (id) => {
-              deleteIncidentMeta(id)
+              deleteIncidentMeta(id);
 
-              setIncidents((prev) => prev.filter((i) => i.id !== id))
+              setIncidents((prev) => prev.filter((i) => i.id !== id));
 
-              showToast(`Blotter ${id} permanently purged`)
+              showToast(`Blotter ${id} permanently purged`);
 
               try {
-                await supabase.from("incidents").delete().eq("id", id)
+                await supabase.from("incidents").delete().eq("id", id);
               } catch (e) {
-                console.error(e)
+                console.error(e);
               }
             }}
             onToast={showToast}
@@ -7798,12 +7869,12 @@ export default function App() {
             currentUser={user}
             barangayInfo={barangay}
             onPromotedAdminsChange={(newList) => {
-              setPromotedAdmins(newList)
+              setPromotedAdmins(newList);
 
-              notifyRolesChange(newList)
+              notifyRolesChange(newList);
             }}
             onUserRoleChange={(newRole) => {
-              setUser((prev) => (prev ? { ...prev, role: newRole } : null))
+              setUser((prev) => (prev ? { ...prev, role: newRole } : null));
             }}
           />
         )}
@@ -7826,21 +7897,21 @@ export default function App() {
           onSave={({ name, photoUrl }) => {
             setUser((prev) =>
               prev ? { ...prev, name, initials: getInitials(name) } : prev,
-            )
+            );
 
-            setProfileSettingsOpen(false)
+            setProfileSettingsOpen(false);
 
-            showToast("Profile updated successfully! ✅")
+            showToast("Profile updated successfully! ✅");
 
             // Force avatar refresh by storing photo
 
             if (photoUrl) {
               try {
-                localStorage.setItem(`brgy_profile_photo_${user.id}`, photoUrl)
+                localStorage.setItem(`brgy_profile_photo_${user.id}`, photoUrl);
               } catch {}
             } else {
               try {
-                localStorage.removeItem(`brgy_profile_photo_${user.id}`)
+                localStorage.removeItem(`brgy_profile_photo_${user.id}`);
               } catch {}
             }
           }}
@@ -7946,21 +8017,21 @@ export default function App() {
               </div>
             ) : (
               activeNotifications.map((n) => {
-                const isUnread = !readNotifIds.includes(n.id)
+                const isUnread = !readNotifIds.includes(n.id);
 
                 return (
                   <div
                     className="notification-item"
                     key={n.id}
                     onClick={() => {
-                      markNotifRead(n.id)
+                      markNotifRead(n.id);
 
-                      setNotifOpen(false)
+                      setNotifOpen(false);
 
-                      setActive(n.targetTab)
+                      setActive(n.targetTab);
 
                       if (n.onAction) {
-                        n.onAction()
+                        n.onAction();
                       }
                     }}
                     style={{
@@ -8031,7 +8102,7 @@ export default function App() {
                       </small>
                     </div>
                   </div>
-                )
+                );
               })
             )}
           </div>
@@ -8044,9 +8115,9 @@ export default function App() {
             editingAnnouncement ? "Edit Announcement" : "Create Announcement"
           }
           close={() => {
-            setComposerOpen(false)
+            setComposerOpen(false);
 
-            setEditingAnnouncement(null)
+            setEditingAnnouncement(null);
           }}
           maxWidth="640px"
         >
@@ -8334,7 +8405,7 @@ export default function App() {
                   display: "block",
                 }}
                 onError={(e) => {
-                  ;(e.currentTarget as HTMLElement).style.display = "none"
+                  (e.currentTarget as HTMLElement).style.display = "none";
                 }}
               />
               <div
@@ -8376,9 +8447,9 @@ export default function App() {
                 <button
                   type="button"
                   onClick={() => {
-                    setPostImageUrl("")
+                    setPostImageUrl("");
 
-                    if (fileInputRef.current) fileInputRef.current.value = ""
+                    if (fileInputRef.current) fileInputRef.current.value = "";
                   }}
                   style={{
                     border: 0,
@@ -8458,18 +8529,18 @@ export default function App() {
                 accept="image/*"
                 style={{ display: "none" }}
                 onChange={(e) => {
-                  const file = e.target.files?.[0]
+                  const file = e.target.files?.[0];
 
                   if (file) {
-                    const reader = new FileReader()
+                    const reader = new FileReader();
 
                     reader.onload = (uploadEvent) => {
-                      const res = uploadEvent.target?.result as string
+                      const res = uploadEvent.target?.result as string;
 
-                      if (res) setPostImageUrl(res)
-                    }
+                      if (res) setPostImageUrl(res);
+                    };
 
-                    reader.readAsDataURL(file)
+                    reader.readAsDataURL(file);
                   }
                 }}
               />
@@ -8640,9 +8711,9 @@ export default function App() {
                       postImageUrl === b.url ? "selected" : ""
                     }`}
                     onClick={() => {
-                      setPostImageUrl(b.url)
+                      setPostImageUrl(b.url);
 
-                      setShowPresetPicker(false)
+                      setShowPresetPicker(false);
                     }}
                     title={`Use ${b.name} banner`}
                   >
@@ -8698,9 +8769,9 @@ export default function App() {
                 <button
                   type="button"
                   onClick={() => {
-                    setIsSchedulingEnabled(false)
+                    setIsSchedulingEnabled(false);
 
-                    setPostScheduledAt("")
+                    setPostScheduledAt("");
                   }}
                   style={{
                     border: 0,
@@ -8988,7 +9059,7 @@ export default function App() {
           >
             <strong style={{ fontSize: "12px", color: "#203b32" }}>
               Community Inquiries (
-              {(commentsMap[(inquiryModalPost.id as number)] || []).length})
+              {(commentsMap[inquiryModalPost.id as number] || []).length})
             </strong>
             <span style={{ fontSize: "10.5px", color: "#778b84" }}>
               Direct resident inquiry & response channel
@@ -9012,8 +9083,7 @@ export default function App() {
               marginBottom: "16px",
             }}
           >
-            {(commentsMap[(inquiryModalPost.id as number)] || []).length ===
-            0 ? (
+            {(commentsMap[inquiryModalPost.id as number] || []).length === 0 ? (
               <div
                 style={{
                   textAlign: "center",
@@ -9063,7 +9133,7 @@ export default function App() {
                 </p>
               </div>
             ) : (
-              (commentsMap[(inquiryModalPost.id as number)] || []).map((c) => (
+              (commentsMap[inquiryModalPost.id as number] || []).map((c) => (
                 <div
                   key={c.id}
                   style={{
@@ -9170,9 +9240,9 @@ export default function App() {
           {/* Inquiry input box */}
           <form
             onSubmit={(e) => {
-              e.preventDefault()
+              e.preventDefault();
 
-              handleAddComment(inquiryModalPost.id as number)
+              handleAddComment(inquiryModalPost.id as number);
             }}
             style={{
               display: "flex",
@@ -9438,11 +9508,11 @@ export default function App() {
                     className="btn-sm-action primary"
                     style={{ padding: "6px 12px", fontSize: "11px" }}
                     onClick={() => {
-                      const item = viewAnnouncementItem
+                      const item = viewAnnouncementItem;
 
-                      setViewAnnouncementItem(null)
+                      setViewAnnouncementItem(null);
 
-                      openComposer(item)
+                      openComposer(item);
                     }}
                   >
                     <Icon name="edit" size={12} /> Edit
@@ -9459,11 +9529,11 @@ export default function App() {
                     className="btn-sm-action danger"
                     style={{ padding: "6px 12px", fontSize: "11px" }}
                     onClick={() => {
-                      const item = viewAnnouncementItem
+                      const item = viewAnnouncementItem;
 
-                      setViewAnnouncementItem(null)
+                      setViewAnnouncementItem(null);
 
-                      setDeleteAnnouncementItem(item)
+                      setDeleteAnnouncementItem(item);
                     }}
                   >
                     <Icon name="trash" size={12} /> Delete
@@ -9476,15 +9546,11 @@ export default function App() {
             <div className="comments-thread" style={{ marginTop: "10px" }}>
               <strong style={{ fontSize: "12px", color: "#243831" }}>
                 Community Discussion & Resident Inquiries (
-                {
-                  (commentsMap[(viewAnnouncementItem.id as number)] || [])
-                    .length
-                }
-                )
+                {(commentsMap[viewAnnouncementItem.id as number] || []).length})
               </strong>
 
               <div className="comments-list" style={{ maxHeight: "200px" }}>
-                {(commentsMap[(viewAnnouncementItem.id as number)] || [])
+                {(commentsMap[viewAnnouncementItem.id as number] || [])
                   .length === 0 ? (
                   <p
                     style={{
@@ -9500,7 +9566,7 @@ export default function App() {
                     No questions yet. Ask a question or leave a comment below!
                   </p>
                 ) : (
-                  (commentsMap[(viewAnnouncementItem.id as number)] || []).map(
+                  (commentsMap[viewAnnouncementItem.id as number] || []).map(
                     (c) => (
                       <div className="comment-bubble" key={c.id}>
                         <div className="comment-bubble-header">
@@ -9551,9 +9617,9 @@ export default function App() {
               <form
                 className="comment-composer-box"
                 onSubmit={(e) => {
-                  e.preventDefault()
+                  e.preventDefault();
 
-                  handleAddComment(viewAnnouncementItem.id as number)
+                  handleAddComment(viewAnnouncementItem.id as number);
                 }}
               >
                 <input
@@ -9638,18 +9704,18 @@ export default function App() {
           {(() => {
             const services = getCachedDocumentServices().filter(
               (d) => d.enabled,
-            )
+            );
 
             const currentService =
               services.find((s) => s.name === selectedDocForModal) ||
-              services[0]
+              services[0];
 
             const finalPurpose =
               newRequestPurpose === "Other"
                 ? newRequestCustomPurpose
-                : newRequestPurpose || "Employment requirement"
+                : newRequestPurpose || "Employment requirement";
 
-            const resMeta = resolveResidentMeta(user?.email || "", user?.name)
+            const resMeta = resolveResidentMeta(user?.email || "", user?.name);
 
             const quickPurposes = [
               "Employment requirement",
@@ -9663,17 +9729,17 @@ export default function App() {
               "Business registration",
 
               "Other",
-            ]
+            ];
 
             return (
               <form
                 onSubmit={(e) => {
-                  e.preventDefault()
+                  e.preventDefault();
 
                   if (!finalPurpose.trim()) {
-                    showToast("Please specify the purpose of your request.")
+                    showToast("Please specify the purpose of your request.");
 
-                    return
+                    return;
                   }
 
                   handleCreateRequest(
@@ -9686,7 +9752,7 @@ export default function App() {
                     newRequestPhone || resMeta.phone,
 
                     newRequestAddress || resMeta.address,
-                  )
+                  );
                 }}
                 style={{
                   display: "flex",
@@ -9805,7 +9871,7 @@ export default function App() {
                     {quickPurposes.map((p) => {
                       const isSelected =
                         newRequestPurpose === p ||
-                        (!newRequestPurpose && p === "Employment requirement")
+                        (!newRequestPurpose && p === "Employment requirement");
 
                       return (
                         <button
@@ -9819,7 +9885,7 @@ export default function App() {
                         >
                           {p}
                         </button>
-                      )
+                      );
                     })}
                   </div>
                   {newRequestPurpose === "Other" && (
@@ -9884,7 +9950,7 @@ export default function App() {
                   <Icon name="check" size={16} /> Submit official request
                 </button>
               </form>
-            )
+            );
           })()}
         </Modal>
       )}
@@ -9894,13 +9960,13 @@ export default function App() {
           request={viewingRequest}
           close={() => setViewingRequest(null)}
           onOpenChat={(req: DocumentRequest) => {
-            setViewingRequest(null)
+            setViewingRequest(null);
 
             setPresetMessageDraft(
               `Good day po! Follow-up inquiry regarding my ${req.docType} (Tracking No. ${req.trackingNo}).`,
-            )
+            );
 
-            setActive("messages")
+            setActive("messages");
           }}
           onMarkReceived={(req: DocumentRequest) => {
             handleUpdateRequest(req.id, {
@@ -9920,11 +9986,11 @@ export default function App() {
                   : req.paymentStatus,
 
               updatedAt: new Date().toISOString(),
-            })
+            });
 
-            showToast("Document confirmed as received! 📄✅")
+            showToast("Document confirmed as received! 📄✅");
 
-            setViewingRequest(null)
+            setViewingRequest(null);
           }}
         />
       )}
@@ -9936,7 +10002,7 @@ export default function App() {
         </div>
       )}
     </div>
-  )
+  );
 }
 
 // ─── Login ───────────────────────────────────────────────────────────────────
@@ -9955,7 +10021,7 @@ function LoadingView({ label }: { label: string }) {
         <i />
       </span>
     </div>
-  )
+  );
 }
 
 function ReactionButton({
@@ -9963,11 +10029,11 @@ function ReactionButton({
 
   postId: _postId,
 }: {
-  count: number
+  count: number;
 
-  postId?: number
+  postId?: number;
 }) {
-  const [reacted, setReacted] = useState(false)
+  const [reacted, setReacted] = useState(false);
 
   return (
     <button
@@ -9977,7 +10043,7 @@ function ReactionButton({
     >
       <b>♥</b> {count + (reacted ? 1 : 0)} residents acknowledged
     </button>
-  )
+  );
 }
 
 function LoginView({
@@ -9985,117 +10051,117 @@ function LoginView({
 
   barangay,
 }: {
-  onLoginSuccess: (u: Account) => void
+  onLoginSuccess: (u: Account) => void;
 
-  barangay: BarangayInfo
+  barangay: BarangayInfo;
 }) {
-  const [email, setEmail] = useState("")
+  const [email, setEmail] = useState("");
 
-  const [password, setPassword] = useState("")
+  const [password, setPassword] = useState("");
 
-  const [error, setError] = useState("")
+  const [error, setError] = useState("");
 
-  const [submitting, setSubmitting] = useState(false)
+  const [submitting, setSubmitting] = useState(false);
 
-  const [showPassword, setShowPassword] = useState(false)
+  const [showPassword, setShowPassword] = useState(false);
 
-  const [registerOpen, setRegisterOpen] = useState(false)
+  const [registerOpen, setRegisterOpen] = useState(false);
 
-  const [regSuccessOpen, setRegSuccessOpen] = useState(false)
+  const [regSuccessOpen, setRegSuccessOpen] = useState(false);
 
-  const [regSubmittedName, setRegSubmittedName] = useState("")
+  const [regSubmittedName, setRegSubmittedName] = useState("");
 
-  const [pendingLoginOpen, setPendingLoginOpen] = useState(false)
+  const [pendingLoginOpen, setPendingLoginOpen] = useState(false);
 
   // Forgot password modal state
 
-  const [forgotOpen, setForgotOpen] = useState(false)
+  const [forgotOpen, setForgotOpen] = useState(false);
 
-  const [forgotName, setForgotName] = useState("")
+  const [forgotName, setForgotName] = useState("");
 
-  const [forgotEmail, setForgotEmail] = useState("")
+  const [forgotEmail, setForgotEmail] = useState("");
 
-  const [forgotPhone, setForgotPhone] = useState("")
+  const [forgotPhone, setForgotPhone] = useState("");
 
-  const [forgotError, setForgotError] = useState("")
+  const [forgotError, setForgotError] = useState("");
 
-  const [forgotSubmitting, setForgotSubmitting] = useState(false)
+  const [forgotSubmitting, setForgotSubmitting] = useState(false);
 
-  const [forgotSuccess, setForgotSuccess] = useState(false)
+  const [forgotSuccess, setForgotSuccess] = useState(false);
 
   // ── Register form state ───────────────────────────────────────────────
 
-  const [regFirstName, setRegFirstName] = useState("")
+  const [regFirstName, setRegFirstName] = useState("");
 
-  const [regLastName, setRegLastName] = useState("")
+  const [regLastName, setRegLastName] = useState("");
 
-  const [regEmail, setRegEmail] = useState("")
+  const [regEmail, setRegEmail] = useState("");
 
-  const [regPhone, setRegPhone] = useState("")
+  const [regPhone, setRegPhone] = useState("");
 
-  const [regAddress, setRegAddress] = useState("")
+  const [regAddress, setRegAddress] = useState("");
 
-  const [regPassword, setRegPassword] = useState("")
+  const [regPassword, setRegPassword] = useState("");
 
-  const [regConfirm, setRegConfirm] = useState("")
+  const [regConfirm, setRegConfirm] = useState("");
 
-  const [showRegPassword, setShowRegPassword] = useState(false)
+  const [showRegPassword, setShowRegPassword] = useState(false);
 
-  const [showRegConfirm, setShowRegConfirm] = useState(false)
+  const [showRegConfirm, setShowRegConfirm] = useState(false);
 
-  const [regError, setRegError] = useState("")
+  const [regError, setRegError] = useState("");
 
-  const [regSubmitting, setRegSubmitting] = useState(false)
+  const [regSubmitting, setRegSubmitting] = useState(false);
 
   // Validation helpers to prevent random strings & garbage input
 
   function isValidEmail(val: string): boolean {
-    return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(val.trim())
+    return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(val.trim());
   }
 
   function normalizePhilippinePhone(val: string): string | null {
-    let cleaned = val.replace(/[\s\-()]/g, "")
+    let cleaned = val.replace(/[\s\-()]/g, "");
 
     if (cleaned.startsWith("+63")) {
-      cleaned = "0" + cleaned.slice(3)
+      cleaned = "0" + cleaned.slice(3);
     }
 
     // Must be exactly 11 digits starting with 09
 
     if (/^09\d{9}$/.test(cleaned)) {
-      return `${cleaned.slice(0, 4)}-${cleaned.slice(4, 7)}-${cleaned.slice(7)}`
+      return `${cleaned.slice(0, 4)}-${cleaned.slice(4, 7)}-${cleaned.slice(7)}`;
     }
 
-    return null
+    return null;
   }
 
   function isValidName(val: string): boolean {
-    return /^[a-zA-ZÀ-ÿ\s.'-]{2,50}$/.test(val.trim())
+    return /^[a-zA-ZÀ-ÿ\s.'-]{2,50}$/.test(val.trim());
   }
 
   async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
+    e.preventDefault();
 
-    setError("")
+    setError("");
 
-    setSubmitting(true)
+    setSubmitting(true);
 
-    const cleanEmail = email.trim().toLowerCase()
+    const cleanEmail = email.trim().toLowerCase();
 
     try {
       // 1. Check if user has an active reset issued by administrator
 
-      let activeTempPassword: string | null = null
+      let activeTempPassword: string | null = null;
 
       // Check local temp passwords
 
       try {
         const tempMap = JSON.parse(
           localStorage.getItem("brgy_temp_passwords") || "{}",
-        )
+        );
 
         if (tempMap[cleanEmail]?.tempPassword) {
-          activeTempPassword = tempMap[cleanEmail].tempPassword
+          activeTempPassword = tempMap[cleanEmail].tempPassword;
         }
       } catch {}
 
@@ -10112,7 +10178,7 @@ function LoginView({
 
           .order("updated_at", { ascending: false })
 
-          .limit(1)
+          .limit(1);
 
         if (
           dbResets &&
@@ -10120,17 +10186,17 @@ function LoginView({
           dbResets[0].status === "completed" &&
           dbResets[0].temp_password
         ) {
-          activeTempPassword = dbResets[0].temp_password
+          activeTempPassword = dbResets[0].temp_password;
         }
       } catch {}
 
       // Check active resets synced from barangay description metadata
 
       if (!activeTempPassword) {
-        const settingsResets = parseActiveResetsFromDesc(barangay.description)
+        const settingsResets = parseActiveResetsFromDesc(barangay.description);
 
         if (settingsResets[cleanEmail]?.tempPassword) {
-          activeTempPassword = settingsResets[cleanEmail].tempPassword
+          activeTempPassword = settingsResets[cleanEmail].tempPassword;
         }
       }
 
@@ -10148,54 +10214,54 @@ function LoginView({
 
             .eq("email", cleanEmail)
 
-            .maybeSingle()
+            .maybeSingle();
 
           if (profile) {
             if (profile.status === "pending") {
-              setSubmitting(false)
+              setSubmitting(false);
 
-              setPendingLoginOpen(true)
+              setPendingLoginOpen(true);
 
-              return
+              return;
             }
 
             if (profile.status === "rejected") {
               setError(
                 "Your account registration was not approved. Please visit the Barangay Hall for verification.",
-              )
+              );
 
-              setSubmitting(false)
+              setSubmitting(false);
 
-              return
+              return;
             }
 
             if (profile.status === "suspended" || profile.status === "banned") {
               setError(
                 "Your account has been temporarily suspended. Contact the barangay office.",
-              )
+              );
 
-              setSubmitting(false)
+              setSubmitting(false);
 
-              return
+              return;
             }
 
             if (profile.status === "deleted") {
               setError(
                 "This account has been deleted by the barangay administration. Please contact the Barangay Office.",
-              )
+              );
 
-              setSubmitting(false)
+              setSubmitting(false);
 
-              return
+              return;
             }
 
-            const name = profile.full_name || email
+            const name = profile.full_name || email;
 
             const isAdm =
               profile.role === "admin" ||
               isProtectedAdminEmail(profile.email || cleanEmail) ||
               isRootMasterAdmin(cleanEmail) ||
-              isPromotedAdmin(cleanEmail)
+              isPromotedAdmin(cleanEmail);
 
             const accountObj: Account = {
               id: profile.id,
@@ -10207,23 +10273,23 @@ function LoginView({
               name,
 
               initials: getInitials(name),
-            }
+            };
 
             try {
               localStorage.setItem(
                 "brgy_auth_session",
 
                 JSON.stringify({ user: accountObj, timestamp: Date.now() }),
-              )
+              );
             } catch {}
 
-            onLoginSuccess(accountObj)
+            onLoginSuccess(accountObj);
 
-            return
+            return;
           } else {
             const isAdm =
               isProtectedAdminEmail(cleanEmail) ||
-              isRootMasterAdmin(cleanEmail)
+              isRootMasterAdmin(cleanEmail);
 
             const accountObj: Account = {
               id: `user-${cleanEmail}`,
@@ -10235,30 +10301,30 @@ function LoginView({
               name: cleanEmail,
 
               initials: getInitials(cleanEmail),
-            }
+            };
 
             try {
               localStorage.setItem(
                 "brgy_auth_session",
 
                 JSON.stringify({ user: accountObj, timestamp: Date.now() }),
-              )
+              );
             } catch {}
 
-            onLoginSuccess(accountObj)
+            onLoginSuccess(accountObj);
 
-            return
+            return;
           }
         } else {
           // Resident did NOT enter the new password (e.g. they typed the old password)
 
           setError(
             "Your password has been reset by the Barangay Administration. Your old password is no longer valid. Please sign in with the new temporary password provided to you via SMS.",
-          )
+          );
 
-          setSubmitting(false)
+          setSubmitting(false);
 
-          return
+          return;
         }
       }
 
@@ -10266,107 +10332,141 @@ function LoginView({
         email: cleanEmail,
 
         password,
-      })
+      });
 
       if (authErr || !data.user) {
         setError(
           authErr?.message ?? "Invalid email or password. Please try again.",
-        )
+        );
 
-        setSubmitting(false)
+        setSubmitting(false);
 
-        return
+        return;
       }
 
       // Fetch profile from accounts table
-
-      const { data: profile, error: profileErr } = await supabase
-
+      let profile: { full_name?: string; role?: string; status?: string } | null = null;
+      const { data: pData } = await supabase
         .from("accounts")
-
         .select("full_name, role, status")
-
         .eq("id", data.user.id)
+        .maybeSingle();
 
-        .single()
+      profile = pData;
 
-      if (profileErr || !profile) {
-        setError("Account profile not found. Please contact the barangay.")
+      // Fallback: search by email in accounts table in case auth id differs
+      if (!profile) {
+        const { data: pEmailData } = await supabase
+          .from("accounts")
+          .select("full_name, role, status")
+          .eq("email", cleanEmail)
+          .maybeSingle();
 
-        await supabase.auth.signOut()
+        if (pEmailData) {
+          profile = pEmailData;
+          try {
+            await supabase.from("accounts").update({ id: data.user.id }).eq("email", cleanEmail);
+          } catch {}
+        }
+      }
 
-        setSubmitting(false)
-
-        return
+      // If still missing and it is an official admin, auto-create/upsert admin profile
+      if (!profile) {
+        if (isProtectedAdminEmail(cleanEmail) || isRootMasterAdmin(cleanEmail)) {
+          const adminProf = {
+            id: data.user.id,
+            email: cleanEmail,
+            full_name: "Barangay Administrator",
+            role: "admin",
+            status: "active",
+            address: barangay.address || "Barangay Hall",
+            phone: barangay.phone || "",
+          };
+          try {
+            await supabase.from("accounts").upsert([adminProf]);
+          } catch (e) {
+            console.warn("Auto-upsert admin profile error:", e);
+          }
+          profile = {
+            full_name: "Barangay Administrator",
+            role: "admin",
+            status: "active",
+          };
+        } else {
+          setError("Account profile not found. Please contact the barangay.");
+          await supabase.auth.signOut();
+          setSubmitting(false);
+          return;
+        }
       }
 
       if (profile.status === "pending") {
-        await supabase.auth.signOut()
+        await supabase.auth.signOut();
 
-        setSubmitting(false)
+        setSubmitting(false);
 
-        setPendingLoginOpen(true)
+        setPendingLoginOpen(true);
 
-        return
+        return;
       }
 
       if (profile.status === "rejected") {
         setError(
           "Your account registration was not approved. Please visit the Barangay Hall for verification.",
-        )
+        );
 
-        await supabase.auth.signOut()
+        await supabase.auth.signOut();
 
-        setSubmitting(false)
+        setSubmitting(false);
 
-        return
+        return;
       }
 
       if (profile.status === "suspended") {
         setError(
           "Your account has been temporarily suspended. Contact the barangay office.",
-        )
+        );
 
-        await supabase.auth.signOut()
+        await supabase.auth.signOut();
 
-        setSubmitting(false)
+        setSubmitting(false);
 
-        return
+        return;
       }
 
       if (profile.status === "banned") {
         setError(
           "This account has been permanently banned from the Barangay Connect portal.",
-        )
+        );
 
-        await supabase.auth.signOut()
+        await supabase.auth.signOut();
 
-        setSubmitting(false)
+        setSubmitting(false);
 
-        return
+        return;
       }
 
       if (profile.status === "deleted") {
         setError(
           "This account has been deleted by the barangay administration. Please contact the Barangay Office.",
-        )
+        );
 
-        await supabase.auth.signOut()
+        await supabase.auth.signOut();
 
-        setSubmitting(false)
+        setSubmitting(false);
 
-        return
+        return;
       }
 
-      const name = profile.full_name || data.user.email || "User"
+      const name = profile.full_name || data.user.email || "User";
 
-      const finalEmail = (data.user.email ?? cleanEmail).toLowerCase().trim()
+      const finalEmail = (data.user.email ?? cleanEmail).toLowerCase().trim();
 
       const isAdm =
         profile.role === "admin" ||
         isProtectedAdminEmail(finalEmail) ||
         isRootMasterAdmin(finalEmail) ||
-        isPromotedAdmin(finalEmail)
+        isPromotedAdmin(finalEmail);
 
       const accountObj: Account = {
         id: data.user.id,
@@ -10378,75 +10478,75 @@ function LoginView({
         name,
 
         initials: getInitials(name),
-      }
+      };
 
       try {
         localStorage.setItem(
           "brgy_auth_session",
 
           JSON.stringify({ user: accountObj, timestamp: Date.now() }),
-        )
+        );
       } catch {}
 
-      onLoginSuccess(accountObj)
+      onLoginSuccess(accountObj);
     } catch (err: any) {
-      setError(err?.message ?? "An unexpected error occurred.")
+      setError(err?.message ?? "An unexpected error occurred.");
 
-      setSubmitting(false)
+      setSubmitting(false);
     }
   }
 
   async function handleRegisterDirect() {
-    setRegError("")
+    setRegError("");
 
     // 1. Name validation
 
     if (!regFirstName.trim() || !regLastName.trim()) {
-      setRegError("Please enter your complete first and last name.")
+      setRegError("Please enter your complete first and last name.");
 
-      return
+      return;
     }
 
     if (!isValidName(regFirstName) || !isValidName(regLastName)) {
       setRegError(
         "Names should only contain valid letters (no numbers or random symbols).",
-      )
+      );
 
-      return
+      return;
     }
 
     // 2. Email validation — required and must be a real format
 
     if (!regEmail.trim()) {
-      setRegError("Please enter your email address.")
+      setRegError("Please enter your email address.");
 
-      return
+      return;
     }
 
     if (!isValidEmail(regEmail)) {
       setRegError(
         "Please enter a valid email address (e.g., resident@gmail.com).",
-      )
+      );
 
-      return
+      return;
     }
 
     // 3. Philippine Phone validation
 
     if (!regPhone.trim()) {
-      setRegError("Please enter your mobile phone number.")
+      setRegError("Please enter your mobile phone number.");
 
-      return
+      return;
     }
 
-    const validatedPhone = normalizePhilippinePhone(regPhone)
+    const validatedPhone = normalizePhilippinePhone(regPhone);
 
     if (!validatedPhone) {
       setRegError(
         "Please enter a valid 11-digit Philippine mobile number starting with 09 (e.g., 0917-123-4567).",
-      )
+      );
 
-      return
+      return;
     }
 
     // 4. Address validation
@@ -10454,26 +10554,26 @@ function LoginView({
     if (!regAddress.trim() || regAddress.trim().length < 6) {
       setRegError(
         "Please enter your home address within the barangay (at least 6 characters).",
-      )
+      );
 
-      return
+      return;
     }
 
     // 5. Password validation
 
     if (regPassword.length < 8) {
-      setRegError("Password must be at least 8 characters long.")
+      setRegError("Password must be at least 8 characters long.");
 
-      return
+      return;
     }
 
     if (regPassword !== regConfirm) {
-      setRegError("Passwords do not match.")
+      setRegError("Passwords do not match.");
 
-      return
+      return;
     }
 
-    setRegSubmitting(true)
+    setRegSubmitting(true);
 
     try {
       // Check if phone number already registered
@@ -10486,16 +10586,16 @@ function LoginView({
 
         .eq("phone", validatedPhone)
 
-        .maybeSingle()
+        .maybeSingle();
 
       if (existingPhone) {
         setRegError(
           "This phone number is already linked to an existing account.",
-        )
+        );
 
-        setRegSubmitting(false)
+        setRegSubmitting(false);
 
-        return
+        return;
       }
 
       // Check if email already registered
@@ -10508,16 +10608,16 @@ function LoginView({
 
         .eq("email", regEmail.trim().toLowerCase())
 
-        .maybeSingle()
+        .maybeSingle();
 
       if (existingEmail) {
         setRegError(
           "An account with this email address already exists. Please sign in instead.",
-        )
+        );
 
-        setRegSubmitting(false)
+        setRegSubmitting(false);
 
-        return
+        return;
       }
 
       // Create the auth account — status will be "pending" until admin approves
@@ -10528,19 +10628,19 @@ function LoginView({
 
           password: regPassword,
         },
-      )
+      );
 
       if (signUpErr || !signUpData.user) {
         setRegError(
           signUpErr?.message || "Registration failed. Please try again.",
-        )
+        );
 
-        setRegSubmitting(false)
+        setRegSubmitting(false);
 
-        return
+        return;
       }
 
-      const fullName = `${regFirstName.trim()} ${regLastName.trim()}`
+      const fullName = `${regFirstName.trim()} ${regLastName.trim()}`;
 
       // Insert into accounts table with pending status for admin review
 
@@ -10560,39 +10660,39 @@ function LoginView({
 
           status: "pending",
         },
-      ])
+      ]);
 
       // Sign out — they must wait for admin approval before logging in
 
-      await supabase.auth.signOut()
+      await supabase.auth.signOut();
 
-      setRegSubmittedName(fullName)
+      setRegSubmittedName(fullName);
 
-      setRegisterOpen(false)
+      setRegisterOpen(false);
 
-      setRegSuccessOpen(true)
+      setRegSuccessOpen(true);
 
       // Reset fields
 
-      setRegFirstName("")
+      setRegFirstName("");
 
-      setRegLastName("")
+      setRegLastName("");
 
-      setRegEmail("")
+      setRegEmail("");
 
-      setRegPhone("")
+      setRegPhone("");
 
-      setRegAddress("")
+      setRegAddress("");
 
-      setRegPassword("")
+      setRegPassword("");
 
-      setRegConfirm("")
+      setRegConfirm("");
     } catch (err: any) {
       setRegError(
         err?.message || "An unexpected error occurred. Please try again.",
-      )
+      );
     } finally {
-      setRegSubmitting(false)
+      setRegSubmitting(false);
     }
   }
 
@@ -10675,9 +10775,9 @@ function LoginView({
               type="email"
               value={email}
               onChange={(e) => {
-                setEmail(e.target.value)
+                setEmail(e.target.value);
 
-                setError("")
+                setError("");
               }}
               placeholder="Enter your email"
               required
@@ -10690,9 +10790,9 @@ function LoginView({
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => {
-                  setPassword(e.target.value)
+                  setPassword(e.target.value);
 
-                  setError("")
+                  setError("");
                 }}
                 placeholder="Enter your password"
                 required
@@ -10715,17 +10815,17 @@ function LoginView({
             <button
               type="button"
               onClick={() => {
-                setForgotOpen(true)
+                setForgotOpen(true);
 
-                setForgotSuccess(false)
+                setForgotSuccess(false);
 
-                setForgotError("")
+                setForgotError("");
 
-                setForgotName("")
+                setForgotName("");
 
-                setForgotEmail("")
+                setForgotEmail("");
 
-                setForgotPhone("")
+                setForgotPhone("");
               }}
             >
               Forgot password?
@@ -10752,7 +10852,8 @@ function LoginView({
             </button>
           </p>
           <span className="secure-note">
-            Barangay Connect Community Management System • Protected by encrypted authentication.
+            Barangay Connect Community Management System • Protected by
+            encrypted authentication.
           </span>
         </form>
       </section>
@@ -10760,9 +10861,9 @@ function LoginView({
         <Modal
           title="Resident registration"
           close={() => {
-            setRegisterOpen(false)
+            setRegisterOpen(false);
 
-            setRegError("")
+            setRegError("");
           }}
         >
           <>
@@ -10847,14 +10948,9 @@ function LoginView({
                   aria-label={
                     showRegPassword ? "Hide password" : "Show password"
                   }
-                  title={
-                    showRegPassword ? "Hide password" : "Show password"
-                  }
+                  title={showRegPassword ? "Hide password" : "Show password"}
                 >
-                  <Icon
-                    name={showRegPassword ? "eyeOff" : "eye"}
-                    size={18}
-                  />
+                  <Icon name={showRegPassword ? "eyeOff" : "eye"} size={18} />
                 </button>
               </div>
             </label>
@@ -10875,14 +10971,9 @@ function LoginView({
                   aria-label={
                     showRegConfirm ? "Hide password" : "Show password"
                   }
-                  title={
-                    showRegConfirm ? "Hide password" : "Show password"
-                  }
+                  title={showRegConfirm ? "Hide password" : "Show password"}
                 >
-                  <Icon
-                    name={showRegConfirm ? "eyeOff" : "eye"}
-                    size={18}
-                  />
+                  <Icon name={showRegConfirm ? "eyeOff" : "eye"} size={18} />
                 </button>
               </div>
             </label>
@@ -11052,36 +11143,36 @@ function LoginView({
                 disabled={forgotSubmitting}
                 style={{ marginTop: "6px" }}
                 onClick={async () => {
-                  setForgotError("")
+                  setForgotError("");
 
                   if (
                     !forgotName.trim() ||
                     !forgotEmail.trim() ||
                     !forgotPhone.trim()
                   ) {
-                    setForgotError("Please fill in all fields.")
+                    setForgotError("Please fill in all fields.");
 
-                    return
+                    return;
                   }
 
-                  const cleanEmail = forgotEmail.trim().toLowerCase()
+                  const cleanEmail = forgotEmail.trim().toLowerCase();
 
-                  const cleanPhone = forgotPhone.replace(/[\s\-()]/g, "")
+                  const cleanPhone = forgotPhone.replace(/[\s\-()]/g, "");
 
                   if (!/^(09)\d{9}$/.test(cleanPhone)) {
                     setForgotError(
                       "Please enter a valid 11-digit Philippine mobile number starting with 09.",
-                    )
+                    );
 
-                    return
+                    return;
                   }
 
-                  setForgotSubmitting(true)
+                  setForgotSubmitting(true);
 
                   try {
                     // 1. Gather all existing requests for this email (from Supabase + localStorage)
 
-                    let dbReqs: any[] = []
+                    let dbReqs: any[] = [];
 
                     try {
                       const { data } = await supabase
@@ -11092,18 +11183,18 @@ function LoginView({
 
                         .eq("email", cleanEmail)
 
-                        .order("created_at", { ascending: false })
+                        .order("created_at", { ascending: false });
 
-                      if (data) dbReqs = data
+                      if (data) dbReqs = data;
                     } catch {}
 
                     const localRequests: any[] = JSON.parse(
                       localStorage.getItem("brgy_pw_reset_requests") || "[]",
-                    )
+                    );
 
                     const localForEmail = localRequests.filter(
                       (r) => r.email?.toLowerCase() === cleanEmail,
-                    )
+                    );
 
                     // Check if resident already has an active pending request
 
@@ -11113,16 +11204,16 @@ function LoginView({
                       ) ||
                       localForEmail.some(
                         (r) => (r.status || "pending") === "pending",
-                      )
+                      );
 
                     if (hasPending) {
                       setForgotError(
                         "You already have an active pending password reset request. Please wait for the Barangay Administration to review and process your request.",
-                      )
+                      );
 
-                      setForgotSubmitting(false)
+                      setForgotSubmitting(false);
 
-                      return
+                      return;
                     }
 
                     // Check if previous request was completed or dismissed within 12 hours
@@ -11137,7 +11228,7 @@ function LoginView({
                         (r) =>
                           r.status === "completed" || r.status === "dismissed",
                       ),
-                    ]
+                    ];
 
                     if (pastRequests.length > 0) {
                       pastRequests.sort((a, b) => {
@@ -11148,7 +11239,7 @@ function LoginView({
                             a.created_at ||
                             a.requestedAt ||
                             0,
-                        ).getTime()
+                        ).getTime();
 
                         const tB = new Date(
                           b.updated_at ||
@@ -11157,12 +11248,12 @@ function LoginView({
                             b.created_at ||
                             b.requestedAt ||
                             0,
-                        ).getTime()
+                        ).getTime();
 
-                        return tB - tA
-                      })
+                        return tB - tA;
+                      });
 
-                      const latestPast = pastRequests[0]
+                      const latestPast = pastRequests[0];
 
                       const pastTime = new Date(
                         latestPast.updated_at ||
@@ -11170,37 +11261,37 @@ function LoginView({
                           latestPast.resetAt ||
                           latestPast.created_at ||
                           latestPast.requestedAt,
-                      ).getTime()
+                      ).getTime();
 
-                      const now = Date.now()
+                      const now = Date.now();
 
-                      const diffMs = now - pastTime
+                      const diffMs = now - pastTime;
 
-                      const TWELVE_HOURS_MS = 12 * 60 * 60 * 1000
+                      const TWELVE_HOURS_MS = 12 * 60 * 60 * 1000;
 
                       if (diffMs < TWELVE_HOURS_MS) {
-                        const remainingMs = TWELVE_HOURS_MS - diffMs
+                        const remainingMs = TWELVE_HOURS_MS - diffMs;
 
                         const remainingHours = Math.floor(
                           remainingMs / (1000 * 60 * 60),
-                        )
+                        );
 
                         const remainingMins = Math.ceil(
                           (remainingMs % (1000 * 60 * 60)) / (1000 * 60),
-                        )
+                        );
 
                         const pastStatus =
                           latestPast.status === "completed"
                             ? "processed"
-                            : "dismissed"
+                            : "dismissed";
 
                         setForgotError(
                           `Your previous password reset request was recently ${pastStatus}. A 12-hour interval is required before requesting another password reset. Please try again in ${remainingHours}h ${remainingMins}m.`,
-                        )
+                        );
 
-                        setForgotSubmitting(false)
+                        setForgotSubmitting(false);
 
-                        return
+                        return;
                       }
                     }
 
@@ -11216,13 +11307,13 @@ function LoginView({
                       requestedAt: new Date().toISOString(),
 
                       status: "pending",
-                    }
+                    };
 
                     localStorage.setItem(
                       "brgy_pw_reset_requests",
 
                       JSON.stringify([newReq, ...localRequests]),
-                    )
+                    );
 
                     try {
                       await supabase.from("password_reset_requests").insert([
@@ -11235,19 +11326,19 @@ function LoginView({
 
                           status: "pending",
                         },
-                      ])
+                      ]);
                     } catch {
                       // Table may not exist yet — local queue still works
                     }
 
-                    setForgotSuccess(true)
+                    setForgotSuccess(true);
                   } catch (err: any) {
                     setForgotError(
                       err?.message ||
                         "Failed to submit request. Please try again.",
-                    )
+                    );
                   } finally {
-                    setForgotSubmitting(false)
+                    setForgotSubmitting(false);
                   }
                 }}
               >
@@ -11418,7 +11509,7 @@ function LoginView({
         </div>
       )}
     </div>
-  )
+  );
 }
 
 // ─── Modal ───────────────────────────────────────────────────────────────────
@@ -11432,13 +11523,13 @@ function Modal({
 
   maxWidth,
 }: {
-  title: string
+  title: string;
 
-  close: () => void
+  close: () => void;
 
-  children: React.ReactNode
+  children: React.ReactNode;
 
-  maxWidth?: string | number
+  maxWidth?: string | number;
 }) {
   return (
     <div className="modal-backdrop" onMouseDown={close}>
@@ -11464,34 +11555,34 @@ function Modal({
         {children}
       </section>
     </div>
-  )
+  );
 }
 
 // ─── Calendar ────────────────────────────────────────────────────────────────
 
 type CalendarViewProps = {
-  isAdmin: boolean
+  isAdmin: boolean;
 
-  events: CommunityEvent[]
+  events: CommunityEvent[];
 
-  onAddEvent: (ev: Omit<CommunityEvent, "id">) => void
+  onAddEvent: (ev: Omit<CommunityEvent, "id">) => void;
 
-  onUpdateEvent: (ev: CommunityEvent) => void
+  onUpdateEvent: (ev: CommunityEvent) => void;
 
-  onDeleteEvent: (id: number) => void
+  onDeleteEvent: (id: number) => void;
 
-  onToast: (msg: string) => void
+  onToast: (msg: string) => void;
 
-  userRsvps: number[]
+  userRsvps: number[];
 
-  onToggleRsvp: (id: number) => void
+  onToggleRsvp: (id: number) => void;
 
-  viewingEvent: CommunityEvent | null
+  viewingEvent: CommunityEvent | null;
 
-  setViewingEvent: (ev: CommunityEvent | null) => void
+  setViewingEvent: (ev: CommunityEvent | null) => void;
 
-  barangayInfo?: BarangayInfo
-}
+  barangayInfo?: BarangayInfo;
+};
 
 function CalendarView({
   isAdmin,
@@ -11517,26 +11608,26 @@ function CalendarView({
   barangayInfo,
 }: CalendarViewProps) {
   const bName = barangayInfo?.name
-    ? (barangayInfo.name.toLowerCase().startsWith("barangay")
-        ? barangayInfo.name
-        : `Barangay ${barangayInfo.name}`)
-    : "Barangay Office"
+    ? barangayInfo.name.toLowerCase().startsWith("barangay")
+      ? barangayInfo.name
+      : `Barangay ${barangayInfo.name}`
+    : "Barangay Office";
   const [currentDate, setCurrentDate] = useState<Date>(
     () => new Date(2026, 9, 1),
-  )
+  );
 
-  const [viewMode, setViewMode] = useState<"month" | "agenda">("month")
+  const [viewMode, setViewMode] = useState<"month" | "agenda">("month");
 
-  const [categoryFilter, setCategoryFilter] = useState<string>("all")
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
 
-  const [searchQuery, setSearchQuery] = useState("")
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const [formOpen, setFormOpen] = useState(false)
+  const [formOpen, setFormOpen] = useState(false);
 
-  const [editingEvent, setEditingEvent] = useState<CommunityEvent | null>(null)
+  const [editingEvent, setEditingEvent] = useState<CommunityEvent | null>(null);
 
   const [deleteEventTarget, setDeleteEventTarget] =
-    useState<CommunityEvent | null>(null)
+    useState<CommunityEvent | null>(null);
 
   const [form, setForm] = useState({
     title: "",
@@ -11552,42 +11643,42 @@ function CalendarView({
     description: "",
 
     organizer: bName,
-  })
+  });
 
-  const currentYear = currentDate.getFullYear()
+  const currentYear = currentDate.getFullYear();
 
-  const currentMonthIdx = currentDate.getMonth()
+  const currentMonthIdx = currentDate.getMonth();
 
-  const monthName = currentDate.toLocaleString("en-US", { month: "long" })
+  const monthName = currentDate.toLocaleString("en-US", { month: "long" });
 
-  const monthYearTitle = `${monthName} ${currentYear}`
+  const monthYearTitle = `${monthName} ${currentYear}`;
 
-  const today = new Date()
+  const today = new Date();
 
-  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
 
   function handlePrevMonth() {
     setCurrentDate(
       (prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1),
-    )
+    );
   }
 
   function handleNextMonth() {
     setCurrentDate(
       (prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1),
-    )
+    );
   }
 
   function handleToday() {
-    setCurrentDate(new Date(2026, 9, 1))
+    setCurrentDate(new Date(2026, 9, 1));
   }
 
   function handleOpenCreate(prefilledDate?: string) {
-    setEditingEvent(null)
+    setEditingEvent(null);
 
     const defaultDate =
       prefilledDate ||
-      `${currentYear}-${String(currentMonthIdx + 1).padStart(2, "0")}-15`
+      `${currentYear}-${String(currentMonthIdx + 1).padStart(2, "0")}-15`;
 
     setForm({
       title: "",
@@ -11603,13 +11694,13 @@ function CalendarView({
       description: "",
 
       organizer: bName,
-    })
+    });
 
-    setFormOpen(true)
+    setFormOpen(true);
   }
 
   function handleOpenEdit(ev: CommunityEvent) {
-    setEditingEvent(ev)
+    setEditingEvent(ev);
 
     setForm({
       title: ev.title,
@@ -11627,19 +11718,19 @@ function CalendarView({
       description: ev.description || "",
 
       organizer: ev.organizer || bName,
-    })
+    });
 
-    setFormOpen(true)
+    setFormOpen(true);
   }
 
   function handleSubmitForm() {
     if (!form.title.trim() || !form.date) {
-      onToast("Please provide an event title and date.")
+      onToast("Please provide an event title and date.");
 
-      return
+      return;
     }
 
-    const dayNumber = new Date(form.date + "T00:00:00").getDate() || 1
+    const dayNumber = new Date(form.date + "T00:00:00").getDate() || 1;
 
     if (editingEvent) {
       onUpdateEvent({
@@ -11660,7 +11751,7 @@ function CalendarView({
         description: form.description.trim(),
 
         organizer: form.organizer.trim(),
-      })
+      });
     } else {
       onAddEvent({
         title: form.title.trim(),
@@ -11678,54 +11769,54 @@ function CalendarView({
         description: form.description.trim(),
 
         organizer: form.organizer.trim(),
-      })
+      });
     }
 
-    setFormOpen(false)
+    setFormOpen(false);
   }
 
   function handleConfirmDelete(id: number) {
     const found =
       events.find((e) => e.id === id) ||
-      { id, title: "this event" } as CommunityEvent
+      ({ id, title: "this event" } as CommunityEvent);
 
-    setDeleteEventTarget(found)
+    setDeleteEventTarget(found);
   }
 
   function getGoogleCalendarUrl(ev: CommunityEvent) {
-    const title = encodeURIComponent(ev.title)
+    const title = encodeURIComponent(ev.title);
 
     const details = encodeURIComponent(
       `${ev.description || ""}\n\nOrganizer: ${ev.organizer || bName}\nLocation: ${ev.location || "Barangay Hall"}`,
-    )
+    );
 
-    const loc = encodeURIComponent(ev.location || "Barangay Hall")
+    const loc = encodeURIComponent(ev.location || "Barangay Hall");
 
-    let startIso = ""
+    let startIso = "";
 
-    let endIso = ""
+    let endIso = "";
 
     if (ev.date) {
-      const clean = ev.date.replace(/-/g, "")
+      const clean = ev.date.replace(/-/g, "");
 
-      startIso = `${clean}T080000Z`
+      startIso = `${clean}T080000Z`;
 
-      endIso = `${clean}T110000Z`
+      endIso = `${clean}T110000Z`;
     } else {
-      const dStr = `${currentYear}${String(currentMonthIdx + 1).padStart(2, "0")}${String(ev.day).padStart(2, "0")}`
+      const dStr = `${currentYear}${String(currentMonthIdx + 1).padStart(2, "0")}${String(ev.day).padStart(2, "0")}`;
 
-      startIso = `${dStr}T080000Z`
+      startIso = `${dStr}T080000Z`;
 
-      endIso = `${dStr}T110000Z`
+      endIso = `${dStr}T110000Z`;
     }
 
-    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startIso}/${endIso}&details=${details}&location=${loc}`
+    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startIso}/${endIso}&details=${details}&location=${loc}`;
   }
 
   function downloadIcsFile(ev: CommunityEvent) {
     const dStr = ev.date
       ? ev.date.replace(/-/g, "")
-      : `${currentYear}${String(currentMonthIdx + 1).padStart(2, "0")}${String(ev.day).padStart(2, "0")}`
+      : `${currentYear}${String(currentMonthIdx + 1).padStart(2, "0")}${String(ev.day).padStart(2, "0")}`;
 
     const icsContent = [
       "BEGIN:VCALENDAR",
@@ -11751,40 +11842,40 @@ function CalendarView({
       "END:VEVENT",
 
       "END:VCALENDAR",
-    ].join("\r\n")
+    ].join("\r\n");
 
     const blob = new Blob([icsContent], {
       type: "text/calendar;charset=utf-8",
-    })
+    });
 
-    const url = URL.createObjectURL(blob)
+    const url = URL.createObjectURL(blob);
 
-    const link = document.createElement("a")
+    const link = document.createElement("a");
 
-    link.href = url
+    link.href = url;
 
     link.setAttribute(
       "download",
 
       `${ev.title.toLowerCase().replace(/[^a-z0-9]/g, "_")}.ics`,
-    )
+    );
 
-    document.body.appendChild(link)
+    document.body.appendChild(link);
 
-    link.click()
+    link.click();
 
-    document.body.removeChild(link)
+    document.body.removeChild(link);
 
-    URL.revokeObjectURL(url)
+    URL.revokeObjectURL(url);
 
-    onToast("Event calendar (.ics) file downloaded!")
+    onToast("Event calendar (.ics) file downloaded!");
   }
 
   function handleShare(ev: CommunityEvent) {
-    const text = `📅 ${ev.title}\n🗓 Date: ${ev.date || "Scheduled"}\n⏰ Time: ${ev.time || ""}\n📍 Location: ${ev.location || "Barangay Hall"}\n${ev.description || ""}`
+    const text = `📅 ${ev.title}\n🗓 Date: ${ev.date || "Scheduled"}\n⏰ Time: ${ev.time || ""}\n📍 Location: ${ev.location || "Barangay Hall"}\n${ev.description || ""}`;
 
-    copyToClipboard(text)
-    onToast("Event details copied to clipboard!")
+    copyToClipboard(text);
+    onToast("Event details copied to clipboard!");
   }
 
   // Filter events
@@ -11794,29 +11885,29 @@ function CalendarView({
       categoryFilter !== "all" &&
       (ev.type || "community") !== categoryFilter
     ) {
-      return false
+      return false;
     }
 
     if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase()
+      const q = searchQuery.toLowerCase();
 
-      const matchTitle = ev.title.toLowerCase().includes(q)
+      const matchTitle = ev.title.toLowerCase().includes(q);
 
-      const matchLoc = (ev.location || "").toLowerCase().includes(q)
+      const matchLoc = (ev.location || "").toLowerCase().includes(q);
 
-      const matchDesc = (ev.description || "").toLowerCase().includes(q)
+      const matchDesc = (ev.description || "").toLowerCase().includes(q);
 
-      const matchOrg = (ev.organizer || "").toLowerCase().includes(q)
+      const matchOrg = (ev.organizer || "").toLowerCase().includes(q);
 
-      if (!matchTitle && !matchLoc && !matchDesc && !matchOrg) return false
+      if (!matchTitle && !matchLoc && !matchDesc && !matchOrg) return false;
     }
 
-    return true
-  })
+    return true;
+  });
 
   // Calendar cells computation
 
-  const firstDayOfWeek = new Date(currentYear, currentMonthIdx, 1).getDay()
+  const firstDayOfWeek = new Date(currentYear, currentMonthIdx, 1).getDay();
 
   const totalDaysInMonth = new Date(
     currentYear,
@@ -11824,7 +11915,7 @@ function CalendarView({
     currentMonthIdx + 1,
 
     0,
-  ).getDate()
+  ).getDate();
 
   const totalDaysInPrevMonth = new Date(
     currentYear,
@@ -11832,26 +11923,26 @@ function CalendarView({
     currentMonthIdx,
 
     0,
-  ).getDate()
+  ).getDate();
 
   type CalendarCell = {
-    dayNumber: number
+    dayNumber: number;
 
-    dateStr: string
+    dateStr: string;
 
-    isCurrentMonth: boolean
+    isCurrentMonth: boolean;
 
-    isToday: boolean
-  }
+    isToday: boolean;
+  };
 
-  const cells: CalendarCell[] = []
+  const cells: CalendarCell[] = [];
 
   for (let i = firstDayOfWeek - 1; i >= 0; i--) {
-    const day = totalDaysInPrevMonth - i
+    const day = totalDaysInPrevMonth - i;
 
-    const prevMonthDate = new Date(currentYear, currentMonthIdx - 1, day)
+    const prevMonthDate = new Date(currentYear, currentMonthIdx - 1, day);
 
-    const dStr = `${prevMonthDate.getFullYear()}-${String(prevMonthDate.getMonth() + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`
+    const dStr = `${prevMonthDate.getFullYear()}-${String(prevMonthDate.getMonth() + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 
     cells.push({
       dayNumber: day,
@@ -11861,11 +11952,11 @@ function CalendarView({
       isCurrentMonth: false,
 
       isToday: dStr === todayStr,
-    })
+    });
   }
 
   for (let day = 1; day <= totalDaysInMonth; day++) {
-    const dStr = `${currentYear}-${String(currentMonthIdx + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`
+    const dStr = `${currentYear}-${String(currentMonthIdx + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 
     cells.push({
       dayNumber: day,
@@ -11875,16 +11966,16 @@ function CalendarView({
       isCurrentMonth: true,
 
       isToday: dStr === todayStr,
-    })
+    });
   }
 
   const remainingCells =
-    cells.length <= 35 ? 35 - cells.length : 42 - cells.length
+    cells.length <= 35 ? 35 - cells.length : 42 - cells.length;
 
   for (let day = 1; day <= remainingCells; day++) {
-    const nextMonthDate = new Date(currentYear, currentMonthIdx + 1, day)
+    const nextMonthDate = new Date(currentYear, currentMonthIdx + 1, day);
 
-    const dStr = `${nextMonthDate.getFullYear()}-${String(nextMonthDate.getMonth() + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`
+    const dStr = `${nextMonthDate.getFullYear()}-${String(nextMonthDate.getMonth() + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 
     cells.push({
       dayNumber: day,
@@ -11894,32 +11985,32 @@ function CalendarView({
       isCurrentMonth: false,
 
       isToday: dStr === todayStr,
-    })
+    });
   }
 
   function getEventsForCell(cell: CalendarCell) {
     return filteredEvents.filter((ev) => {
       if (ev.date) {
-        return ev.date === cell.dateStr
+        return ev.date === cell.dateStr;
       }
 
       if (cell.isCurrentMonth && ev.day === cell.dayNumber) {
-        return true
+        return true;
       }
 
-      return false
-    })
+      return false;
+    });
   }
 
   const agendaEvents = [...filteredEvents].sort((a, b) => {
     const dateA =
-      a.date || `${currentYear}-10-${String(a.day).padStart(2, "0")}`
+      a.date || `${currentYear}-10-${String(a.day).padStart(2, "0")}`;
 
     const dateB =
-      b.date || `${currentYear}-10-${String(b.day).padStart(2, "0")}`
+      b.date || `${currentYear}-10-${String(b.day).padStart(2, "0")}`;
 
-    return dateA.localeCompare(dateB)
-  })
+    return dateA.localeCompare(dateB);
+  });
 
   const categories = [
     { id: "all", label: "All Events" },
@@ -11933,7 +12024,7 @@ function CalendarView({
     { id: "advisory", label: "Advisories" },
 
     { id: "sports", label: "Sports & Youth" },
-  ]
+  ];
 
   return (
     <div className="page inner-page">
@@ -12084,7 +12175,7 @@ function CalendarView({
               cat.id === "all"
                 ? events.length
                 : events.filter((e) => (e.type || "community") === cat.id)
-                    .length
+                    .length;
 
             return (
               <button
@@ -12096,7 +12187,7 @@ function CalendarView({
               >
                 {cat.label} ({count})
               </button>
-            )
+            );
           })}
         </div>
       </section>
@@ -12179,13 +12270,13 @@ function CalendarView({
 
           <div className="calendar-grid">
             {cells.map((cell, idx) => {
-              const cellEvents = getEventsForCell(cell)
+              const cellEvents = getEventsForCell(cell);
 
-              let classNames = "calendar-day"
+              let classNames = "calendar-day";
 
-              if (!cell.isCurrentMonth) classNames += " muted"
+              if (!cell.isCurrentMonth) classNames += " muted";
 
-              if (cell.isToday) classNames += " today"
+              if (cell.isToday) classNames += " today";
 
               return (
                 <div
@@ -12193,7 +12284,7 @@ function CalendarView({
                   key={idx}
                   onClick={() => {
                     if (isAdmin && cell.isCurrentMonth) {
-                      handleOpenCreate(cell.dateStr)
+                      handleOpenCreate(cell.dateStr);
                     }
                   }}
                   style={{
@@ -12261,16 +12352,16 @@ function CalendarView({
                     }}
                   >
                     {cellEvents.map((ev) => {
-                      const isRsvp = userRsvps.includes(ev.id)
+                      const isRsvp = userRsvps.includes(ev.id);
 
                       return (
                         <button
                           key={ev.id}
                           className={`calendar-event event-${ev.type || "community"}`}
                           onClick={(e) => {
-                            e.stopPropagation()
+                            e.stopPropagation();
 
-                            setViewingEvent(ev)
+                            setViewingEvent(ev);
                           }}
                           style={{
                             textAlign: "left",
@@ -12338,11 +12429,11 @@ function CalendarView({
                           </div>
                           {ev.time && <small>{ev.time}</small>}
                         </button>
-                      )
+                      );
                     })}
                   </div>
                 </div>
-              )
+              );
             })}
           </div>
         </section>
@@ -12419,9 +12510,9 @@ function CalendarView({
             </div>
           ) : (
             agendaEvents.map((ev) => {
-              const isRsvp = userRsvps.includes(ev.id)
+              const isRsvp = userRsvps.includes(ev.id);
 
-              const evDate = ev.date ? new Date(ev.date + "T00:00:00") : null
+              const evDate = ev.date ? new Date(ev.date + "T00:00:00") : null;
 
               const monthLabel = evDate
                 ? evDate
@@ -12429,9 +12520,9 @@ function CalendarView({
                     .toLocaleString("en-US", { month: "short" })
 
                     .toUpperCase()
-                : "OCT"
+                : "OCT";
 
-              const dayLabel = ev.day || (evDate ? evDate.getDate() : 1)
+              const dayLabel = ev.day || (evDate ? evDate.getDate() : 1);
 
               const weekday = evDate
                 ? evDate
@@ -12439,7 +12530,7 @@ function CalendarView({
                     .toLocaleString("en-US", { weekday: "short" })
 
                     .toUpperCase()
-                : "EVENT"
+                : "EVENT";
 
               return (
                 <div className="agenda-card" key={ev.id}>
@@ -12548,7 +12639,7 @@ function CalendarView({
                     )}
                   </div>
                 </div>
-              )
+              );
             })
           )}
         </section>
@@ -12897,11 +12988,11 @@ function CalendarView({
                   className="outline-button"
                   style={{ fontSize: "12px", padding: "6px 14px" }}
                   onClick={() => {
-                    const ev = viewingEvent
+                    const ev = viewingEvent;
 
-                    setViewingEvent(null)
+                    setViewingEvent(null);
 
-                    handleOpenEdit(ev)
+                    handleOpenEdit(ev);
                   }}
                 >
                   <Icon name="edit" size={14} /> Edit event
@@ -13192,15 +13283,15 @@ function CalendarView({
                 type="button"
                 className="danger-button"
                 onClick={() => {
-                  onDeleteEvent(deleteEventTarget.id)
+                  onDeleteEvent(deleteEventTarget.id);
 
                   if (viewingEvent?.id === deleteEventTarget.id)
-                    setViewingEvent(null)
+                    setViewingEvent(null);
 
                   if (editingEvent?.id === deleteEventTarget.id)
-                    setFormOpen(false)
+                    setFormOpen(false);
 
-                  setDeleteEventTarget(null)
+                  setDeleteEventTarget(null);
                 }}
               >
                 <Icon name="trash" size={14} /> Confirm Delete
@@ -13210,7 +13301,7 @@ function CalendarView({
         </Modal>
       )}
     </div>
-  )
+  );
 }
 
 // ─── Documents ───────────────────────────────────────────────────────────────
@@ -13224,34 +13315,34 @@ function DocumentDetailsModal({
 
   onMarkReceived,
 }: {
-  request: DocumentRequest
+  request: DocumentRequest;
 
-  close: () => void
+  close: () => void;
 
-  onOpenChat?: (req: DocumentRequest) => void
+  onOpenChat?: (req: DocumentRequest) => void;
 
-  onMarkReceived?: (req: DocumentRequest) => void
+  onMarkReceived?: (req: DocumentRequest) => void;
 }) {
-  const [copied, setCopied] = useState(false)
+  const [copied, setCopied] = useState(false);
 
   function copyTracking() {
-    copyToClipboard(request.trackingNo)
+    copyToClipboard(request.trackingNo);
 
-    setCopied(true)
+    setCopied(true);
 
-    setTimeout(() => setCopied(false), 2000)
+    setTimeout(() => setCopied(false), 2000);
   }
 
-  const isDeclined = request.status === "Declined"
+  const isDeclined = request.status === "Declined";
 
   const isReceived =
-    request.status === "Received" || request.status === "Released"
+    request.status === "Received" || request.status === "Released";
 
   const isApproved =
     !isReceived &&
-    (request.status === "Approved" || request.status === "Ready for Pickup")
+    (request.status === "Approved" || request.status === "Ready for Pickup");
 
-  const currentStep = isDeclined ? 2 : isReceived ? 4 : isApproved ? 3 : 2
+  const currentStep = isDeclined ? 2 : isReceived ? 4 : isApproved ? 3 : 2;
 
   const progressPercent = isDeclined
     ? "50%"
@@ -13259,7 +13350,7 @@ function DocumentDetailsModal({
       ? "100%"
       : isApproved
         ? "75%"
-        : "50%"
+        : "50%";
 
   const steps = [
     { num: 1, label: "Filed" },
@@ -13269,7 +13360,7 @@ function DocumentDetailsModal({
     { num: 3, label: "Approved & Ready" },
 
     { num: 4, label: "Received" },
-  ]
+  ];
 
   const statusCssMap: Record<string, string> = {
     Pending: "pending",
@@ -13283,7 +13374,7 @@ function DocumentDetailsModal({
     Received: "verified",
 
     Declined: "declined",
-  }
+  };
 
   return (
     <Modal title="Document Request Details" close={close} maxWidth={620}>
@@ -13414,11 +13505,11 @@ function DocumentDetailsModal({
               style={{ width: progressPercent }}
             />
             {steps.map((st) => {
-              const isPast = currentStep > st.num
+              const isPast = currentStep > st.num;
 
-              const isCurr = currentStep === st.num
+              const isCurr = currentStep === st.num;
 
-              const isDeclinedStep = isDeclined && st.num === 2
+              const isDeclinedStep = isDeclined && st.num === 2;
 
               const stepClass = isDeclinedStep
                 ? "declined"
@@ -13426,7 +13517,7 @@ function DocumentDetailsModal({
                   ? "done"
                   : isCurr
                     ? "active"
-                    : ""
+                    : "";
 
               return (
                 <div key={st.num} className={`doc-step ${stepClass}`}>
@@ -13435,7 +13526,7 @@ function DocumentDetailsModal({
                   </div>
                   <span className="doc-step-label">{st.label}</span>
                 </div>
-              )
+              );
             })}
           </div>
         </div>
@@ -13684,7 +13775,7 @@ function DocumentDetailsModal({
         </div>
       </div>
     </Modal>
-  )
+  );
 }
 
 function ResidentDocumentsPage({
@@ -13704,37 +13795,37 @@ function ResidentDocumentsPage({
 
   onToast,
 }: {
-  user: { id: string; name: string; email: string }
+  user: { id: string; name: string; email: string };
 
-  requests: DocumentRequest[]
+  requests: DocumentRequest[];
 
-  onRequest: () => void
+  onRequest: () => void;
 
-  onOpenChat: (doc: DocumentRequest) => void
+  onOpenChat: (doc: DocumentRequest) => void;
 
-  onViewDetails: (req: DocumentRequest) => void
+  onViewDetails: (req: DocumentRequest) => void;
 
-  onDeleteRequest?: (id: string) => void
+  onDeleteRequest?: (id: string) => void;
 
-  onUpdateRequest?: (id: string, updates: Partial<DocumentRequest>) => void
+  onUpdateRequest?: (id: string, updates: Partial<DocumentRequest>) => void;
 
-  onToast?: (msg: string) => void
+  onToast?: (msg: string) => void;
 }) {
-  const [search, setSearch] = useState("")
+  const [search, setSearch] = useState("");
 
-  const [filterStatus, setFilterStatus] = useState<string>("all")
+  const [filterStatus, setFilterStatus] = useState<string>("all");
 
   const [deleteDocTarget, setDeleteDocTarget] =
-    useState<DocumentRequest | null>(null)
+    useState<DocumentRequest | null>(null);
 
   const filtered = requests.filter((r) => {
-    const q = search.toLowerCase()
+    const q = search.toLowerCase();
 
     const matchSearch =
       !q ||
       r.docType.toLowerCase().includes(q) ||
       r.purpose.toLowerCase().includes(q) ||
-      r.trackingNo.toLowerCase().includes(q)
+      r.trackingNo.toLowerCase().includes(q);
 
     const matchStatus =
       filterStatus === "all"
@@ -13743,10 +13834,10 @@ function ResidentDocumentsPage({
           ? r.status === "Approved" || r.status === "Ready for Pickup"
           : filterStatus === "Received"
             ? r.status === "Received" || r.status === "Released"
-            : r.status === filterStatus
+            : r.status === filterStatus;
 
-    return matchSearch && matchStatus
-  })
+    return matchSearch && matchStatus;
+  });
 
   const statusCssMap: Record<string, string> = {
     Pending: "pending",
@@ -13760,7 +13851,7 @@ function ResidentDocumentsPage({
     Received: "verified",
 
     Declined: "declined",
-  }
+  };
 
   return (
     <div className="page inner-page">
@@ -13782,15 +13873,15 @@ function ResidentDocumentsPage({
         {(["Pending", "Approved", "Received", "Declined"] as const).map((s) => {
           const count = requests.filter((r) => {
             if (s === "Approved") {
-              return r.status === "Approved" || r.status === "Ready for Pickup"
+              return r.status === "Approved" || r.status === "Ready for Pickup";
             }
 
             if (s === "Received") {
-              return r.status === "Received" || r.status === "Released"
+              return r.status === "Received" || r.status === "Released";
             }
 
-            return r.status === s
-          }).length
+            return r.status === s;
+          }).length;
 
           return (
             <button
@@ -13806,7 +13897,7 @@ function ResidentDocumentsPage({
               </span>
               <span className="doc-kpi-count">{count}</span>
             </button>
-          )
+          );
         })}
       </div>
 
@@ -13954,9 +14045,9 @@ function ResidentDocumentsPage({
                               : r.paymentStatus,
 
                           updatedAt: new Date().toISOString(),
-                        })
+                        });
 
-                        onToast?.("Document confirmed as received! ✅")
+                        onToast?.("Document confirmed as received! ✅");
                       }}
                       title="Confirm you have claimed and received this document"
                     >
@@ -14090,10 +14181,10 @@ function ResidentDocumentsPage({
                 className="danger-button"
                 onClick={() => {
                   if (onDeleteRequest) {
-                    onDeleteRequest(deleteDocTarget.id)
+                    onDeleteRequest(deleteDocTarget.id);
                   }
 
-                  setDeleteDocTarget(null)
+                  setDeleteDocTarget(null);
                 }}
               >
                 <Icon name="trash" size={14} /> Remove Request
@@ -14103,7 +14194,7 @@ function ResidentDocumentsPage({
         </Modal>
       )}
     </div>
-  )
+  );
 }
 
 function AdminDocumentsPage({
@@ -14119,30 +14210,30 @@ function AdminDocumentsPage({
 
   onDeleteRequest,
 }: {
-  requests: DocumentRequest[]
+  requests: DocumentRequest[];
 
-  onUpdateRequest: (id: string, updates: Partial<DocumentRequest>) => void
+  onUpdateRequest: (id: string, updates: Partial<DocumentRequest>) => void;
 
-  onToast: (msg: string) => void
+  onToast: (msg: string) => void;
 
-  onOpenChat: (email: string) => void
+  onOpenChat: (email: string) => void;
 
-  onViewDetails: (req: DocumentRequest) => void
+  onViewDetails: (req: DocumentRequest) => void;
 
-  onDeleteRequest?: (id: string) => void
+  onDeleteRequest?: (id: string) => void;
 }) {
-  const [search, setSearch] = useState("")
+  const [search, setSearch] = useState("");
 
-  const [filterStatus, setFilterStatus] = useState<string>("all")
+  const [filterStatus, setFilterStatus] = useState<string>("all");
 
-  const [selected, setSelected] = useState<DocumentRequest | null>(null)
+  const [selected, setSelected] = useState<DocumentRequest | null>(null);
 
-  const [feedback, setFeedback] = useState("")
+  const [feedback, setFeedback] = useState("");
 
-  const [pickupWindow, setPickupWindow] = useState("Window 1")
+  const [pickupWindow, setPickupWindow] = useState("Window 1");
 
   const [deleteDocTarget, setDeleteDocTarget] =
-    useState<DocumentRequest | null>(null)
+    useState<DocumentRequest | null>(null);
 
   const statusCssMap: Record<string, string> = {
     Pending: "pending",
@@ -14156,17 +14247,17 @@ function AdminDocumentsPage({
     Received: "verified",
 
     Declined: "declined",
-  }
+  };
 
   const filtered = requests.filter((r) => {
-    const q = search.toLowerCase()
+    const q = search.toLowerCase();
 
     const matchSearch =
       !q ||
       r.residentName.toLowerCase().includes(q) ||
       r.docType.toLowerCase().includes(q) ||
       r.purpose.toLowerCase().includes(q) ||
-      r.trackingNo.toLowerCase().includes(q)
+      r.trackingNo.toLowerCase().includes(q);
 
     const matchStatus =
       filterStatus === "all"
@@ -14175,19 +14266,19 @@ function AdminDocumentsPage({
           ? r.status === "Approved" || r.status === "Ready for Pickup"
           : filterStatus === "Received"
             ? r.status === "Received" || r.status === "Released"
-            : r.status === filterStatus
+            : r.status === filterStatus;
 
-    return matchSearch && matchStatus
-  })
+    return matchSearch && matchStatus;
+  });
 
-  const pendingCount = requests.filter((r) => r.status === "Pending").length
+  const pendingCount = requests.filter((r) => r.status === "Pending").length;
 
   function decide(newStatus: RequestStatus) {
-    if (!selected) return
+    if (!selected) return;
 
-    const finalStatus = newStatus === "Declined" ? "Declined" : "Approved"
+    const finalStatus = newStatus === "Declined" ? "Declined" : "Approved";
 
-    const finalWindow = pickupWindow || selected.pickupWindow || "Window 1"
+    const finalWindow = pickupWindow || selected.pickupWindow || "Window 1";
 
     const updates: Partial<DocumentRequest> = {
       status: finalStatus,
@@ -14197,21 +14288,21 @@ function AdminDocumentsPage({
       pickupWindow: finalWindow,
 
       updatedAt: new Date().toISOString(),
-    }
+    };
 
-    onUpdateRequest(selected.id, updates)
+    onUpdateRequest(selected.id, updates);
 
     onToast(
       finalStatus === "Declined"
         ? "Request declined. Resident notified."
         : `Request approved & ready for pickup at ${finalWindow}! Resident notified. 📋✅`,
-    )
+    );
 
-    setSelected(null)
+    setSelected(null);
 
-    setFeedback("")
+    setFeedback("");
 
-    setPickupWindow("Window 1")
+    setPickupWindow("Window 1");
   }
 
   const initials = (name: string) =>
@@ -14223,7 +14314,7 @@ function AdminDocumentsPage({
 
       .slice(0, 2)
 
-      .join("")
+      .join("");
 
   return (
     <div className="page inner-page">
@@ -14248,15 +14339,15 @@ function AdminDocumentsPage({
         {(["Pending", "Approved", "Received", "Declined"] as const).map((s) => {
           const count = requests.filter((r) => {
             if (s === "Approved") {
-              return r.status === "Approved" || r.status === "Ready for Pickup"
+              return r.status === "Approved" || r.status === "Ready for Pickup";
             }
 
             if (s === "Received") {
-              return r.status === "Received" || r.status === "Released"
+              return r.status === "Received" || r.status === "Released";
             }
 
-            return r.status === s
-          }).length
+            return r.status === s;
+          }).length;
 
           return (
             <button
@@ -14272,7 +14363,7 @@ function AdminDocumentsPage({
               </span>
               <span className="doc-kpi-count">{count}</span>
             </button>
-          )
+          );
         })}
       </div>
 
@@ -14427,7 +14518,7 @@ function AdminDocumentsPage({
                       }}
                       title="Instantly approve request and mark ready for pickup"
                       onClick={() => {
-                        const win = r.pickupWindow || "Window 1"
+                        const win = r.pickupWindow || "Window 1";
 
                         onUpdateRequest(r.id, {
                           status: "Approved",
@@ -14435,11 +14526,11 @@ function AdminDocumentsPage({
                           pickupWindow: win,
 
                           updatedAt: new Date().toISOString(),
-                        })
+                        });
 
                         onToast(
                           `Request approved & ready for pickup at ${win}! 📋✅`,
-                        )
+                        );
                       }}
                     >
                       <Icon name="check" size={13} /> Approve
@@ -14447,11 +14538,11 @@ function AdminDocumentsPage({
                     <button
                       className="row-action"
                       onClick={() => {
-                        setSelected(r)
+                        setSelected(r);
 
-                        setFeedback(r.adminFeedback || "")
+                        setFeedback(r.adminFeedback || "");
 
-                        setPickupWindow(r.pickupWindow || "Window 1")
+                        setPickupWindow(r.pickupWindow || "Window 1");
                       }}
                     >
                       Review
@@ -14498,9 +14589,11 @@ function AdminDocumentsPage({
                               : r.paymentStatus,
 
                           updatedAt: new Date().toISOString(),
-                        })
+                        });
 
-                        onToast("Document marked as Received by resident! 📄✅")
+                        onToast(
+                          "Document marked as Received by resident! 📄✅",
+                        );
                       }}
                     >
                       <Icon name="check" size={13} /> Receive
@@ -14508,11 +14601,11 @@ function AdminDocumentsPage({
                     <button
                       className="row-action"
                       onClick={() => {
-                        setSelected(r)
+                        setSelected(r);
 
-                        setFeedback(r.adminFeedback || "")
+                        setFeedback(r.adminFeedback || "");
 
-                        setPickupWindow(r.pickupWindow || "Window 1")
+                        setPickupWindow(r.pickupWindow || "Window 1");
                       }}
                     >
                       Manage
@@ -14523,11 +14616,11 @@ function AdminDocumentsPage({
                     <button
                       className="row-action"
                       onClick={() => {
-                        setSelected(r)
+                        setSelected(r);
 
-                        setFeedback(r.adminFeedback || "")
+                        setFeedback(r.adminFeedback || "");
 
-                        setPickupWindow(r.pickupWindow || "Window 1")
+                        setPickupWindow(r.pickupWindow || "Window 1");
                       }}
                     >
                       Manage
@@ -14734,11 +14827,11 @@ function AdminDocumentsPage({
                         : selected.paymentStatus,
 
                     updatedAt: new Date().toISOString(),
-                  })
+                  });
 
-                  onToast("Document marked as Received by resident! 📄✅")
+                  onToast("Document marked as Received by resident! 📄✅");
 
-                  setSelected(null)
+                  setSelected(null);
                 }}
               >
                 <Icon name="check" size={14} /> Mark as Received
@@ -14747,9 +14840,9 @@ function AdminDocumentsPage({
                 className="ghost-button"
                 style={{ display: "inline-flex", alignItems: "center", gap: 5 }}
                 onClick={() => {
-                  onOpenChat(selected.residentEmail)
+                  onOpenChat(selected.residentEmail);
 
-                  setSelected(null)
+                  setSelected(null);
                 }}
               >
                 <Icon name="message" size={14} /> Message Resident
@@ -14763,11 +14856,11 @@ function AdminDocumentsPage({
                     adminFeedback: feedback.trim() || undefined,
 
                     updatedAt: new Date().toISOString(),
-                  })
+                  });
 
-                  onToast("Document request details updated.")
+                  onToast("Document request details updated.");
 
-                  setSelected(null)
+                  setSelected(null);
                 }}
               >
                 Save Details
@@ -14781,9 +14874,9 @@ function AdminDocumentsPage({
                 className="ghost-button"
                 style={{ display: "inline-flex", alignItems: "center", gap: 5 }}
                 onClick={() => {
-                  onOpenChat(selected.residentEmail)
+                  onOpenChat(selected.residentEmail);
 
-                  setSelected(null)
+                  setSelected(null);
                 }}
               >
                 <Icon name="message" size={14} /> Message Resident
@@ -14795,11 +14888,11 @@ function AdminDocumentsPage({
                     status: "Approved",
 
                     updatedAt: new Date().toISOString(),
-                  })
+                  });
 
-                  onToast("Status reverted back to Approved.")
+                  onToast("Status reverted back to Approved.");
 
-                  setSelected(null)
+                  setSelected(null);
                 }}
                 title="Revert back to Approved if marked as received by mistake"
               >
@@ -14813,9 +14906,9 @@ function AdminDocumentsPage({
                 className="ghost-button"
                 style={{ display: "inline-flex", alignItems: "center", gap: 5 }}
                 onClick={() => {
-                  onOpenChat(selected.residentEmail)
+                  onOpenChat(selected.residentEmail);
 
-                  setSelected(null)
+                  setSelected(null);
                 }}
               >
                 <Icon name="message" size={14} /> Message Resident
@@ -14829,11 +14922,11 @@ function AdminDocumentsPage({
                     adminFeedback: "",
 
                     updatedAt: new Date().toISOString(),
-                  })
+                  });
 
-                  onToast("Request reopened to Pending.")
+                  onToast("Request reopened to Pending.");
 
-                  setSelected(null)
+                  setSelected(null);
                 }}
               >
                 Reopen to Pending
@@ -14975,14 +15068,14 @@ function AdminDocumentsPage({
                 className="danger-button"
                 onClick={() => {
                   if (onDeleteRequest) {
-                    onDeleteRequest(deleteDocTarget.id)
+                    onDeleteRequest(deleteDocTarget.id);
                   }
 
                   if (selected?.id === deleteDocTarget.id) {
-                    setSelected(null)
+                    setSelected(null);
                   }
 
-                  setDeleteDocTarget(null)
+                  setDeleteDocTarget(null);
                 }}
               >
                 <Icon name="trash" size={14} /> Confirm Delete
@@ -14992,7 +15085,7 @@ function AdminDocumentsPage({
         </Modal>
       )}
     </div>
-  )
+  );
 }
 
 // ─── Messaging ───────────────────────────────────────────────────────────────
@@ -15009,9 +15102,9 @@ function getInitialsFromEmail(email: string, name?: string): string {
 
       .join("")
 
-      .toUpperCase()
+      .toUpperCase();
 
-  return email.slice(0, 2).toUpperCase()
+  return email.slice(0, 2).toUpperCase();
 }
 
 function AdminMessagesPage({
@@ -15028,59 +15121,61 @@ function AdminMessagesPage({
   promotedAdmins,
   barangayInfo,
 }: {
-  threads: Record<string, Msg[]>
-  activeThread: string | null
-  onSelectThread: (email: string) => void
-  onSend: (email: string, text: string) => void
+  threads: Record<string, Msg[]>;
+  activeThread: string | null;
+  onSelectThread: (email: string) => void;
+  onSend: (email: string, text: string) => void;
   onDeleteMessage: (
     email: string,
     dbId: number | undefined,
     timestamp: number | undefined,
-  ) => void
-  onDeleteThread: (email: string) => void
-  allRequests: DocumentRequest[]
-  onViewDocRequest: (req: DocumentRequest) => void
-  currentUser?: { id?: string | number; email?: string; role?: string }
-  registeredResidents?: ResidentRecord[]
-  promotedAdmins?: string[]
-  barangayInfo?: BarangayInfo
+  ) => void;
+  onDeleteThread: (email: string) => void;
+  allRequests: DocumentRequest[];
+  onViewDocRequest: (req: DocumentRequest) => void;
+  currentUser?: { id?: string | number; email?: string; role?: string };
+  registeredResidents?: ResidentRecord[];
+  promotedAdmins?: string[];
+  barangayInfo?: BarangayInfo;
 }) {
-  const [draft, setDraft] = useState("")
-  const [search, setSearch] = useState("")
-  const [filterTab, setFilterTab] = useState<"all" | "residents" | "admins">("all")
-  const [threadToDelete, setThreadToDelete] = useState<string | null>(null)
-  const chatRef = useRef<HTMLDivElement>(null)
+  const [draft, setDraft] = useState("");
+  const [search, setSearch] = useState("");
+  const [filterTab, setFilterTab] = useState<"all" | "residents" | "admins">(
+    "all",
+  );
+  const [threadToDelete, setThreadToDelete] = useState<string | null>(null);
+  const chatRef = useRef<HTMLDivElement>(null);
 
-  const rawBarangayName = (barangayInfo?.name || "").trim() || "Labangan"
+  const rawBarangayName = (barangayInfo?.name || "").trim() || "Labangan";
   const officeName = rawBarangayName.toLowerCase().startsWith("barangay")
     ? `${rawBarangayName} Office`
-    : `Barangay ${rawBarangayName} Office`
+    : `Barangay ${rawBarangayName} Office`;
 
   const [loadedResidents, setLoadedResidents] = useState<ResidentRecord[]>(
     () => {
-      if (registeredResidents !== undefined) return registeredResidents
+      if (registeredResidents !== undefined) return registeredResidents;
 
       try {
-        const cached = localStorage.getItem("brgy_residents_cache")
+        const cached = localStorage.getItem("brgy_residents_cache");
         if (cached) {
-          const parsed = JSON.parse(cached)
+          const parsed = JSON.parse(cached);
           if (Array.isArray(parsed)) {
-            const purged = getPurgedIds()
+            const purged = getPurgedIds();
             return parsed.filter(
               (r) =>
                 !purged.includes(String(r.id)) &&
-                !purged.includes((r.email || "").toLowerCase().trim())
-            )
+                !purged.includes((r.email || "").toLowerCase().trim()),
+            );
           }
         }
       } catch {}
-      return []
+      return [];
     },
-  )
+  );
 
   useEffect(() => {
     if (registeredResidents !== undefined) {
-      setLoadedResidents(registeredResidents)
+      setLoadedResidents(registeredResidents);
     } else {
       supabase
         .from("accounts")
@@ -15088,32 +15183,32 @@ function AdminMessagesPage({
         .order("created_at", { ascending: false })
         .then(({ data }) => {
           if (data) {
-            const purged = getPurgedIds()
-            const meta = getResidentMeta()
+            const purged = getPurgedIds();
+            const meta = getResidentMeta();
             const mapped: ResidentRecord[] = data
               .filter((row: any) => {
-                const em = (row.email || "").toLowerCase().trim()
-                if (isProtectedAdminEmail(em)) return true
-                return !purged.includes(String(row.id)) && !purged.includes(em)
+                const em = (row.email || "").toLowerCase().trim();
+                if (isProtectedAdminEmail(em)) return true;
+                return !purged.includes(String(row.id)) && !purged.includes(em);
               })
               .map((row: any) => {
-                const rowMeta = meta[row.id] || {}
+                const rowMeta = meta[row.id] || {};
                 let finalStatus = (
                   rowMeta.statusOverride ||
                   row.status ||
                   "active"
-                ).toLowerCase() as any
-                if (finalStatus === "verified") finalStatus = "active"
+                ).toLowerCase() as any;
+                if (finalStatus === "verified") finalStatus = "active";
 
-                const address = row.address || `Barangay ${rawBarangayName}`
-                let purok = row.purok || "Purok 1"
-                const purokMatch = address.match(/Purok\s*\d+/i)
-                if (purokMatch) purok = purokMatch[0]
+                const address = row.address || `Barangay ${rawBarangayName}`;
+                let purok = row.purok || "Purok 1";
+                const purokMatch = address.match(/Purok\s*\d+/i);
+                if (purokMatch) purok = purokMatch[0];
 
-                const rEmail = (row.email || "").toLowerCase().trim()
+                const rEmail = (row.email || "").toLowerCase().trim();
                 const rRole = isProtectedAdminEmail(rEmail)
                   ? "admin"
-                  : ((row.role as any) || "resident")
+                  : (row.role as any) || "resident";
 
                 return {
                   id: String(row.id),
@@ -15128,20 +15223,20 @@ function AdminMessagesPage({
                   status: finalStatus,
                   registered: formatResidentDate(row.created_at),
                   isOnline: false,
-                }
-              })
+                };
+              });
 
-            setLoadedResidents(mapped)
+            setLoadedResidents(mapped);
             try {
               localStorage.setItem(
                 "brgy_residents_cache",
                 JSON.stringify(mapped),
-              )
+              );
             } catch {}
           }
-        })
+        });
     }
-  }, [registeredResidents, rawBarangayName])
+  }, [registeredResidents, rawBarangayName]);
 
   // Identify master administrator & current session email
   const masterAdminEmail = (
@@ -15150,7 +15245,7 @@ function AdminMessagesPage({
     "admin@baranggay.conn.gov.ph"
   )
     .toLowerCase()
-    .trim()
+    .trim();
 
   const myEmail = (
     currentUser?.email ||
@@ -15160,104 +15255,120 @@ function AdminMessagesPage({
     ""
   )
     .toLowerCase()
-    .trim()
+    .trim();
 
   const isSelf = (checkEmail?: string, checkId?: string | number) => {
-    const clean = (checkEmail || "").toLowerCase().trim()
-    if (!clean && !checkId) return false
-    if (myEmail && clean === myEmail) return true
-    if (currentUser?.email && clean === currentUser.email.toLowerCase().trim()) return true
-    if (checkId && currentUser?.id && String(checkId) === String(currentUser.id)) return true
-    return false
-  }
+    const clean = (checkEmail || "").toLowerCase().trim();
+    if (!clean && !checkId) return false;
+    if (myEmail && clean === myEmail) return true;
+    if (currentUser?.email && clean === currentUser.email.toLowerCase().trim())
+      return true;
+    if (
+      checkId &&
+      currentUser?.id &&
+      String(checkId) === String(currentUser.id)
+    )
+      return true;
+    return false;
+  };
 
   const allAdminEmails = useMemo(() => {
-    const set = new Set<string>()
-    if (masterAdminEmail) set.add(masterAdminEmail)
-    set.add("admin@baranggay.conn.gov.ph")
-    set.add("admin@sanisidro.gov.ph")
-    ;(promotedAdmins || getPromotedAdminEmails()).forEach((em: string) => {
-      if (em) set.add(em.toLowerCase().trim())
-    })
-    const purged = getPurgedIds()
+    const set = new Set<string>();
+    if (masterAdminEmail) set.add(masterAdminEmail);
+    set.add("admin@baranggay.conn.gov.ph");
+    set.add("admin@sanisidro.gov.ph");
+    (promotedAdmins || getPromotedAdminEmails()).forEach((em: string) => {
+      if (em) set.add(em.toLowerCase().trim());
+    });
+    const purged = getPurgedIds();
     loadedResidents.forEach((r) => {
-      const rEmail = (r.email || "").toLowerCase().trim()
+      const rEmail = (r.email || "").toLowerCase().trim();
       if (
         !isProtectedAdminEmail(rEmail) &&
         (purged.includes(String(r.id)) || purged.includes(rEmail))
       ) {
-        return
+        return;
       }
       if ((r.role === "admin" || isProtectedAdminEmail(rEmail)) && r.email) {
-        set.add(rEmail)
+        set.add(rEmail);
       }
-    })
-    return set
-  }, [masterAdminEmail, promotedAdmins, loadedResidents])
+    });
+    return set;
+  }, [masterAdminEmail, promotedAdmins, loadedResidents]);
 
   const isAdminEmail = (email: string) =>
-    allAdminEmails.has(email.toLowerCase().trim())
+    allAdminEmails.has(email.toLowerCase().trim());
 
   // Collect all emails that have active threads (filter out deleted ones AND filter out self!)
   const allEmails = Object.keys(threads).filter(
     (email) => !isThreadDeleted(email) && !isSelf(email),
-  )
+  );
 
   const activeMatchingEmails = allEmails.filter((email) => {
-    if (!search.trim()) return true
-    const q = search.trim().toLowerCase()
-    const name = resolveResidentMeta(email).name
-    return email.toLowerCase().includes(q) || name.toLowerCase().includes(q)
-  })
+    if (!search.trim()) return true;
+    const q = search.trim().toLowerCase();
+    const name = resolveResidentMeta(email).name;
+    return email.toLowerCase().includes(q) || name.toLowerCase().includes(q);
+  });
 
   // Sort active: unread first, then by last msg timestamp
   const sortedActiveThreads = [...activeMatchingEmails].sort((a, b) => {
-    const aLast = threads[a]?.at(-1)
-    const bLast = threads[b]?.at(-1)
-    const aUnread = aLast?.from === "resident" ? 1 : 0
-    const bUnread = bLast?.from === "resident" ? 1 : 0
-    if (bUnread !== aUnread) return bUnread - aUnread
-    return (bLast?.timestamp ?? 0) - (aLast?.timestamp ?? 0)
-  })
+    const aLast = threads[a]?.at(-1);
+    const bLast = threads[b]?.at(-1);
+    const aUnread = aLast?.from === "resident" ? 1 : 0;
+    const bUnread = bLast?.from === "resident" ? 1 : 0;
+    if (bUnread !== aUnread) return bUnread - aUnread;
+    return (bLast?.timestamp ?? 0) - (aLast?.timestamp ?? 0);
+  });
 
-  const activeAdminThreads = sortedActiveThreads.filter((em) => isAdminEmail(em))
-  const activeResidentThreads = sortedActiveThreads.filter((em) => !isAdminEmail(em))
+  const activeAdminThreads = sortedActiveThreads.filter((em) =>
+    isAdminEmail(em),
+  );
+  const activeResidentThreads = sortedActiveThreads.filter(
+    (em) => !isAdminEmail(em),
+  );
 
   const displayedThreads =
     filterTab === "admins"
       ? activeAdminThreads
       : filterTab === "residents"
-      ? activeResidentThreads
-      : sortedActiveThreads
+        ? activeResidentThreads
+        : sortedActiveThreads;
 
   // Other available administrators (strictly excluding current user!)
   const availableAdmins = useMemo(() => {
-    const list: { email: string; name: string; role: string; purok?: string; id?: string }[] = []
-    const seen = new Set<string>()
-    const purged = getPurgedIds()
+    const list: {
+      email: string;
+      name: string;
+      role: string;
+      purok?: string;
+      id?: string;
+    }[] = [];
+    const seen = new Set<string>();
+    const purged = getPurgedIds();
 
     allAdminEmails.forEach((adminEmail) => {
-      if (!adminEmail) return
-      if (isSelf(adminEmail)) return // Current user can NEVER chat with themselves!
-      if (seen.has(adminEmail)) return
-      seen.add(adminEmail)
+      if (!adminEmail) return;
+      if (isSelf(adminEmail)) return; // Current user can NEVER chat with themselves!
+      if (seen.has(adminEmail)) return;
+      seen.add(adminEmail);
 
       const res = loadedResidents.find(
         (r) => r.email.toLowerCase().trim() === adminEmail,
-      )
+      );
       if (
         res &&
         !isProtectedAdminEmail(adminEmail) &&
         (purged.includes(String(res.id)) ||
           purged.includes(res.email.toLowerCase().trim()))
       ) {
-        return
+        return;
       }
 
-      const isSanIsidro = adminEmail === "admin@sanisidro.gov.ph"
+      const isSanIsidro = adminEmail === "admin@sanisidro.gov.ph";
       const isMaster =
         adminEmail === masterAdminEmail ||
-        adminEmail === "admin@baranggay.conn.gov.ph"
+        adminEmail === "admin@baranggay.conn.gov.ph";
 
       list.push({
         id: res?.id,
@@ -15267,58 +15378,62 @@ function AdminMessagesPage({
           (isSanIsidro
             ? `${barangayInfo?.captain || "Barangay Captain"} (Administrator)`
             : isMaster
-            ? "Barangay Admin (Master Admin)"
-            : adminEmail.split("@")[0]),
+              ? "Barangay Admin (Master Admin)"
+              : adminEmail.split("@")[0]),
         role: "Administrator",
         purok: res?.purok,
-      })
-    })
+      });
+    });
 
-    return list
-  }, [allAdminEmails, myEmail, currentUser, loadedResidents, masterAdminEmail, barangayInfo?.captain])
+    return list;
+  }, [
+    allAdminEmails,
+    myEmail,
+    currentUser,
+    loadedResidents,
+    masterAdminEmail,
+    barangayInfo?.captain,
+  ]);
 
   const availableAdminsToStart = availableAdmins.filter(
     (a) => !allEmails.includes(a.email.toLowerCase().trim()),
-  )
+  );
 
   const filteredAvailableAdmins = availableAdminsToStart.filter((a) => {
-    if (!search.trim()) return true
-    const q = search.trim().toLowerCase()
+    if (!search.trim()) return true;
+    const q = search.trim().toLowerCase();
     return (
       a.name.toLowerCase().includes(q) ||
       a.email.toLowerCase().includes(q) ||
       a.role.toLowerCase().includes(q)
-    )
-  })
+    );
+  });
 
   // Other registered residents who are not currently in active threads
   const availableResidents = useMemo(() => {
-    const purged = getPurgedIds()
+    const purged = getPurgedIds();
     return loadedResidents.filter((r) => {
-      const resEmail = (r.email || "").toLowerCase().trim()
-      if (!resEmail) return false
-      if (isSelf(resEmail, r.id)) return false // Current user can NEVER chat with themselves!
-      if (isAdminEmail(resEmail)) return false // Admins are not residents!
-      if (
-        purged.includes(String(r.id)) ||
-        purged.includes(resEmail)
-      ) {
-        return false
+      const resEmail = (r.email || "").toLowerCase().trim();
+      if (!resEmail) return false;
+      if (isSelf(resEmail, r.id)) return false; // Current user can NEVER chat with themselves!
+      if (isAdminEmail(resEmail)) return false; // Admins are not residents!
+      if (purged.includes(String(r.id)) || purged.includes(resEmail)) {
+        return false;
       }
-      return !allEmails.includes(resEmail)
-    })
-  }, [loadedResidents, myEmail, currentUser, allAdminEmails, allEmails])
+      return !allEmails.includes(resEmail);
+    });
+  }, [loadedResidents, myEmail, currentUser, allAdminEmails, allEmails]);
 
   const filteredAvailableResidents = availableResidents.filter((r) => {
-    if (!search.trim()) return true
-    const q = search.trim().toLowerCase()
+    if (!search.trim()) return true;
+    const q = search.trim().toLowerCase();
     return (
       (r.name && r.name.toLowerCase().includes(q)) ||
       (r.email && r.email.toLowerCase().includes(q)) ||
       (r.purok && r.purok.toLowerCase().includes(q)) ||
       (r.address && r.address.toLowerCase().includes(q))
-    )
-  })
+    );
+  });
 
   const ADMIN_RESIDENT_QUICK_REPLIES = [
     "Magandang araw! Paano po kita matutulungan ngayon?",
@@ -15326,7 +15441,7 @@ function AdminMessagesPage({
     "Maaari po kayong pumunta sa barangay hall para sa inyong request.",
     "Ang inyong dokumento ay naghihintay na ng pickup sa Window 1.",
     "Mayroon pa po bang ibang katanungan?",
-  ]
+  ];
 
   const ADMIN_COORDINATION_QUICK_REPLIES = [
     "Noted, thank you for the update!",
@@ -15335,52 +15450,53 @@ function AdminMessagesPage({
     "Updated the announcement board, please take a look.",
     "Copy that, handling it right now.",
     "Let's coordinate on the upcoming barangay event.",
-  ]
+  ];
 
   useEffect(() => {
     if (activeThread && isSelf(activeThread)) {
-      onSelectThread("")
+      onSelectThread("");
     }
-  }, [activeThread, myEmail, currentUser])
+  }, [activeThread, myEmail, currentUser]);
 
   function handleSend() {
-    if (!draft.trim() || !activeThread) return
-    if (isSelf(activeThread)) return
-    onSend(activeThread, draft.trim())
-    setDraft("")
+    if (!draft.trim() || !activeThread) return;
+    if (isSelf(activeThread)) return;
+    onSend(activeThread, draft.trim());
+    setDraft("");
   }
 
   useEffect(() => {
     if (chatRef.current) {
-      chatRef.current.scrollTop = chatRef.current.scrollHeight
+      chatRef.current.scrollTop = chatRef.current.scrollHeight;
     }
-  }, [activeThread, threads])
+  }, [activeThread, threads]);
 
-  const isActiveThreadAdmin = activeThread ? isAdminEmail(activeThread) : false
+  const isActiveThreadAdmin = activeThread ? isAdminEmail(activeThread) : false;
   const activeResidentMeta = activeThread
     ? resolveResidentMeta(activeThread)
-    : null
+    : null;
 
   const activeAdminInfo =
     isActiveThreadAdmin && activeThread
       ? availableAdmins.find(
-          (a) => a.email.toLowerCase().trim() === activeThread.toLowerCase().trim(),
+          (a) =>
+            a.email.toLowerCase().trim() === activeThread.toLowerCase().trim(),
         )
-      : null
+      : null;
 
   const activeDisplayName =
     activeAdminInfo?.name ||
     activeResidentMeta?.name ||
     activeThread ||
-    "Resident"
+    "Resident";
 
   const activeRequests =
     activeThread && !isActiveThreadAdmin
       ? allRequests.filter((r) => r.residentEmail === activeThread)
-      : []
+      : [];
 
   function initials(name: string): string {
-    return getInitials(name)
+    return getInitials(name);
   }
 
   return (
@@ -15389,7 +15505,10 @@ function AdminMessagesPage({
         <div>
           <p className="eyebrow">ADMINISTRATION</p>
           <h1>Resident & Admin Messages</h1>
-          <p>Coordinate with barangay officials and respond to resident inquiries in real-time.</p>
+          <p>
+            Coordinate with barangay officials and respond to resident inquiries
+            in real-time.
+          </p>
         </div>
       </section>
       <div className="messages-shell">
@@ -15491,16 +15610,17 @@ function AdminMessagesPage({
                 </div>
               )}
               {displayedThreads.map((email) => {
-                const msgs = threads[email] ?? []
-                const last = msgs.at(-1)
-                const isTargetAdmin = isAdminEmail(email)
-                const hasUnread = last?.from === "resident"
-                const meta = resolveResidentMeta(email)
+                const msgs = threads[email] ?? [];
+                const last = msgs.at(-1);
+                const isTargetAdmin = isAdminEmail(email);
+                const hasUnread = last?.from === "resident";
+                const meta = resolveResidentMeta(email);
                 const adm = availableAdmins.find(
-                  (a) => a.email.toLowerCase().trim() === email.toLowerCase().trim(),
-                )
-                const displayName = adm?.name || meta.name || email
-                const initials = getInitialsFromEmail(email, displayName)
+                  (a) =>
+                    a.email.toLowerCase().trim() === email.toLowerCase().trim(),
+                );
+                const displayName = adm?.name || meta.name || email;
+                const initials = getInitialsFromEmail(email, displayName);
 
                 return (
                   <div
@@ -15518,10 +15638,18 @@ function AdminMessagesPage({
                     >
                       <Avatar
                         initials={initials}
-                        tone={isTargetAdmin ? "blue" : (hasUnread ? "amber" : "green")}
+                        tone={
+                          isTargetAdmin ? "blue" : hasUnread ? "amber" : "green"
+                        }
                       />
                       <div className="thread-meta">
-                        <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 5,
+                          }}
+                        >
                           <strong>{displayName}</strong>
                           {isTargetAdmin && (
                             <span
@@ -15554,35 +15682,36 @@ function AdminMessagesPage({
                       className="thread-delete-btn"
                       title={`Delete conversation with ${displayName}`}
                       onClick={(e) => {
-                        e.stopPropagation()
-                        setThreadToDelete(email)
+                        e.stopPropagation();
+                        setThreadToDelete(email);
                       }}
                     >
                       <Icon name="trash" size={13} />
                     </button>
                   </div>
-                )
+                );
               })}
 
               {/* Start new chat with Admins when searching */}
-              {(filterTab === "all" || filterTab === "admins") && filteredAvailableAdmins.length > 0 && (
-                <div
-                  style={{
-                    padding: "10px 14px 4px",
-                    fontSize: 11,
-                    fontWeight: 700,
-                    color: "#1d4ed8",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.5px",
-                    borderTop: "1px solid #e5e7eb",
-                  }}
-                >
-                  👑 Start Chat with Admin ({filteredAvailableAdmins.length})
-                </div>
-              )}
+              {(filterTab === "all" || filterTab === "admins") &&
+                filteredAvailableAdmins.length > 0 && (
+                  <div
+                    style={{
+                      padding: "10px 14px 4px",
+                      fontSize: 11,
+                      fontWeight: 700,
+                      color: "#1d4ed8",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.5px",
+                      borderTop: "1px solid #e5e7eb",
+                    }}
+                  >
+                    👑 Start Chat with Admin ({filteredAvailableAdmins.length})
+                  </div>
+                )}
               {(filterTab === "all" || filterTab === "admins") &&
                 filteredAvailableAdmins.map((adm) => {
-                  const initials = getInitialsFromEmail(adm.email, adm.name)
+                  const initials = getInitialsFromEmail(adm.email, adm.name);
                   return (
                     <button
                       key={adm.email}
@@ -15591,8 +15720,8 @@ function AdminMessagesPage({
                         activeThread === adm.email ? " active" : ""
                       }`}
                       onClick={() => {
-                        unmarkThreadDeleted(adm.email)
-                        onSelectThread(adm.email)
+                        unmarkThreadDeleted(adm.email);
+                        onSelectThread(adm.email);
                       }}
                       style={{
                         width: "100%",
@@ -15615,7 +15744,13 @@ function AdminMessagesPage({
                           className="thread-meta"
                           style={{ overflow: "hidden" }}
                         >
-                          <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 5,
+                            }}
+                          >
                             <strong>{adm.name}</strong>
                             <span
                               style={{
@@ -15650,28 +15785,30 @@ function AdminMessagesPage({
                         + Chat
                       </span>
                     </button>
-                  )
+                  );
                 })}
 
               {/* Start new chat with Residents when searching */}
-              {(filterTab === "all" || filterTab === "residents") && filteredAvailableResidents.length > 0 && (
-                <div
-                  style={{
-                    padding: "10px 14px 4px",
-                    fontSize: 11,
-                    fontWeight: 700,
-                    color: "#166534",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.5px",
-                    borderTop: "1px solid #e5e7eb",
-                  }}
-                >
-                  Start Chat with Resident ({filteredAvailableResidents.length})
-                </div>
-              )}
+              {(filterTab === "all" || filterTab === "residents") &&
+                filteredAvailableResidents.length > 0 && (
+                  <div
+                    style={{
+                      padding: "10px 14px 4px",
+                      fontSize: 11,
+                      fontWeight: 700,
+                      color: "#166534",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.5px",
+                      borderTop: "1px solid #e5e7eb",
+                    }}
+                  >
+                    Start Chat with Resident (
+                    {filteredAvailableResidents.length})
+                  </div>
+                )}
               {(filterTab === "all" || filterTab === "residents") &&
                 filteredAvailableResidents.map((res) => {
-                  const initials = getInitialsFromEmail(res.email, res.name)
+                  const initials = getInitialsFromEmail(res.email, res.name);
                   return (
                     <button
                       key={res.email}
@@ -15680,8 +15817,8 @@ function AdminMessagesPage({
                         activeThread === res.email ? " active" : ""
                       }`}
                       onClick={() => {
-                        unmarkThreadDeleted(res.email)
-                        onSelectThread(res.email)
+                        unmarkThreadDeleted(res.email);
+                        onSelectThread(res.email);
                       }}
                       style={{
                         width: "100%",
@@ -15724,7 +15861,7 @@ function AdminMessagesPage({
                         Message
                       </span>
                     </button>
-                  )
+                  );
                 })}
 
               {displayedThreads.length === 0 &&
@@ -15748,16 +15885,18 @@ function AdminMessagesPage({
               {displayedThreads.length > 0 ? (
                 <>
                   {displayedThreads.map((email) => {
-                    const msgs = threads[email] ?? []
-                    const last = msgs.at(-1)
-                    const isTargetAdmin = isAdminEmail(email)
-                    const hasUnread = last?.from === "resident"
-                    const meta = resolveResidentMeta(email)
+                    const msgs = threads[email] ?? [];
+                    const last = msgs.at(-1);
+                    const isTargetAdmin = isAdminEmail(email);
+                    const hasUnread = last?.from === "resident";
+                    const meta = resolveResidentMeta(email);
                     const adm = availableAdmins.find(
-                      (a) => a.email.toLowerCase().trim() === email.toLowerCase().trim(),
-                    )
-                    const displayName = adm?.name || meta.name || email
-                    const initials = getInitialsFromEmail(email, displayName)
+                      (a) =>
+                        a.email.toLowerCase().trim() ===
+                        email.toLowerCase().trim(),
+                    );
+                    const displayName = adm?.name || meta.name || email;
+                    const initials = getInitialsFromEmail(email, displayName);
 
                     return (
                       <div
@@ -15775,10 +15914,22 @@ function AdminMessagesPage({
                         >
                           <Avatar
                             initials={initials}
-                            tone={isTargetAdmin ? "blue" : (hasUnread ? "amber" : "green")}
+                            tone={
+                              isTargetAdmin
+                                ? "blue"
+                                : hasUnread
+                                  ? "amber"
+                                  : "green"
+                            }
                           />
                           <div className="thread-meta">
-                            <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 5,
+                              }}
+                            >
                               <strong>{displayName}</strong>
                               {isTargetAdmin && (
                                 <span
@@ -15811,14 +15962,14 @@ function AdminMessagesPage({
                           className="thread-delete-btn"
                           title={`Delete conversation with ${displayName}`}
                           onClick={(e) => {
-                            e.stopPropagation()
-                            setThreadToDelete(email)
+                            e.stopPropagation();
+                            setThreadToDelete(email);
                           }}
                         >
                           <Icon name="trash" size={13} />
                         </button>
                       </div>
-                    )
+                    );
                   })}
 
                   {/* Show available Admins section if tab allows */}
@@ -15844,13 +15995,14 @@ function AdminMessagesPage({
                             gap: 4,
                           }}
                         >
-                          👑 Message Other Admins ({filteredAvailableAdmins.length})
+                          👑 Message Other Admins (
+                          {filteredAvailableAdmins.length})
                         </div>
                         {filteredAvailableAdmins.map((adm) => {
                           const initials = getInitialsFromEmail(
                             adm.email,
                             adm.name,
-                          )
+                          );
                           return (
                             <button
                               key={adm.email}
@@ -15859,8 +16011,8 @@ function AdminMessagesPage({
                                 activeThread === adm.email ? " active" : ""
                               }`}
                               onClick={() => {
-                                unmarkThreadDeleted(adm.email)
-                                onSelectThread(adm.email)
+                                unmarkThreadDeleted(adm.email);
+                                onSelectThread(adm.email);
                               }}
                               style={{
                                 width: "100%",
@@ -15884,7 +16036,13 @@ function AdminMessagesPage({
                                   className="thread-meta"
                                   style={{ overflow: "hidden" }}
                                 >
-                                  <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                                  <div
+                                    style={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: 5,
+                                    }}
+                                  >
                                     <strong>{adm.name}</strong>
                                     <span
                                       style={{
@@ -15919,7 +16077,7 @@ function AdminMessagesPage({
                                 + Chat
                               </span>
                             </button>
-                          )
+                          );
                         })}
                       </div>
                     )}
@@ -15944,13 +16102,14 @@ function AdminMessagesPage({
                             marginBottom: 8,
                           }}
                         >
-                          Message Other Residents ({filteredAvailableResidents.length})
+                          Message Other Residents (
+                          {filteredAvailableResidents.length})
                         </div>
                         {filteredAvailableResidents.slice(0, 8).map((res) => {
                           const initials = getInitialsFromEmail(
                             res.email,
                             res.name,
-                          )
+                          );
                           return (
                             <button
                               key={res.email}
@@ -15959,8 +16118,8 @@ function AdminMessagesPage({
                                 activeThread === res.email ? " active" : ""
                               }`}
                               onClick={() => {
-                                unmarkThreadDeleted(res.email)
-                                onSelectThread(res.email)
+                                unmarkThreadDeleted(res.email);
+                                onSelectThread(res.email);
                               }}
                               style={{
                                 width: "100%",
@@ -16004,7 +16163,7 @@ function AdminMessagesPage({
                                 + Chat
                               </span>
                             </button>
-                          )
+                          );
                         })}
                         {filteredAvailableResidents.length > 8 && (
                           <p
@@ -16028,9 +16187,11 @@ function AdminMessagesPage({
                 <div style={{ padding: "14px 14px" }}>
                   <div
                     style={{
-                      background: filterTab === "admins" ? "#eff6ff" : "#f0fdf4",
+                      background:
+                        filterTab === "admins" ? "#eff6ff" : "#f0fdf4",
                       border: "1px solid",
-                      borderColor: filterTab === "admins" ? "#bfdbfe" : "#bbf7d0",
+                      borderColor:
+                        filterTab === "admins" ? "#bfdbfe" : "#bbf7d0",
                       borderRadius: 8,
                       padding: "10px 12px",
                       marginBottom: 12,
@@ -16076,13 +16237,14 @@ function AdminMessagesPage({
                             marginBottom: 6,
                           }}
                         >
-                          👑 Barangay Administrators ({filteredAvailableAdmins.length})
+                          👑 Barangay Administrators (
+                          {filteredAvailableAdmins.length})
                         </div>
                         {filteredAvailableAdmins.map((adm) => {
                           const initials = getInitialsFromEmail(
                             adm.email,
                             adm.name,
-                          )
+                          );
                           return (
                             <button
                               key={adm.email}
@@ -16091,8 +16253,8 @@ function AdminMessagesPage({
                                 activeThread === adm.email ? " active" : ""
                               }`}
                               onClick={() => {
-                                unmarkThreadDeleted(adm.email)
-                                onSelectThread(adm.email)
+                                unmarkThreadDeleted(adm.email);
+                                onSelectThread(adm.email);
                               }}
                               style={{
                                 width: "100%",
@@ -16116,7 +16278,13 @@ function AdminMessagesPage({
                                   className="thread-meta"
                                   style={{ overflow: "hidden" }}
                                 >
-                                  <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                                  <div
+                                    style={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: 5,
+                                    }}
+                                  >
                                     <strong>{adm.name}</strong>
                                     <span
                                       style={{
@@ -16151,7 +16319,7 @@ function AdminMessagesPage({
                                 + Chat
                               </span>
                             </button>
-                          )
+                          );
                         })}
                       </div>
                     )}
@@ -16170,13 +16338,14 @@ function AdminMessagesPage({
                             marginBottom: 6,
                           }}
                         >
-                          Registered Residents ({filteredAvailableResidents.length})
+                          Registered Residents (
+                          {filteredAvailableResidents.length})
                         </div>
                         {filteredAvailableResidents.map((res) => {
                           const initials = getInitialsFromEmail(
                             res.email,
                             res.name,
-                          )
+                          );
                           return (
                             <button
                               key={res.email}
@@ -16185,8 +16354,8 @@ function AdminMessagesPage({
                                 activeThread === res.email ? " active" : ""
                               }`}
                               onClick={() => {
-                                unmarkThreadDeleted(res.email)
-                                onSelectThread(res.email)
+                                unmarkThreadDeleted(res.email);
+                                onSelectThread(res.email);
                               }}
                               style={{
                                 width: "100%",
@@ -16230,7 +16399,7 @@ function AdminMessagesPage({
                                 Message
                               </span>
                             </button>
-                          )
+                          );
                         })}
                       </div>
                     )}
@@ -16245,7 +16414,8 @@ function AdminMessagesPage({
                           textAlign: "center",
                         }}
                       >
-                        No other accounts found. New registered users will appear here.
+                        No other accounts found. New registered users will
+                        appear here.
                       </p>
                     )}
                 </div>
@@ -16259,10 +16429,7 @@ function AdminMessagesPage({
           <div className="chat-pane">
             <div className="chat-header">
               <Avatar
-                initials={getInitialsFromEmail(
-                  activeThread,
-                  activeDisplayName,
-                )}
+                initials={getInitialsFromEmail(activeThread, activeDisplayName)}
                 tone={isActiveThreadAdmin ? "blue" : "green"}
               />
               <div style={{ flex: 1 }}>
@@ -16369,12 +16536,12 @@ function AdminMessagesPage({
                 </div>
               ) : (
                 (threads[activeThread] ?? []).map((msg, i) => {
-                  const isMe = msg.from === "admin"
+                  const isMe = msg.from === "admin";
                   const senderInitials = isActiveThreadAdmin
                     ? initials(activeDisplayName)
                     : activeResidentMeta?.name
-                    ? initials(activeResidentMeta.name)
-                    : getInitialsFromEmail(activeThread || "User")
+                      ? initials(activeResidentMeta.name)
+                      : getInitialsFromEmail(activeThread || "User");
 
                   return (
                     <div
@@ -16407,7 +16574,7 @@ function AdminMessagesPage({
                         <small className="chat-time">{msg.time}</small>
                       </div>
                     </div>
-                  )
+                  );
                 })
               )}
             </div>
@@ -16458,7 +16625,8 @@ function AdminMessagesPage({
             </span>
             <h3>Select a conversation</h3>
             <p>
-              Choose a resident or administrator from the list to view and reply to messages.
+              Choose a resident or administrator from the list to view and reply
+              to messages.
             </p>
           </div>
         )}
@@ -16500,8 +16668,8 @@ function AdminMessagesPage({
                 type="button"
                 className="danger-button"
                 onClick={() => {
-                  onDeleteThread(threadToDelete)
-                  setThreadToDelete(null)
+                  onDeleteThread(threadToDelete);
+                  setThreadToDelete(null);
                 }}
               >
                 Delete Conversation
@@ -16511,7 +16679,7 @@ function AdminMessagesPage({
         </Modal>
       )}
     </div>
-  )
+  );
 }
 
 function ResidentMessagesPage({
@@ -16533,59 +16701,59 @@ function ResidentMessagesPage({
 
   barangayInfo,
 }: {
-  user: { id: string; name: string; email: string }
+  user: { id: string; name: string; email: string };
 
-  thread: Msg[]
+  thread: Msg[];
 
-  onSend: (text: string) => void
+  onSend: (text: string) => void;
 
   onDeleteMessage: (
     dbId: number | undefined,
 
     timestamp: number | undefined,
-  ) => void
+  ) => void;
 
-  onClearThread: () => void
+  onClearThread: () => void;
 
-  presetDraft?: string
+  presetDraft?: string;
 
-  onClearPresetDraft?: () => void
+  onClearPresetDraft?: () => void;
 
-  myRequests: DocumentRequest[]
+  myRequests: DocumentRequest[];
 
-  barangayInfo?: BarangayInfo
+  barangayInfo?: BarangayInfo;
 }) {
-  const [draft, setDraft] = useState("")
+  const [draft, setDraft] = useState("");
 
-  const [confirmClearOpen, setConfirmClearOpen] = useState(false)
+  const [confirmClearOpen, setConfirmClearOpen] = useState(false);
 
-  const chatRef = useRef<HTMLDivElement>(null)
+  const chatRef = useRef<HTMLDivElement>(null);
 
-  const rawBarangayName = (barangayInfo?.name || "").trim() || "Labangan"
+  const rawBarangayName = (barangayInfo?.name || "").trim() || "Labangan";
   const displayName = rawBarangayName.toLowerCase().startsWith("barangay")
     ? rawBarangayName
-    : `Barangay ${rawBarangayName}`
-  const officeName = `${displayName} Office`
-  const officeInitials = getInitials(displayName)
+    : `Barangay ${rawBarangayName}`;
+  const officeName = `${displayName} Office`;
+  const officeInitials = getInitials(displayName);
   const hoursText = barangayInfo?.weekdayHours
     ? `Mon–Fri ${barangayInfo.weekdayHours}`
-    : "Mon–Fri 8AM–5PM"
+    : "Mon–Fri 8AM–5PM";
 
   // Inject preset draft (e.g. follow-up from documents page)
 
   useEffect(() => {
     if (presetDraft) {
-      setDraft(presetDraft)
+      setDraft(presetDraft);
 
-      onClearPresetDraft?.()
+      onClearPresetDraft?.();
     }
-  }, [presetDraft])
+  }, [presetDraft]);
 
   useEffect(() => {
     if (chatRef.current) {
-      chatRef.current.scrollTop = chatRef.current.scrollHeight
+      chatRef.current.scrollTop = chatRef.current.scrollHeight;
     }
-  }, [thread])
+  }, [thread]);
 
   const QUICK_PROMPTS = [
     "Magandang araw po! Gusto ko pong itanong ang status ng aking request.",
@@ -16597,14 +16765,14 @@ function ResidentMessagesPage({
     "May tanong po ako tungkol sa barangay programs.",
 
     "Follow-up lang po sa aking nakaraang mensahe.",
-  ]
+  ];
 
   function handleSend() {
-    if (!draft.trim()) return
+    if (!draft.trim()) return;
 
-    onSend(draft.trim())
+    onSend(draft.trim());
 
-    setDraft("")
+    setDraft("");
   }
 
   return (
@@ -16668,14 +16836,13 @@ function ResidentMessagesPage({
               <div className="chat-start-note">
                 <Icon name="message" size={22} />
                 <p>
-                  Start a conversation with {officeName}. Use this
-                  channel for concerns, inquiries, or follow-ups on your
-                  requests.
+                  Start a conversation with {officeName}. Use this channel for
+                  concerns, inquiries, or follow-ups on your requests.
                 </p>
               </div>
             )}
             {thread.map((msg, i) => {
-              const isMe = msg.from === "resident"
+              const isMe = msg.from === "resident";
 
               return (
                 <div
@@ -16701,7 +16868,7 @@ function ResidentMessagesPage({
                     <small className="chat-time">{msg.time}</small>
                   </div>
                 </div>
-              )
+              );
             })}
           </div>
 
@@ -16762,8 +16929,8 @@ function ResidentMessagesPage({
                 lineHeight: 1.6,
               }}
             >
-              Are you sure you want to clear your conversation with {officeName}?
-              This will remove all messages from your chat.
+              Are you sure you want to clear your conversation with {officeName}
+              ? This will remove all messages from your chat.
             </p>
             <div
               style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}
@@ -16779,9 +16946,9 @@ function ResidentMessagesPage({
                 type="button"
                 className="danger-button"
                 onClick={() => {
-                  onClearThread()
+                  onClearThread();
 
-                  setConfirmClearOpen(false)
+                  setConfirmClearOpen(false);
                 }}
               >
                 Clear Chat
@@ -16791,7 +16958,7 @@ function ResidentMessagesPage({
         </Modal>
       )}
     </div>
-  )
+  );
 }
 
 // Avatar with custom size for chat
@@ -16803,11 +16970,11 @@ function AvatarSm({
 
   size = 36,
 }: {
-  initials: string
+  initials: string;
 
-  tone?: "blue" | "amber" | "green"
+  tone?: "blue" | "amber" | "green";
 
-  size?: number
+  size?: number;
 }) {
   return (
     <span
@@ -16816,62 +16983,62 @@ function AvatarSm({
     >
       {initials}
     </span>
-  )
+  );
 }
 
 // Alias used in JSX above
 
-const _ = AvatarSm
+const _ = AvatarSm;
 
-void _
+void _;
 
 // ─── Real-Time Session Presence Tracking ─────────────────────────────────
 
-const PRESENCE_STORAGE_KEY = "brgy_presence_sessions_v1"
+const PRESENCE_STORAGE_KEY = "brgy_presence_sessions_v1";
 
 interface ActiveSessionEntry {
-  id: string
+  id: string;
 
-  email: string
+  email: string;
 
-  timestamp: number
+  timestamp: number;
 }
 
 function getActiveSessions(): Record<string, ActiveSessionEntry> {
   try {
-    const raw = localStorage.getItem(PRESENCE_STORAGE_KEY)
+    const raw = localStorage.getItem(PRESENCE_STORAGE_KEY);
 
-    if (!raw) return {}
+    if (!raw) return {};
 
-    const parsed = JSON.parse(raw)
+    const parsed = JSON.parse(raw);
 
-    const now = Date.now()
+    const now = Date.now();
 
-    const valid: Record<string, ActiveSessionEntry> = {}
+    const valid: Record<string, ActiveSessionEntry> = {};
 
     for (const key in parsed) {
       if (parsed[key] && now - parsed[key].timestamp < 40000) {
-        valid[key] = parsed[key]
+        valid[key] = parsed[key];
       }
     }
 
-    return valid
+    return valid;
   } catch {
-    return {}
+    return {};
   }
 }
 
 function recordPresenceHeartbeat(id: string, email: string) {
-  if (!id && !email) return
+  if (!id && !email) return;
 
   try {
-    const sessions = getActiveSessions()
+    const sessions = getActiveSessions();
 
-    const idKey = (id || "").toLowerCase()
+    const idKey = (id || "").toLowerCase();
 
-    const emailKey = (email || "").toLowerCase()
+    const emailKey = (email || "").toLowerCase();
 
-    const now = Date.now()
+    const now = Date.now();
 
     const entry: ActiveSessionEntry = {
       id: id || "",
@@ -16879,83 +17046,92 @@ function recordPresenceHeartbeat(id: string, email: string) {
       email: email || "",
 
       timestamp: now,
-    }
+    };
 
-    if (idKey) sessions[idKey] = entry
+    if (idKey) sessions[idKey] = entry;
 
-    if (emailKey) sessions[emailKey] = entry
+    if (emailKey) sessions[emailKey] = entry;
 
-    localStorage.setItem(PRESENCE_STORAGE_KEY, JSON.stringify(sessions))
+    localStorage.setItem(PRESENCE_STORAGE_KEY, JSON.stringify(sessions));
   } catch {}
 }
 
 function removePresenceHeartbeat(id: string, email: string) {
   try {
-    const sessions = getActiveSessions()
+    const sessions = getActiveSessions();
 
-    const idKey = (id || "").toLowerCase()
+    const idKey = (id || "").toLowerCase();
 
-    const emailKey = (email || "").toLowerCase()
+    const emailKey = (email || "").toLowerCase();
 
-    if (idKey) delete sessions[idKey]
+    if (idKey) delete sessions[idKey];
 
-    if (emailKey) delete sessions[emailKey]
+    if (emailKey) delete sessions[emailKey];
 
-    localStorage.setItem(PRESENCE_STORAGE_KEY, JSON.stringify(sessions))
+    localStorage.setItem(PRESENCE_STORAGE_KEY, JSON.stringify(sessions));
   } catch {}
 }
 
 // ─── Residents ───────────────────────────────────────────────────────────────
 
 type ResidentRecord = {
-  id: string
+  id: string;
 
-  name: string
+  name: string;
 
-  email: string
+  email: string;
 
-  mobile: string
+  mobile: string;
 
-  address: string
+  address: string;
 
-  purok: string
+  purok: string;
 
-  role: "resident" | "admin"
+  role: "resident" | "admin";
 
-  status: "active" | "pending" | "suspended" | "rejected" | "banned" | "deleted"
+  status:
+    | "active"
+    | "pending"
+    | "suspended"
+    | "rejected"
+    | "banned"
+    | "deleted";
 
-  registered: string
+  registered: string;
 
-  isOnline: boolean
+  isOnline: boolean;
 
-  rejectionReason?: string
+  rejectionReason?: string;
 
-  banReason?: string
+  banReason?: string;
 
-  deletedAt?: string
+  deletedAt?: string;
 
-  created_at?: string
-}
+  created_at?: string;
+};
 
 // Helper for local metadata caching (for rejection reason, ban notes, deletion dates, and instant overrides)
 
-function getResidentMeta(): Record<string, {
-  rejectionReason?: string
+function getResidentMeta(): Record<
+  string,
+  {
+    rejectionReason?: string;
 
-  banReason?: string
+    banReason?: string;
 
-  statusOverride?: string
+    statusOverride?: string;
 
-  isOnline?: boolean
+    isOnline?: boolean;
 
-  deletedAt?: string
-}> {
+    deletedAt?: string;
+  }
+> {
   try {
-    const raw = localStorage.getItem("barangay_residents_meta")
+    const raw = localStorage.getItem("barangay_residents_meta");
 
-    return raw ? JSON.parse(raw) : {}
+    return raw ? JSON.parse(raw) : {};
   } catch {
-    return {}
+    return {};
   }
 }
 
@@ -16963,91 +17139,91 @@ function saveResidentMeta(
   id: string,
 
   data: {
-    rejectionReason?: string
+    rejectionReason?: string;
 
-    banReason?: string
+    banReason?: string;
 
-    statusOverride?: string
+    statusOverride?: string;
 
-    isOnline?: boolean
+    isOnline?: boolean;
 
-    deletedAt?: string
+    deletedAt?: string;
 
-    tempPassword?: string
+    tempPassword?: string;
 
-    needsPwChange?: boolean
+    needsPwChange?: boolean;
   },
 ) {
   try {
-    const current = getResidentMeta()
+    const current = getResidentMeta();
 
-    current[id] = { ...current[id], ...data }
+    current[id] = { ...current[id], ...data };
 
-    localStorage.setItem("barangay_residents_meta", JSON.stringify(current))
+    localStorage.setItem("barangay_residents_meta", JSON.stringify(current));
   } catch (e) {
-    console.error("Failed to save resident meta:", e)
+    console.error("Failed to save resident meta:", e);
   }
 }
 
 function getPurgedIds(): string[] {
   try {
-    const raw = localStorage.getItem("barangay_purged_resident_ids")
+    const raw = localStorage.getItem("barangay_purged_resident_ids");
 
-    return raw ? JSON.parse(raw) : []
+    return raw ? JSON.parse(raw) : [];
   } catch {
-    return []
+    return [];
   }
 }
 
 function addPurgedId(id: string) {
   try {
-    const list = getPurgedIds()
+    const list = getPurgedIds();
 
     if (!list.includes(id)) {
-      list.push(id)
+      list.push(id);
 
       localStorage.setItem(
         "barangay_purged_resident_ids",
 
         JSON.stringify(list),
-      )
+      );
     }
   } catch (e) {
-    console.error(e)
+    console.error(e);
   }
 }
 
 function removePurgedId(id: string) {
   try {
-    const list = getPurgedIds().filter((x) => x !== id)
+    const list = getPurgedIds().filter((x) => x !== id);
 
-    localStorage.setItem("barangay_purged_resident_ids", JSON.stringify(list))
+    localStorage.setItem("barangay_purged_resident_ids", JSON.stringify(list));
   } catch (e) {
-    console.error(e)
+    console.error(e);
   }
 }
 
 function formatResidentDate(isoDate?: string): string {
-  if (!isoDate) return "Recently"
+  if (!isoDate) return "Recently";
 
   try {
-    const d = new Date(isoDate)
+    const d = new Date(isoDate);
 
-    const now = new Date()
+    const now = new Date();
 
-    const diffHours = (now.getTime() - d.getTime()) / (1000 * 60 * 60)
+    const diffHours = (now.getTime() - d.getTime()) / (1000 * 60 * 60);
 
-    if (diffHours < 24 && now.getDate() === d.getDate()) return "Today"
+    if (diffHours < 24 && now.getDate() === d.getDate()) return "Today";
 
-    if (diffHours < 48) return "Yesterday"
+    if (diffHours < 48) return "Yesterday";
 
-    return d.toLocaleDateString("en-US", { month: "short", day: "numeric" })
+    return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
   } catch {
-    return "Recently"
+    return "Recently";
   }
 }
 
-const fallbackResidents: ResidentRecord[] = []
+const fallbackResidents: ResidentRecord[] = [];
 
 function ResidentsPage({
   pendingCount,
@@ -17064,50 +17240,49 @@ function ResidentsPage({
 
   barangayInfo,
 }: {
-  pendingCount: number
+  pendingCount: number;
 
-  onPendingChange: (count: number) => void
+  onPendingChange: (count: number) => void;
 
-  onToast: (msg: string) => void
+  onToast: (msg: string) => void;
 
-  currentUser?: Account | null
+  currentUser?: Account | null;
 
-  onPromotedAdminsChange?: (emails: string[]) => void
+  onPromotedAdminsChange?: (emails: string[]) => void;
 
-  onUserRoleChange?: (newRole: "admin" | "resident") => void
+  onUserRoleChange?: (newRole: "admin" | "resident") => void;
 
-  barangayInfo?: BarangayInfo
+  barangayInfo?: BarangayInfo;
 }) {
   const [residents, setResidents] = useState<ResidentRecord[]>(() => {
     try {
-      const cached = localStorage.getItem("brgy_residents_cache")
+      const cached = localStorage.getItem("brgy_residents_cache");
 
-      if (cached) return JSON.parse(cached)
+      if (cached) return JSON.parse(cached);
     } catch {}
 
-    return []
-  })
+    return [];
+  });
 
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(false);
 
-  const [refreshing, setRefreshing] = useState(false)
+  const [refreshing, setRefreshing] = useState(false);
 
-  const [search, setSearch] = useState("")
+  const [search, setSearch] = useState("");
 
-  const [purokFilter, setPurokFilter] = useState("all")
+  const [purokFilter, setPurokFilter] = useState("all");
 
-  const [tab, setTab] =
-    useState<"approved" | "pending" | "rejected" | "suspended" | "deleted" | "pwresets">(
-      "approved",
-    )
+  const [tab, setTab] = useState<
+    "approved" | "pending" | "rejected" | "suspended" | "deleted" | "pwresets"
+  >("approved");
 
   const [activeSessions, setActiveSessions] =
-    useState<Record<string, ActiveSessionEntry>>(getActiveSessions)
+    useState<Record<string, ActiveSessionEntry>>(getActiveSessions);
 
   function checkIsOnline(residentId: string, residentEmail: string): boolean {
-    const idLower = String(residentId || "").toLowerCase()
+    const idLower = String(residentId || "").toLowerCase();
 
-    const emailLower = String(residentEmail || "").toLowerCase()
+    const emailLower = String(residentEmail || "").toLowerCase();
 
     // 1. Current logged-in user on this window
 
@@ -17116,60 +17291,60 @@ function ResidentsPage({
         (currentUser.id && String(currentUser.id).toLowerCase() === idLower) ||
         (currentUser.email && currentUser.email.toLowerCase() === emailLower)
       ) {
-        return true
+        return true;
       }
     }
 
     // 2. Active session heartbeat within last 40 seconds (other tab / browser window / device)
 
-    if (idLower && activeSessions[idLower]) return true
+    if (idLower && activeSessions[idLower]) return true;
 
-    if (emailLower && activeSessions[emailLower]) return true
+    if (emailLower && activeSessions[emailLower]) return true;
 
     for (const k in activeSessions) {
-      const s = activeSessions[k]
+      const s = activeSessions[k];
 
       if (
         (s.id && idLower && String(s.id).toLowerCase() === idLower) ||
         (s.email && emailLower && s.email.toLowerCase() === emailLower)
       ) {
-        return true
+        return true;
       }
     }
 
-    return false
+    return false;
   }
 
   // Real-time synchronization of active sessions
 
   useEffect(() => {
     const sync = () => {
-      setActiveSessions(getActiveSessions())
-    }
+      setActiveSessions(getActiveSessions());
+    };
 
-    sync()
+    sync();
 
-    const interval = setInterval(sync, 3000)
+    const interval = setInterval(sync, 3000);
 
     const presenceChan = supabase.channel("brgy_presence_sync_page", {
       config: { broadcast: { self: false } },
-    })
+    });
 
     presenceChan
 
       .on("broadcast", { event: "ping" }, ({ payload }: any) => {
         if (payload?.id || payload?.email) {
-          recordPresenceHeartbeat(payload.id, payload.email)
+          recordPresenceHeartbeat(payload.id, payload.email);
 
-          sync()
+          sync();
         }
       })
 
       .on("broadcast", { event: "leave" }, ({ payload }: any) => {
         if (payload?.id || payload?.email) {
-          removePresenceHeartbeat(payload.id, payload.email)
+          removePresenceHeartbeat(payload.id, payload.email);
 
-          sync()
+          sync();
         }
       })
 
@@ -17181,44 +17356,44 @@ function ResidentsPage({
             event: "request_presence",
 
             payload: {},
-          })
+          });
         }
-      })
+      });
 
     const handleStorage = (e: StorageEvent) => {
       if (e.key === PRESENCE_STORAGE_KEY) {
-        sync()
+        sync();
       }
-    }
+    };
 
-    window.addEventListener("storage", handleStorage)
+    window.addEventListener("storage", handleStorage);
 
     return () => {
-      clearInterval(interval)
+      clearInterval(interval);
 
-      window.removeEventListener("storage", handleStorage)
+      window.removeEventListener("storage", handleStorage);
 
-      presenceChan.unsubscribe()
-    }
-  }, [])
+      presenceChan.unsubscribe();
+    };
+  }, []);
 
   // Modals state
 
-  const [selected, setSelected] = useState<ResidentRecord | null>(null)
+  const [selected, setSelected] = useState<ResidentRecord | null>(null);
 
-  const [isEditing, setIsEditing] = useState(false)
+  const [isEditing, setIsEditing] = useState(false);
 
-  const [editName, setEditName] = useState("")
+  const [editName, setEditName] = useState("");
 
-  const [editMobile, setEditMobile] = useState("")
+  const [editMobile, setEditMobile] = useState("");
 
-  const [editAddress, setEditAddress] = useState("")
+  const [editAddress, setEditAddress] = useState("");
 
-  const [addOpen, setAddOpen] = useState(false)
+  const [addOpen, setAddOpen] = useState(false);
 
-  const [addSubmitting, setAddSubmitting] = useState(false)
+  const [addSubmitting, setAddSubmitting] = useState(false);
 
-  const [showAddPassword, setShowAddPassword] = useState(false)
+  const [showAddPassword, setShowAddPassword] = useState(false);
 
   const [newResident, setNewResident] = useState({
     name: "",
@@ -17234,75 +17409,75 @@ function ResidentsPage({
     password: "Resident@2025!",
 
     immediateStatus: "active" as "active" | "pending",
-  })
+  });
 
   // Rejection modal
 
-  const [rejectModalOpen, setRejectModalOpen] = useState(false)
+  const [rejectModalOpen, setRejectModalOpen] = useState(false);
 
   const [rejectingResident, setRejectingResident] =
-    useState<ResidentRecord | null>(null)
+    useState<ResidentRecord | null>(null);
 
-  const [rejectionReason, setRejectionReason] = useState("")
+  const [rejectionReason, setRejectionReason] = useState("");
 
-  const [selectedPresetReason, setSelectedPresetReason] = useState("")
+  const [selectedPresetReason, setSelectedPresetReason] = useState("");
 
   // Delete modal (Soft delete -> moves to Deleted Accounts tab)
 
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 
   const [deletingResident, setDeletingResident] =
-    useState<ResidentRecord | null>(null)
+    useState<ResidentRecord | null>(null);
 
-  const [isDeleting, setIsDeleting] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Purge modal (Hard delete -> erases from database)
 
-  const [purgeModalOpen, setPurgeModalOpen] = useState(false)
+  const [purgeModalOpen, setPurgeModalOpen] = useState(false);
 
   const [purgingResident, setPurgingResident] = useState<ResidentRecord | null>(
     null,
-  )
+  );
 
-  const [isPurging, setIsPurging] = useState(false)
+  const [isPurging, setIsPurging] = useState(false);
 
   // Reset all accounts modal
-  const [confirmResetAllOpen, setConfirmResetAllOpen] = useState(false)
-  const [isResettingAll, setIsResettingAll] = useState(false)
+  const [confirmResetAllOpen, setConfirmResetAllOpen] = useState(false);
+  const [isResettingAll, setIsResettingAll] = useState(false);
 
   // Password reset requests & direct resident resets
 
   const [pwResetRequests, setPwResetRequests] = useState<any[]>(() => {
     try {
-      return JSON.parse(localStorage.getItem("brgy_pw_reset_requests") || "[]")
+      return JSON.parse(localStorage.getItem("brgy_pw_reset_requests") || "[]");
     } catch {
-      return []
+      return [];
     }
-  })
+  });
 
-  const [pwResetModalOpen, setPwResetModalOpen] = useState(false)
+  const [pwResetModalOpen, setPwResetModalOpen] = useState(false);
 
-  const [pwResetTarget, setPwResetTarget] = useState<any>(null)
+  const [pwResetTarget, setPwResetTarget] = useState<any>(null);
 
-  const [pwResetAdminPass, setPwResetAdminPass] = useState("")
+  const [pwResetAdminPass, setPwResetAdminPass] = useState("");
 
-  const [pwResetNewPass, setPwResetNewPass] = useState("")
+  const [pwResetNewPass, setPwResetNewPass] = useState("");
 
-  const [pwResetConfirmPass, setPwResetConfirmPass] = useState("")
+  const [pwResetConfirmPass, setPwResetConfirmPass] = useState("");
 
-  const [pwResetError, setPwResetError] = useState("")
+  const [pwResetError, setPwResetError] = useState("");
 
-  const [pwResetSubmitting, setPwResetSubmitting] = useState(false)
+  const [pwResetSubmitting, setPwResetSubmitting] = useState(false);
 
-  const [pwResetSuccess, setPwResetSuccess] = useState(false)
+  const [pwResetSuccess, setPwResetSuccess] = useState(false);
 
-  const [showPwResetAdminPass, setShowPwResetAdminPass] = useState(false)
+  const [showPwResetAdminPass, setShowPwResetAdminPass] = useState(false);
 
-  const [showPwResetNew, setShowPwResetNew] = useState(false)
+  const [showPwResetNew, setShowPwResetNew] = useState(false);
 
-  const [showPwResetConfirm, setShowPwResetConfirm] = useState(false)
+  const [showPwResetConfirm, setShowPwResetConfirm] = useState(false);
 
-  const [copiedSms, setCopiedSms] = useState(false)
+  const [copiedSms, setCopiedSms] = useState(false);
 
   // Reload pw reset requests from storage and Supabase
 
@@ -17310,7 +17485,7 @@ function ResidentsPage({
     try {
       const local = JSON.parse(
         localStorage.getItem("brgy_pw_reset_requests") || "[]",
-      )
+      );
 
       try {
         const { data, error } = await supabase
@@ -17319,7 +17494,7 @@ function ResidentsPage({
 
           .select("*")
 
-          .order("created_at", { ascending: false })
+          .order("created_at", { ascending: false });
 
         if (!error && data && data.length > 0) {
           const dbMapped = data.map((d: any) => ({
@@ -17344,9 +17519,9 @@ function ResidentsPage({
                 : undefined,
 
             updatedAt: d.updated_at || d.created_at,
-          }))
+          }));
 
-          const merged = [...dbMapped]
+          const merged = [...dbMapped];
 
           local.forEach((l: any) => {
             if (
@@ -17354,102 +17529,102 @@ function ResidentsPage({
                 (m) => m.email?.toLowerCase() === l.email?.toLowerCase(),
               )
             ) {
-              merged.push(l)
+              merged.push(l);
             }
-          })
+          });
 
-          setPwResetRequests(merged)
+          setPwResetRequests(merged);
 
           localStorage.setItem(
             "brgy_pw_reset_requests",
 
             JSON.stringify(merged),
-          )
+          );
 
-          return
+          return;
         }
       } catch {}
 
-      setPwResetRequests(local)
+      setPwResetRequests(local);
     } catch {}
   }
 
   function generateSecurePassword() {
-    const prefixes = ["Brgy", "SanIsidro", "Citizen", "Portal", "Secure"]
+    const prefixes = ["Brgy", "SanIsidro", "Citizen", "Portal", "Secure"];
 
-    const prefix = prefixes[Math.floor(Math.random() * prefixes.length)]
+    const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
 
-    const num = Math.floor(1000 + Math.random() * 9000)
+    const num = Math.floor(1000 + Math.random() * 9000);
 
-    const syms = ["!", "@", "#", "$", "*"]
+    const syms = ["!", "@", "#", "$", "*"];
 
-    const sym = syms[Math.floor(Math.random() * syms.length)]
+    const sym = syms[Math.floor(Math.random() * syms.length)];
 
-    return `${prefix}${sym}${num}`
+    return `${prefix}${sym}${num}`;
   }
 
   function handleOpenResetModal(target: {
-    id?: string
+    id?: string;
 
-    name: string
+    name: string;
 
-    email: string
+    email: string;
 
-    phone: string
+    phone: string;
 
-    reqId?: string
+    reqId?: string;
   }) {
-    const autoPass = generateSecurePassword()
+    const autoPass = generateSecurePassword();
 
-    setPwResetTarget(target)
+    setPwResetTarget(target);
 
-    setPwResetAdminPass("")
+    setPwResetAdminPass("");
 
-    setPwResetNewPass(autoPass)
+    setPwResetNewPass(autoPass);
 
-    setPwResetConfirmPass(autoPass)
+    setPwResetConfirmPass(autoPass);
 
-    setPwResetError("")
+    setPwResetError("");
 
-    setPwResetSuccess(false)
+    setPwResetSuccess(false);
 
-    setShowPwResetAdminPass(false)
+    setShowPwResetAdminPass(false);
 
-    setShowPwResetNew(true)
+    setShowPwResetNew(true);
 
-    setCopiedSms(false)
+    setCopiedSms(false);
 
-    setPwResetModalOpen(true)
+    setPwResetModalOpen(true);
   }
 
   async function handleConfirmAdminPasswordReset() {
-    if (!pwResetTarget) return
+    if (!pwResetTarget) return;
 
-    setPwResetError("")
+    setPwResetError("");
 
     if (!pwResetAdminPass.trim()) {
       setPwResetError(
         "Please enter your administrator password to authorize this action.",
-      )
+      );
 
-      return
+      return;
     }
 
     if (!pwResetNewPass.trim() || pwResetNewPass.length < 6) {
       setPwResetError(
         "New temporary password must be at least 6 characters long.",
-      )
+      );
 
-      return
+      return;
     }
 
     if (pwResetNewPass !== pwResetConfirmPass) {
-      setPwResetError("New password and confirmation do not match.")
+      setPwResetError("New password and confirmation do not match.");
 
-      return
+      return;
     }
 
-    setPwResetSubmitting(true)
+    setPwResetSubmitting(true);
 
     try {
       // 1. Verify current administrator's identity by validating password
@@ -17459,26 +17634,26 @@ function ResidentsPage({
           email: currentUser.email,
 
           password: pwResetAdminPass,
-        })
+        });
 
         if (authErr) {
           setPwResetError(
             "Administrator verification failed: Your password was incorrect. Authorization denied.",
-          )
+          );
 
-          setPwResetSubmitting(false)
+          setPwResetSubmitting(false);
 
-          return
+          return;
         }
       }
 
-      const nowIso = new Date().toISOString()
+      const nowIso = new Date().toISOString();
 
       // 2. Update local requests queue
 
       const localRequests: any[] = JSON.parse(
         localStorage.getItem("brgy_pw_reset_requests") || "[]",
-      )
+      );
 
       const updatedLocal = localRequests.map((req) => {
         if (
@@ -17497,25 +17672,25 @@ function ResidentsPage({
             updatedAt: nowIso,
 
             resetBy: currentUser?.name || "Administrator",
-          }
+          };
         }
 
-        return req
-      })
+        return req;
+      });
 
       localStorage.setItem(
         "brgy_pw_reset_requests",
 
         JSON.stringify(updatedLocal),
-      )
+      );
 
-      setPwResetRequests(updatedLocal)
+      setPwResetRequests(updatedLocal);
 
       // 3. Save temporary password mapping so resident can sign in
 
       const tempMap = JSON.parse(
         localStorage.getItem("brgy_temp_passwords") || "{}",
-      )
+      );
 
       tempMap[pwResetTarget.email.toLowerCase()] = {
         tempPassword: pwResetNewPass,
@@ -17525,9 +17700,9 @@ function ResidentsPage({
         name: pwResetTarget.name,
 
         resetAt: nowIso,
-      }
+      };
 
-      localStorage.setItem("brgy_temp_passwords", JSON.stringify(tempMap))
+      localStorage.setItem("brgy_temp_passwords", JSON.stringify(tempMap));
 
       // 4. Update Supabase password_reset_requests table
 
@@ -17546,7 +17721,7 @@ function ResidentsPage({
 
           .eq("email", pwResetTarget.email.toLowerCase())
 
-          .select()
+          .select();
 
         if (!updatedDb || updatedDb.length === 0) {
           await supabase.from("password_reset_requests").insert([
@@ -17563,13 +17738,13 @@ function ResidentsPage({
 
               updated_at: nowIso,
             },
-          ])
+          ]);
         }
       } catch {}
 
       // 5. Synchronize active reset across all devices via barangay metadata
 
-      await syncActiveReset(pwResetTarget.email, pwResetNewPass)
+      await syncActiveReset(pwResetTarget.email, pwResetNewPass);
 
       // 6. Try RPC if backend function exists
 
@@ -17579,48 +17754,48 @@ function ResidentsPage({
             target_user_id: pwResetTarget.id,
 
             new_password: pwResetNewPass,
-          })
+          });
         } catch {}
 
         saveResidentMeta(pwResetTarget.id, {
           tempPassword: pwResetNewPass,
 
           needsPwChange: true,
-        })
+        });
       }
 
-      setPwResetSuccess(true)
+      setPwResetSuccess(true);
 
-      onToast(`Password successfully reset for ${pwResetTarget.name}! 🔑`)
+      onToast(`Password successfully reset for ${pwResetTarget.name}! 🔑`);
     } catch (err: any) {
       setPwResetError(
         err?.message || "Failed to reset password. Please try again.",
-      )
+      );
     } finally {
-      setPwResetSubmitting(false)
+      setPwResetSubmitting(false);
     }
   }
 
   async function handleDismissResetRequest(reqId: string, email?: string) {
-    const nowIso = new Date().toISOString()
+    const nowIso = new Date().toISOString();
 
     const localRequests: any[] = JSON.parse(
       localStorage.getItem("brgy_pw_reset_requests") || "[]",
-    )
+    );
 
     const updated = localRequests.map((r) =>
       r.id === reqId ||
       (email && r.email?.toLowerCase() === email.toLowerCase())
         ? { ...r, status: "dismissed", dismissedAt: nowIso, updatedAt: nowIso }
         : r,
-    )
+    );
 
-    localStorage.setItem("brgy_pw_reset_requests", JSON.stringify(updated))
+    localStorage.setItem("brgy_pw_reset_requests", JSON.stringify(updated));
 
-    setPwResetRequests(updated)
+    setPwResetRequests(updated);
 
     try {
-      const numId = parseInt(reqId, 10)
+      const numId = parseInt(reqId, 10);
 
       if (!isNaN(numId)) {
         await supabase
@@ -17629,7 +17804,7 @@ function ResidentsPage({
 
           .update({ status: "dismissed", updated_at: nowIso })
 
-          .eq("id", numId)
+          .eq("id", numId);
       }
 
       if (email) {
@@ -17639,19 +17814,19 @@ function ResidentsPage({
 
           .update({ status: "dismissed", updated_at: nowIso })
 
-          .eq("email", email.toLowerCase())
+          .eq("email", email.toLowerCase());
       }
     } catch (err) {
-      console.warn("Supabase dismiss error:", err)
+      console.warn("Supabase dismiss error:", err);
     }
 
-    onToast("Password reset request permanently dismissed.")
+    onToast("Password reset request permanently dismissed.");
   }
 
   // Fetch accounts directly from Supabase
 
   async function fetchResidents(silent = false) {
-    if (!silent) setRefreshing(true)
+    if (!silent) setRefreshing(true);
 
     try {
       const { data, error } = await supabase
@@ -17660,43 +17835,48 @@ function ResidentsPage({
 
         .select("*")
 
-        .order("created_at", { ascending: false })
+        .order("created_at", { ascending: false });
 
-      if (error) throw error
+      if (error) throw error;
 
-      const meta = getResidentMeta()
+      const meta = getResidentMeta();
 
-      const purged = getPurgedIds()
+      const purged = getPurgedIds();
 
-      const rawRows = data && data.length > 0 ? data : []
+      const rawRows = data && data.length > 0 ? data : [];
 
-      const currentPurged = getPurgedIds()
+      const currentPurged = getPurgedIds();
       const mapped: ResidentRecord[] = rawRows
         .filter((row: any) => {
-          const em = (row.email || "").toLowerCase().trim()
-          if (isProtectedAdminEmail(em)) return true
-          return !currentPurged.includes(String(row.id)) && !currentPurged.includes(em)
+          const em = (row.email || "").toLowerCase().trim();
+          if (isProtectedAdminEmail(em)) return true;
+          return (
+            !currentPurged.includes(String(row.id)) &&
+            !currentPurged.includes(em)
+          );
         })
 
         .map((row: any, idx: number) => {
-          const rowMeta = meta[row.id] || {}
+          const rowMeta = meta[row.id] || {};
 
-          let finalStatus = (rowMeta.statusOverride || row.status || "active")
+          let finalStatus = (
+            rowMeta.statusOverride ||
+            row.status ||
+            "active"
+          ).toLowerCase() as any;
 
-            .toLowerCase() as any
-
-          if (finalStatus === "verified") finalStatus = "active"
+          if (finalStatus === "verified") finalStatus = "active";
 
           // Derive Purok
 
-          const address = row.address || "Barangay Labangan"
+          const address = row.address || "Barangay Labangan";
 
-          let purok = row.purok || "Purok 1"
+          let purok = row.purok || "Purok 1";
 
-          const purokMatch = address.match(/Purok\s*\d+/i)
+          const purokMatch = address.match(/Purok\s*\d+/i);
 
           if (purokMatch) {
-            purok = purokMatch[0]
+            purok = purokMatch[0];
           }
 
           // Online presence: strictly reflects active sessions
@@ -17705,7 +17885,7 @@ function ResidentsPage({
             currentUser &&
             (String(currentUser.id) === String(row.id) ||
               currentUser.email?.toLowerCase() ===
-                (row.email || "").toLowerCase())
+                (row.email || "").toLowerCase());
 
           const isOnline =
             finalStatus === "deleted" ||
@@ -17714,11 +17894,11 @@ function ResidentsPage({
               ? false
               : Boolean(
                   isCurrent || checkIsOnline(String(row.id), row.email || ""),
-                )
+                );
 
           const rRole: "resident" | "admin" = isProtectedAdminEmail(row.email)
             ? "admin"
-            : ((row.role || "resident") as "resident" | "admin")
+            : ((row.role || "resident") as "resident" | "admin");
 
           return {
             id: String(row.id),
@@ -17748,37 +17928,37 @@ function ResidentsPage({
             deletedAt: rowMeta.deletedAt,
 
             created_at: row.created_at,
-          }
-        })
+          };
+        });
 
-      setResidents(mapped)
+      setResidents(mapped);
 
       try {
-        localStorage.setItem("brgy_residents_cache", JSON.stringify(mapped))
+        localStorage.setItem("brgy_residents_cache", JSON.stringify(mapped));
       } catch {}
 
       // Keep pending count updated
 
-      const pendingTotal = mapped.filter((r) => r.status === "pending").length
+      const pendingTotal = mapped.filter((r) => r.status === "pending").length;
 
-      onPendingChange(pendingTotal)
+      onPendingChange(pendingTotal);
     } catch (err) {
-      console.error("Failed to load residents from Supabase:", err)
+      console.error("Failed to load residents from Supabase:", err);
 
-      setResidents((prev) => (prev.length > 0 ? prev : []))
+      setResidents((prev) => (prev.length > 0 ? prev : []));
     } finally {
-      setLoading(false)
+      setLoading(false);
 
-      setRefreshing(false)
+      setRefreshing(false);
     }
   }
 
   // Load and listen to real-time events
 
   useEffect(() => {
-    fetchResidents()
+    fetchResidents();
 
-    reloadPwResetRequests()
+    reloadPwResetRequests();
 
     const channel = supabase
 
@@ -17790,11 +17970,11 @@ function ResidentsPage({
         { event: "*", schema: "public", table: "accounts" },
 
         () => {
-          fetchResidents(true)
+          fetchResidents(true);
         },
       )
 
-      .subscribe()
+      .subscribe();
 
     // Real-time subscription for password reset requests
 
@@ -17808,32 +17988,32 @@ function ResidentsPage({
         { event: "*", schema: "public", table: "password_reset_requests" },
 
         () => {
-          reloadPwResetRequests()
+          reloadPwResetRequests();
         },
       )
 
-      .subscribe()
+      .subscribe();
 
     return () => {
-      channel.unsubscribe()
+      channel.unsubscribe();
 
-      pwResetChannel.unsubscribe()
-    }
-  }, [])
+      pwResetChannel.unsubscribe();
+    };
+  }, []);
 
   // Update edit form when selected resident changes
 
   useEffect(() => {
     if (selected) {
-      setEditName(selected.name)
+      setEditName(selected.name);
 
-      setEditMobile(selected.mobile === "No contact" ? "" : selected.mobile)
+      setEditMobile(selected.mobile === "No contact" ? "" : selected.mobile);
 
-      setEditAddress(selected.address)
+      setEditAddress(selected.address);
 
-      setIsEditing(false)
+      setIsEditing(false);
     }
-  }, [selected])
+  }, [selected]);
 
   // Actions
 
@@ -17845,9 +18025,9 @@ function ResidentsPage({
 
         .update({ status: "active" })
 
-        .eq("id", residentId)
+        .eq("id", residentId);
 
-      if (error) throw error
+      if (error) throw error;
 
       saveResidentMeta(residentId, {
         statusOverride: "active",
@@ -17855,7 +18035,7 @@ function ResidentsPage({
         rejectionReason: undefined,
 
         deletedAt: undefined,
-      })
+      });
 
       setResidents((prev) =>
         prev.map((r) =>
@@ -17873,11 +18053,11 @@ function ResidentsPage({
               }
             : r,
         ),
-      )
+      );
 
-      const nextPending = Math.max(0, pendingCount - 1)
+      const nextPending = Math.max(0, pendingCount - 1);
 
-      onPendingChange(nextPending)
+      onPendingChange(nextPending);
 
       if (selected?.id === residentId) {
         setSelected((prev) =>
@@ -17894,16 +18074,16 @@ function ResidentsPage({
                 deletedAt: undefined,
               }
             : null,
-        )
+        );
       }
 
-      onToast("Resident account approved and activated! 🎉")
+      onToast("Resident account approved and activated! 🎉");
     } catch (err: any) {
-      console.error("Approve error:", err)
+      console.error("Approve error:", err);
 
       saveResidentMeta(residentId, {
         statusOverride: "active",
-      })
+      });
 
       setResidents((prev) =>
         prev.map((r) =>
@@ -17911,29 +18091,29 @@ function ResidentsPage({
             ? { ...r, status: "active", isOnline: checkIsOnline(r.id, r.email) }
             : r,
         ),
-      )
+      );
 
-      onToast("Resident approved and activated.")
+      onToast("Resident approved and activated.");
     }
   }
 
   function openRejectModal(resident: ResidentRecord) {
-    setRejectingResident(resident)
+    setRejectingResident(resident);
 
-    setRejectionReason("")
+    setRejectionReason("");
 
-    setSelectedPresetReason("Incomplete or Unreadable Barangay ID")
+    setSelectedPresetReason("Incomplete or Unreadable Barangay ID");
 
-    setRejectModalOpen(true)
+    setRejectModalOpen(true);
   }
 
   async function handleConfirmReject() {
-    if (!rejectingResident) return
+    if (!rejectingResident) return;
 
     const finalReason =
       rejectionReason.trim() ||
       selectedPresetReason ||
-      "Registration criteria not met"
+      "Registration criteria not met";
 
     try {
       // Try updating status to 'rejected'
@@ -17944,7 +18124,7 @@ function ResidentsPage({
 
         .update({ status: "rejected" })
 
-        .eq("id", rejectingResident.id)
+        .eq("id", rejectingResident.id);
 
       // If DB constraint limits to active/pending/suspended, fallback to 'suspended' in DB
 
@@ -17955,7 +18135,7 @@ function ResidentsPage({
 
           .update({ status: "suspended" })
 
-          .eq("id", rejectingResident.id)
+          .eq("id", rejectingResident.id);
       }
 
       saveResidentMeta(rejectingResident.id, {
@@ -17964,7 +18144,7 @@ function ResidentsPage({
         rejectionReason: finalReason,
 
         isOnline: false,
-      })
+      });
 
       setResidents((prev) =>
         prev.map((r) =>
@@ -17980,23 +18160,23 @@ function ResidentsPage({
               }
             : r,
         ),
-      )
+      );
 
       if (rejectingResident.status === "pending") {
-        onPendingChange(Math.max(0, pendingCount - 1))
+        onPendingChange(Math.max(0, pendingCount - 1));
       }
 
       if (selected?.id === rejectingResident.id) {
-        setSelected(null)
+        setSelected(null);
       }
 
-      setRejectModalOpen(false)
+      setRejectModalOpen(false);
 
-      setRejectingResident(null)
+      setRejectingResident(null);
 
-      onToast("Account rejected and moved to Rejected Accounts tab.")
+      onToast("Account rejected and moved to Rejected Accounts tab.");
     } catch (err: any) {
-      console.error("Reject error:", err)
+      console.error("Reject error:", err);
 
       saveResidentMeta(rejectingResident.id, {
         statusOverride: "rejected",
@@ -18004,7 +18184,7 @@ function ResidentsPage({
         rejectionReason: finalReason,
 
         isOnline: false,
-      })
+      });
 
       setResidents((prev) =>
         prev.map((r) =>
@@ -18020,21 +18200,21 @@ function ResidentsPage({
               }
             : r,
         ),
-      )
+      );
 
-      setRejectModalOpen(false)
+      setRejectModalOpen(false);
 
-      setRejectingResident(null)
+      setRejectingResident(null);
 
-      onToast("Application rejected and archived.")
+      onToast("Application rejected and archived.");
     }
   }
 
   async function handleSuspend(residentId: string) {
-    const target = residents.find((r) => r.id === residentId)
+    const target = residents.find((r) => r.id === residentId);
     if (target && isProtectedAdminEmail(target.email)) {
-      onToast("Official administrator accounts cannot be suspended.")
-      return
+      onToast("Official administrator accounts cannot be suspended.");
+      return;
     }
     try {
       const { error } = await supabase
@@ -18043,15 +18223,15 @@ function ResidentsPage({
 
         .update({ status: "suspended" })
 
-        .eq("id", residentId)
+        .eq("id", residentId);
 
-      if (error) throw error
+      if (error) throw error;
 
       saveResidentMeta(residentId, {
         statusOverride: "suspended",
 
         isOnline: false,
-      })
+      });
 
       setResidents((prev) =>
         prev.map((r) =>
@@ -18059,23 +18239,23 @@ function ResidentsPage({
             ? { ...r, status: "suspended", isOnline: false }
             : r,
         ),
-      )
+      );
 
       if (selected?.id === residentId) {
         setSelected((prev) =>
           prev ? { ...prev, status: "suspended", isOnline: false } : null,
-        )
+        );
       }
 
-      onToast("Resident account has been suspended.")
+      onToast("Resident account has been suspended.");
     } catch (err: any) {
-      console.error("Suspend error:", err)
+      console.error("Suspend error:", err);
 
       saveResidentMeta(residentId, {
         statusOverride: "suspended",
 
         isOnline: false,
-      })
+      });
 
       setResidents((prev) =>
         prev.map((r) =>
@@ -18083,17 +18263,17 @@ function ResidentsPage({
             ? { ...r, status: "suspended", isOnline: false }
             : r,
         ),
-      )
+      );
 
-      onToast("Resident account suspended.")
+      onToast("Resident account suspended.");
     }
   }
 
   async function handleBan(residentId: string) {
-    const target = residents.find((r) => r.id === residentId)
+    const target = residents.find((r) => r.id === residentId);
     if (target && isProtectedAdminEmail(target.email)) {
-      onToast("Official administrator accounts cannot be banned.")
-      return
+      onToast("Official administrator accounts cannot be banned.");
+      return;
     }
     try {
       const { error } = await supabase
@@ -18102,7 +18282,7 @@ function ResidentsPage({
 
         .update({ status: "banned" })
 
-        .eq("id", residentId)
+        .eq("id", residentId);
 
       if (error) {
         // Fallback to suspended in DB if constraint limits values
@@ -18113,7 +18293,7 @@ function ResidentsPage({
 
           .update({ status: "suspended" })
 
-          .eq("id", residentId)
+          .eq("id", residentId);
       }
 
       saveResidentMeta(residentId, {
@@ -18122,7 +18302,7 @@ function ResidentsPage({
         banReason: "Permanent ban issued by Barangay Administrator",
 
         isOnline: false,
-      })
+      });
 
       setResidents((prev) =>
         prev.map((r) =>
@@ -18138,34 +18318,34 @@ function ResidentsPage({
               }
             : r,
         ),
-      )
+      );
 
       if (selected?.id === residentId) {
         setSelected((prev) =>
           prev ? { ...prev, status: "banned", isOnline: false } : null,
-        )
+        );
       }
 
-      onToast("Resident has been permanently banned.")
+      onToast("Resident has been permanently banned.");
     } catch (err: any) {
-      console.error("Ban error:", err)
+      console.error("Ban error:", err);
 
       saveResidentMeta(residentId, {
         statusOverride: "banned",
 
         isOnline: false,
-      })
+      });
 
       setResidents((prev) =>
         prev.map((r) => (r.id === residentId ? { ...r, status: "banned" } : r)),
-      )
+      );
 
-      onToast("Resident banned.")
+      onToast("Resident banned.");
     }
   }
 
   async function handlePromoteToAdmin(residentId: string) {
-    const targetResident = residents.find((r) => r.id === residentId)
+    const targetResident = residents.find((r) => r.id === residentId);
 
     const targetEmail = (
       targetResident?.email ||
@@ -18174,7 +18354,7 @@ function ResidentsPage({
 
       ?.toLowerCase()
 
-      .trim()
+      .trim();
 
     try {
       await supabase
@@ -18183,7 +18363,7 @@ function ResidentsPage({
 
         .update({ role: "admin" })
 
-        .eq("id", residentId)
+        .eq("id", residentId);
 
       if (targetEmail) {
         await supabase
@@ -18192,32 +18372,32 @@ function ResidentsPage({
 
           .update({ role: "admin" })
 
-          .eq("email", targetEmail)
+          .eq("email", targetEmail);
       }
     } catch (err: any) {
-      console.warn("Promote error:", err)
+      console.warn("Promote error:", err);
     }
 
     setResidents((prev) => {
       const updated = prev.map((r) =>
         r.id === residentId ? { ...r, role: "admin" as const } : r,
-      )
+      );
 
       try {
-        localStorage.setItem("brgy_residents_cache", JSON.stringify(updated))
+        localStorage.setItem("brgy_residents_cache", JSON.stringify(updated));
       } catch {}
 
-      return updated
-    })
+      return updated;
+    });
 
     if (selected?.id === residentId) {
-      setSelected((prev) => (prev ? { ...prev, role: "admin" } : null))
+      setSelected((prev) => (prev ? { ...prev, role: "admin" } : null));
     }
 
     if (targetEmail) {
-      const newList = await syncPromotedAdminEmail(targetEmail, true)
+      const newList = await syncPromotedAdminEmail(targetEmail, true);
 
-      onPromotedAdminsChange?.(newList)
+      onPromotedAdminsChange?.(newList);
     }
 
     if (
@@ -18225,14 +18405,14 @@ function ResidentsPage({
       (String(currentUser.id) === String(residentId) ||
         currentUser.email?.toLowerCase().trim() === targetEmail)
     ) {
-      onUserRoleChange?.("admin")
+      onUserRoleChange?.("admin");
     }
 
-    onToast("Resident promoted to Administrator! 👑")
+    onToast("Resident promoted to Administrator! 👑");
   }
 
   async function handleDemoteToResident(residentId: string) {
-    const targetResident = residents.find((r) => r.id === residentId)
+    const targetResident = residents.find((r) => r.id === residentId);
 
     const targetEmail = (
       targetResident?.email ||
@@ -18241,12 +18421,12 @@ function ResidentsPage({
 
       ?.toLowerCase()
 
-      .trim()
+      .trim();
 
     if (isProtectedAdminEmail(targetEmail) || isRootMasterAdmin(targetEmail)) {
-      onToast("Official administrator accounts cannot be demoted.")
+      onToast("Official administrator accounts cannot be demoted.");
 
-      return
+      return;
     }
 
     try {
@@ -18256,7 +18436,7 @@ function ResidentsPage({
 
         .update({ role: "resident" })
 
-        .eq("id", residentId)
+        .eq("id", residentId);
 
       if (targetEmail) {
         await supabase
@@ -18265,32 +18445,32 @@ function ResidentsPage({
 
           .update({ role: "resident" })
 
-          .eq("email", targetEmail)
+          .eq("email", targetEmail);
       }
     } catch (err: any) {
-      console.warn("Demote error:", err)
+      console.warn("Demote error:", err);
     }
 
     setResidents((prev) => {
       const updated = prev.map((r) =>
         r.id === residentId ? { ...r, role: "resident" as const } : r,
-      )
+      );
 
       try {
-        localStorage.setItem("brgy_residents_cache", JSON.stringify(updated))
+        localStorage.setItem("brgy_residents_cache", JSON.stringify(updated));
       } catch {}
 
-      return updated
-    })
+      return updated;
+    });
 
     if (selected?.id === residentId) {
-      setSelected((prev) => (prev ? { ...prev, role: "resident" } : null))
+      setSelected((prev) => (prev ? { ...prev, role: "resident" } : null));
     }
 
     if (targetEmail) {
-      const newList = await syncPromotedAdminEmail(targetEmail, false)
+      const newList = await syncPromotedAdminEmail(targetEmail, false);
 
-      onPromotedAdminsChange?.(newList)
+      onPromotedAdminsChange?.(newList);
     }
 
     if (
@@ -18298,10 +18478,10 @@ function ResidentsPage({
       (String(currentUser.id) === String(residentId) ||
         currentUser.email?.toLowerCase().trim() === targetEmail)
     ) {
-      onUserRoleChange?.("resident")
+      onUserRoleChange?.("resident");
     }
 
-    onToast("Admin privileges revoked. Account demoted to Resident.")
+    onToast("Admin privileges revoked. Account demoted to Resident.");
   }
 
   async function handleReactivate(residentId: string) {
@@ -18312,9 +18492,9 @@ function ResidentsPage({
 
         .update({ status: "active" })
 
-        .eq("id", residentId)
+        .eq("id", residentId);
 
-      if (error) throw error
+      if (error) throw error;
 
       saveResidentMeta(residentId, {
         statusOverride: "active",
@@ -18324,9 +18504,9 @@ function ResidentsPage({
         banReason: undefined,
 
         deletedAt: undefined,
-      })
+      });
 
-      removePurgedId(residentId)
+      removePurgedId(residentId);
 
       setResidents((prev) =>
         prev.map((r) =>
@@ -18346,7 +18526,7 @@ function ResidentsPage({
               }
             : r,
         ),
-      )
+      );
 
       if (selected?.id === residentId) {
         setSelected((prev) =>
@@ -18365,16 +18545,16 @@ function ResidentsPage({
                 banReason: undefined,
               }
             : null,
-        )
+        );
       }
 
-      onToast("Account restored and reactivated! 🟢")
+      onToast("Account restored and reactivated! 🟢");
     } catch (err: any) {
-      console.error("Reactivate error:", err)
+      console.error("Reactivate error:", err);
 
       saveResidentMeta(residentId, {
         statusOverride: "active",
-      })
+      });
 
       setResidents((prev) =>
         prev.map((r) =>
@@ -18382,9 +18562,9 @@ function ResidentsPage({
             ? { ...r, status: "active", isOnline: checkIsOnline(r.id, r.email) }
             : r,
         ),
-      )
+      );
 
-      onToast("Account reactivated.")
+      onToast("Account reactivated.");
     }
   }
 
@@ -18392,25 +18572,25 @@ function ResidentsPage({
 
   function openDeleteModal(resident: ResidentRecord) {
     if (isProtectedAdminEmail(resident.email)) {
-      onToast("Official administrator accounts cannot be deleted.")
-      return
+      onToast("Official administrator accounts cannot be deleted.");
+      return;
     }
 
-    setDeletingResident(resident)
+    setDeletingResident(resident);
 
-    setDeleteModalOpen(true)
+    setDeleteModalOpen(true);
   }
 
   // Execute soft-delete: updates status in DB & moves to Deleted Accounts tab
 
   async function handleConfirmDelete() {
-    if (!deletingResident) return
+    if (!deletingResident) return;
 
-    setIsDeleting(true)
+    setIsDeleting(true);
 
-    const targetId = deletingResident.id
+    const targetId = deletingResident.id;
 
-    const deletedDate = "Today"
+    const deletedDate = "Today";
 
     try {
       // 1. Try to set status to 'deleted' in Supabase
@@ -18421,7 +18601,7 @@ function ResidentsPage({
 
         .update({ status: "deleted" })
 
-        .eq("id", targetId)
+        .eq("id", targetId);
 
       // If constraint doesn't allow 'deleted', set to 'suspended' in DB so login is blocked
 
@@ -18432,7 +18612,7 @@ function ResidentsPage({
 
           .update({ status: "suspended" })
 
-          .eq("id", targetId)
+          .eq("id", targetId);
       }
 
       // 2. Persist in resident meta so it stays in Deleted Accounts tab
@@ -18443,7 +18623,7 @@ function ResidentsPage({
         deletedAt: deletedDate,
 
         isOnline: false,
-      })
+      });
 
       // 3. Update local state
 
@@ -18461,10 +18641,10 @@ function ResidentsPage({
               }
             : r,
         ),
-      )
+      );
 
       if (deletingResident.status === "pending") {
-        onPendingChange(Math.max(0, pendingCount - 1))
+        onPendingChange(Math.max(0, pendingCount - 1));
       }
 
       if (selected?.id === targetId) {
@@ -18480,16 +18660,16 @@ function ResidentsPage({
                 deletedAt: deletedDate,
               }
             : null,
-        )
+        );
       }
 
-      setDeleteModalOpen(false)
+      setDeleteModalOpen(false);
 
-      setDeletingResident(null)
+      setDeletingResident(null);
 
-      onToast("Account moved to Deleted Accounts tab. 🗑️")
+      onToast("Account moved to Deleted Accounts tab. 🗑️");
     } catch (err: any) {
-      console.error("Delete error:", err)
+      console.error("Delete error:", err);
 
       saveResidentMeta(targetId, {
         statusOverride: "deleted",
@@ -18497,7 +18677,7 @@ function ResidentsPage({
         deletedAt: deletedDate,
 
         isOnline: false,
-      })
+      });
 
       setResidents((prev) =>
         prev.map((r) =>
@@ -18513,15 +18693,15 @@ function ResidentsPage({
               }
             : r,
         ),
-      )
+      );
 
-      setDeleteModalOpen(false)
+      setDeleteModalOpen(false);
 
-      setDeletingResident(null)
+      setDeletingResident(null);
 
-      onToast("Account moved to Deleted Accounts tab.")
+      onToast("Account moved to Deleted Accounts tab.");
     } finally {
-      setIsDeleting(false)
+      setIsDeleting(false);
     }
   }
 
@@ -18535,9 +18715,9 @@ function ResidentsPage({
 
         .update({ status: "active" })
 
-        .eq("id", residentId)
+        .eq("id", residentId);
 
-      if (error) throw error
+      if (error) throw error;
 
       saveResidentMeta(residentId, {
         statusOverride: "active",
@@ -18547,9 +18727,9 @@ function ResidentsPage({
         rejectionReason: undefined,
 
         banReason: undefined,
-      })
+      });
 
-      removePurgedId(residentId)
+      removePurgedId(residentId);
 
       setResidents((prev) =>
         prev.map((r) =>
@@ -18569,7 +18749,7 @@ function ResidentsPage({
               }
             : r,
         ),
-      )
+      );
 
       if (selected?.id === residentId) {
         setSelected((prev) =>
@@ -18588,18 +18768,18 @@ function ResidentsPage({
                 banReason: undefined,
               }
             : null,
-        )
+        );
       }
 
-      onToast("Account restored to Approved Residents! 🟢")
+      onToast("Account restored to Approved Residents! 🟢");
     } catch (err: any) {
-      console.error("Restore error:", err)
+      console.error("Restore error:", err);
 
       saveResidentMeta(residentId, {
         statusOverride: "active",
 
         deletedAt: undefined,
-      })
+      });
 
       setResidents((prev) =>
         prev.map((r) =>
@@ -18615,7 +18795,7 @@ function ResidentsPage({
               }
             : r,
         ),
-      )
+      );
 
       if (selected?.id === residentId) {
         setSelected((prev) =>
@@ -18630,10 +18810,10 @@ function ResidentsPage({
                 deletedAt: undefined,
               }
             : null,
-        )
+        );
       }
 
-      onToast("Account restored to Approved Residents.")
+      onToast("Account restored to Approved Residents.");
     }
   }
 
@@ -18641,59 +18821,59 @@ function ResidentsPage({
 
   function openPurgeModal(resident: ResidentRecord) {
     if (isProtectedAdminEmail(resident.email)) {
-      onToast("Official administrator accounts cannot be deleted.")
-      return
+      onToast("Official administrator accounts cannot be deleted.");
+      return;
     }
 
-    setPurgingResident(resident)
+    setPurgingResident(resident);
 
-    setPurgeModalOpen(true)
+    setPurgeModalOpen(true);
   }
 
   // Permanently erase account from database and filter
 
   async function handleConfirmPurge() {
-    if (!purgingResident) return
+    if (!purgingResident) return;
 
-    setIsPurging(true)
+    setIsPurging(true);
 
-    const targetId = purgingResident.id
+    const targetId = purgingResident.id;
 
     try {
-      await supabase.from("accounts").delete().eq("id", targetId)
+      await supabase.from("accounts").delete().eq("id", targetId);
 
-      addPurgedId(targetId)
+      addPurgedId(targetId);
 
-      setResidents((prev) => prev.filter((r) => r.id !== targetId))
+      setResidents((prev) => prev.filter((r) => r.id !== targetId));
 
       if (selected?.id === targetId) {
-        setSelected(null)
+        setSelected(null);
       }
 
-      setPurgeModalOpen(false)
+      setPurgeModalOpen(false);
 
-      setPurgingResident(null)
+      setPurgingResident(null);
 
-      onToast("Resident permanently purged from database.")
+      onToast("Resident permanently purged from database.");
     } catch (err: any) {
-      console.error("Purge error:", err)
+      console.error("Purge error:", err);
 
-      addPurgedId(targetId)
+      addPurgedId(targetId);
 
-      setResidents((prev) => prev.filter((r) => r.id !== targetId))
+      setResidents((prev) => prev.filter((r) => r.id !== targetId));
 
-      setPurgeModalOpen(false)
+      setPurgeModalOpen(false);
 
-      setPurgingResident(null)
+      setPurgingResident(null);
 
-      onToast("Resident record purged.")
+      onToast("Resident record purged.");
     } finally {
-      setIsPurging(false)
+      setIsPurging(false);
     }
   }
 
   async function handleSaveEdit() {
-    if (!selected) return
+    if (!selected) return;
 
     try {
       const { error } = await supabase
@@ -18708,9 +18888,9 @@ function ResidentsPage({
           address: editAddress.trim(),
         })
 
-        .eq("id", selected.id)
+        .eq("id", selected.id);
 
-      if (error) throw error
+      if (error) throw error;
 
       setResidents((prev) =>
         prev.map((r) =>
@@ -18726,7 +18906,7 @@ function ResidentsPage({
               }
             : r,
         ),
-      )
+      );
 
       setSelected((prev) =>
         prev
@@ -18740,35 +18920,35 @@ function ResidentsPage({
               address: editAddress.trim(),
             }
           : null,
-      )
+      );
 
-      setIsEditing(false)
+      setIsEditing(false);
 
-      onToast("Resident details updated successfully.")
+      onToast("Resident details updated successfully.");
     } catch (err: any) {
-      console.error("Update profile error:", err)
+      console.error("Update profile error:", err);
 
-      onToast("Saved changes locally.")
+      onToast("Saved changes locally.");
 
-      setIsEditing(false)
+      setIsEditing(false);
     }
   }
 
   // Permanently reset all resident accounts while preserving official administrators
   async function handleResetAllAccounts() {
-    setIsResettingAll(true)
+    setIsResettingAll(true);
     try {
       const nonMasterAccounts = residents.filter(
-        (r) => !isProtectedAdminEmail(r.email)
-      )
+        (r) => !isProtectedAdminEmail(r.email),
+      );
 
       for (const r of nonMasterAccounts) {
-        addPurgedId(String(r.id))
-        if (r.email) addPurgedId(r.email.toLowerCase().trim())
+        addPurgedId(String(r.id));
+        if (r.email) addPurgedId(r.email.toLowerCase().trim());
         try {
-          await supabase.from("accounts").delete().eq("id", r.id)
+          await supabase.from("accounts").delete().eq("id", r.id);
         } catch (err) {
-          console.error("Purge account error:", err)
+          console.error("Purge account error:", err);
         }
       }
 
@@ -18776,31 +18956,30 @@ function ResidentsPage({
         await supabase
           .from("barangay_settings")
           .update({
-            description: "A thriving residential community committed to transparent and responsive local governance.\n<!-- ADMIN_ROLES: [] -->\n<!-- ACTIVE_RESETS: {} --> <!-- MASTER_ADMIN: admin@baranggay.conn.gov.ph -->",
+            description:
+              "A thriving residential community committed to transparent and responsive local governance.\n<!-- ADMIN_ROLES: [] -->\n<!-- ACTIVE_RESETS: {} --> <!-- MASTER_ADMIN: admin@baranggay.conn.gov.ph -->",
             email: "admin@baranggay.conn.gov.ph",
             updated_at: new Date().toISOString(),
           })
-          .eq("id", 1)
+          .eq("id", 1);
       } catch {}
 
-      const kept = residents.filter(
-        (r) => isProtectedAdminEmail(r.email)
-      )
-      setResidents(kept)
+      const kept = residents.filter((r) => isProtectedAdminEmail(r.email));
+      setResidents(kept);
       try {
-        localStorage.setItem("brgy_residents_cache", JSON.stringify(kept))
-        localStorage.removeItem("brgy_promoted_admins")
-        localStorage.removeItem("brgy_temp_passwords")
+        localStorage.setItem("brgy_residents_cache", JSON.stringify(kept));
+        localStorage.removeItem("brgy_promoted_admins");
+        localStorage.removeItem("brgy_temp_passwords");
       } catch {}
 
-      setConfirmResetAllOpen(false)
-      onToast("All resident and promoted accounts removed! Database is clean.")
+      setConfirmResetAllOpen(false);
+      onToast("All resident and promoted accounts removed! Database is clean.");
     } catch (e: any) {
-      console.error(e)
-      onToast("Reset completed.")
-      setConfirmResetAllOpen(false)
+      console.error(e);
+      onToast("Reset completed.");
+      setConfirmResetAllOpen(false);
     } finally {
-      setIsResettingAll(false)
+      setIsResettingAll(false);
     }
   }
 
@@ -18808,27 +18987,27 @@ function ResidentsPage({
 
   async function handleAddResident() {
     if (!newResident.name.trim() || !newResident.email.trim()) {
-      onToast("Name and email are required.")
+      onToast("Name and email are required.");
 
-      return
+      return;
     }
 
-    setAddSubmitting(true)
+    setAddSubmitting(true);
 
     const bName = barangayInfo?.name
-      ? (barangayInfo.name.toLowerCase().startsWith("barangay")
-          ? barangayInfo.name
-          : `Barangay ${barangayInfo.name}`)
-      : "Barangay Office"
+      ? barangayInfo.name.toLowerCase().startsWith("barangay")
+        ? barangayInfo.name
+        : `Barangay ${barangayInfo.name}`
+      : "Barangay Office";
 
     const fullAddress = newResident.street.trim()
       ? `${newResident.street.trim()}, ${newResident.purok}`
-      : `${bName}, ${newResident.purok}`
+      : `${bName}, ${newResident.purok}`;
 
     try {
       // 1. Create auth user with guest client so admin session is undisturbed
 
-      const guest = createGuestClient()
+      const guest = createGuestClient();
 
       const { data: signUpData, error: signUpErr } = await guest.auth.signUp({
         email: newResident.email.trim().toLowerCase(),
@@ -18838,19 +19017,19 @@ function ResidentsPage({
         options: {
           data: { full_name: newResident.name.trim() },
         },
-      })
+      });
 
-      let userId = signUpData?.user?.id
+      let userId = signUpData?.user?.id;
 
       if (signUpErr || !userId) {
-        console.warn("Auth signup notice:", signUpErr?.message)
+        console.warn("Auth signup notice:", signUpErr?.message);
 
         // Fallback UUID if signup limits or requires admin api
 
         userId =
           typeof crypto !== "undefined" && crypto.randomUUID
             ? crypto.randomUUID()
-            : `res-${Date.now()}`
+            : `res-${Date.now()}`;
       }
 
       // 2. Insert into accounts table
@@ -18871,15 +19050,15 @@ function ResidentsPage({
 
           status: newResident.immediateStatus,
         },
-      ])
+      ]);
 
       if (insertErr) {
-        console.error("Accounts table insert error:", insertErr)
+        console.error("Accounts table insert error:", insertErr);
       }
 
       saveResidentMeta(userId, {
         statusOverride: newResident.immediateStatus,
-      })
+      });
 
       const newRecord: ResidentRecord = {
         id: userId,
@@ -18901,15 +19080,15 @@ function ResidentsPage({
         registered: "Today",
 
         isOnline: checkIsOnline(userId, newResident.email),
-      }
+      };
 
-      setResidents((prev) => [newRecord, ...prev])
+      setResidents((prev) => [newRecord, ...prev]);
 
       if (newResident.immediateStatus === "pending") {
-        onPendingChange(pendingCount + 1)
+        onPendingChange(pendingCount + 1);
       }
 
-      setAddOpen(false)
+      setAddOpen(false);
 
       setNewResident({
         name: "",
@@ -18925,43 +19104,43 @@ function ResidentsPage({
         password: "Resident@2025!",
 
         immediateStatus: "active",
-      })
+      });
 
-      onToast(`Account created for ${newRecord.name}! 🎉`)
+      onToast(`Account created for ${newRecord.name}! 🎉`);
     } catch (err: any) {
-      console.error("Failed to add resident:", err)
+      console.error("Failed to add resident:", err);
 
-      onToast(err?.message || "Failed to create resident account")
+      onToast(err?.message || "Failed to create resident account");
     } finally {
-      setAddSubmitting(false)
+      setAddSubmitting(false);
     }
   }
 
   // Categorize lists
 
-  const approvedList = residents.filter((r) => r.status === "active")
+  const approvedList = residents.filter((r) => r.status === "active");
 
-  const pendingList = residents.filter((r) => r.status === "pending")
+  const pendingList = residents.filter((r) => r.status === "pending");
 
-  const rejectedList = residents.filter((r) => r.status === "rejected")
+  const rejectedList = residents.filter((r) => r.status === "rejected");
 
   const suspendedList = residents.filter(
     (r) => r.status === "suspended" || r.status === "banned",
-  )
+  );
 
-  const deletedList = residents.filter((r) => r.status === "deleted")
+  const deletedList = residents.filter((r) => r.status === "deleted");
 
   // Active list based on selected tab
 
-  let currentList = approvedList
+  let currentList = approvedList;
 
-  if (tab === "pending") currentList = pendingList
+  if (tab === "pending") currentList = pendingList;
 
-  if (tab === "rejected") currentList = rejectedList
+  if (tab === "rejected") currentList = rejectedList;
 
-  if (tab === "suspended") currentList = suspendedList
+  if (tab === "suspended") currentList = suspendedList;
 
-  if (tab === "deleted") currentList = deletedList
+  if (tab === "deleted") currentList = deletedList;
 
   // Filter by search & purok
 
@@ -18970,29 +19149,29 @@ function ResidentsPage({
       r.name.toLowerCase().includes(search.toLowerCase()) ||
       r.email.toLowerCase().includes(search.toLowerCase()) ||
       r.mobile.toLowerCase().includes(search.toLowerCase()) ||
-      r.address.toLowerCase().includes(search.toLowerCase())
+      r.address.toLowerCase().includes(search.toLowerCase());
 
     const matchesPurok =
       purokFilter === "all" ||
       r.purok.toLowerCase() === purokFilter.toLowerCase() ||
-      r.address.toLowerCase().includes(purokFilter.toLowerCase())
+      r.address.toLowerCase().includes(purokFilter.toLowerCase());
 
-    return matchesSearch && matchesPurok
-  })
+    return matchesSearch && matchesPurok;
+  });
 
   const filteredPwResets = pwResetRequests.filter((req: any) => {
-    const q = search.toLowerCase()
+    const q = search.toLowerCase();
 
     return (
       (req.name || "").toLowerCase().includes(q) ||
       (req.email || "").toLowerCase().includes(q) ||
       (req.phone || "").toLowerCase().includes(q)
-    )
-  })
+    );
+  });
 
   const onlineCount = approvedList.filter((r) =>
     checkIsOnline(r.id, r.email),
-  ).length
+  ).length;
 
   return (
     <div className="page inner-page">
@@ -19098,9 +19277,9 @@ function ResidentsPage({
         <button
           className={`resident-tab-btn ${tab === "pwresets" ? "active" : ""}`}
           onClick={() => {
-            setTab("pwresets")
+            setTab("pwresets");
 
-            reloadPwResetRequests()
+            reloadPwResetRequests();
           }}
           style={{ borderLeft: "2px solid #e5e7eb" }}
         >
@@ -19364,15 +19543,15 @@ function ResidentsPage({
                             phone: req.phone,
 
                             reqId: req.id,
-                          })
+                          });
 
                           setPwResetNewPass(
                             req.tempPassword || "Resident@2025!",
-                          )
+                          );
 
-                          setPwResetSuccess(true)
+                          setPwResetSuccess(true);
 
-                          setPwResetModalOpen(true)
+                          setPwResetModalOpen(true);
                         }}
                         title="View / Re-send SMS credentials"
                       >
@@ -19631,13 +19810,13 @@ function ResidentsPage({
                         resident.id,
 
                         resident.email,
-                      )
+                      );
 
                       const isSelf =
                         currentUser &&
                         (String(currentUser.id) === String(resident.id) ||
                           currentUser.email?.toLowerCase() ===
-                            resident.email?.toLowerCase())
+                            resident.email?.toLowerCase());
 
                       return (
                         <span
@@ -19656,7 +19835,7 @@ function ResidentsPage({
                               ? "Online"
                               : "Offline"}
                         </span>
-                      )
+                      );
                     })()}
                 </div>
               </div>
@@ -19877,9 +20056,9 @@ function ResidentsPage({
               : `Manage Resident: ${selected.name}`
           }
           close={() => {
-            setSelected(null)
+            setSelected(null);
 
-            setIsEditing(false)
+            setIsEditing(false);
           }}
         >
           <div className="resident-manage-card">
@@ -19939,7 +20118,7 @@ function ResidentsPage({
                 {(() => {
                   const isSelOnline = selected
                     ? checkIsOnline(selected.id, selected.email)
-                    : false
+                    : false;
 
                   return (
                     <span
@@ -19954,7 +20133,7 @@ function ResidentsPage({
                       />
                       {isSelOnline ? "Online Now" : "Offline"}
                     </span>
-                  )
+                  );
                 })()}
               </div>
             </div>
@@ -20390,9 +20569,9 @@ function ResidentsPage({
         <Modal
           title="Decline / Reject Resident Registration"
           close={() => {
-            setRejectModalOpen(false)
+            setRejectModalOpen(false);
 
-            setRejectingResident(null)
+            setRejectingResident(null);
           }}
         >
           <div
@@ -20446,9 +20625,9 @@ function ResidentsPage({
                       selectedPresetReason === reason ? "active" : ""
                     }`}
                     onClick={() => {
-                      setSelectedPresetReason(reason)
+                      setSelectedPresetReason(reason);
 
-                      if (reason !== "Other reason") setRejectionReason("")
+                      if (reason !== "Other reason") setRejectionReason("");
                     }}
                   >
                     {reason}
@@ -20483,9 +20662,9 @@ function ResidentsPage({
                 type="button"
                 className="row-action"
                 onClick={() => {
-                  setRejectModalOpen(false)
+                  setRejectModalOpen(false);
 
-                  setRejectingResident(null)
+                  setRejectingResident(null);
                 }}
               >
                 Cancel
@@ -20514,9 +20693,9 @@ function ResidentsPage({
         <Modal
           title="Move Account to Deleted Archive"
           close={() => {
-            setDeleteModalOpen(false)
+            setDeleteModalOpen(false);
 
-            setDeletingResident(null)
+            setDeletingResident(null);
           }}
         >
           <div className="danger-modal-box">
@@ -20548,9 +20727,9 @@ function ResidentsPage({
               <button
                 className="row-action"
                 onClick={() => {
-                  setDeleteModalOpen(false)
+                  setDeleteModalOpen(false);
 
-                  setDeletingResident(null)
+                  setDeletingResident(null);
                 }}
                 disabled={isDeleting}
               >
@@ -20580,7 +20759,7 @@ function ResidentsPage({
         <Modal
           title="Reset All Accounts in Database"
           close={() => {
-            if (!isResettingAll) setConfirmResetAllOpen(false)
+            if (!isResettingAll) setConfirmResetAllOpen(false);
           }}
         >
           <div className="danger-modal-box">
@@ -20594,8 +20773,10 @@ function ResidentsPage({
               Permanently Erase All Accounts?
             </h3>
             <p className="danger-modal-desc">
-              This action will permanently delete all resident accounts from the Supabase database.
-              Official administrators (<strong>admin@baranggay.conn.gov.ph</strong> & <strong>admin@sanisidro.gov.ph</strong>) will be preserved.
+              This action will permanently delete all resident accounts from the
+              Supabase database. Official administrators (
+              <strong>admin@baranggay.conn.gov.ph</strong> &{" "}
+              <strong>admin@sanisidro.gov.ph</strong>) will be preserved.
             </p>
 
             <div
@@ -20632,7 +20813,9 @@ function ResidentsPage({
                 onClick={handleResetAllAccounts}
               >
                 <Icon name="trash" size={14} />
-                {isResettingAll ? "Erasing Database..." : "Yes, Reset All Accounts"}
+                {isResettingAll
+                  ? "Erasing Database..."
+                  : "Yes, Reset All Accounts"}
               </button>
             </div>
           </div>
@@ -20644,9 +20827,9 @@ function ResidentsPage({
         <Modal
           title="Permanently Purge Resident Record"
           close={() => {
-            setPurgeModalOpen(false)
+            setPurgeModalOpen(false);
 
-            setPurgingResident(null)
+            setPurgingResident(null);
           }}
         >
           <div className="danger-modal-box">
@@ -20679,9 +20862,9 @@ function ResidentsPage({
               <button
                 className="row-action"
                 onClick={() => {
-                  setPurgeModalOpen(false)
+                  setPurgeModalOpen(false);
 
-                  setPurgingResident(null)
+                  setPurgingResident(null);
                 }}
                 disabled={isPurging}
               >
@@ -20800,17 +20983,10 @@ function ResidentsPage({
                 type="button"
                 className="show-password-btn"
                 onClick={() => setShowAddPassword(!showAddPassword)}
-                aria-label={
-                  showAddPassword ? "Hide password" : "Show password"
-                }
-                title={
-                  showAddPassword ? "Hide password" : "Show password"
-                }
+                aria-label={showAddPassword ? "Hide password" : "Show password"}
+                title={showAddPassword ? "Hide password" : "Show password"}
               >
-                <Icon
-                  name={showAddPassword ? "eyeOff" : "eye"}
-                  size={18}
-                />
+                <Icon name={showAddPassword ? "eyeOff" : "eye"} size={18} />
               </button>
             </div>
             <small style={{ color: "#74867f", fontSize: "10px" }}>
@@ -20866,11 +21042,11 @@ function ResidentsPage({
               : `Reset Password: ${pwResetTarget.name}`
           }
           close={() => {
-            setPwResetModalOpen(false)
+            setPwResetModalOpen(false);
 
-            setPwResetSuccess(false)
+            setPwResetSuccess(false);
 
-            setPwResetError("")
+            setPwResetError("");
           }}
         >
           {pwResetSuccess ? (
@@ -21052,9 +21228,9 @@ function ResidentsPage({
                     type="button"
                     className="btn-sm-action"
                     onClick={() => {
-                      copyToClipboard(pwResetNewPass)
+                      copyToClipboard(pwResetNewPass);
 
-                      onToast("Password copied to clipboard! 📋")
+                      onToast("Password copied to clipboard! 📋");
                     }}
                   >
                     Copy Password
@@ -21122,15 +21298,15 @@ function ResidentsPage({
                   type="button"
                   className="btn-sm-action"
                   onClick={() => {
-                    const smsText = `Good day ${pwResetTarget.name}! Your Barangay Connect portal password has been reset by the Barangay Administration.\n\nTemporary Password: ${pwResetNewPass}\n\nPlease sign in to the portal and update your password under Settings. Thank you!`
+                    const smsText = `Good day ${pwResetTarget.name}! Your Barangay Connect portal password has been reset by the Barangay Administration.\n\nTemporary Password: ${pwResetNewPass}\n\nPlease sign in to the portal and update your password under Settings. Thank you!`;
 
-                    copyToClipboard(smsText)
+                    copyToClipboard(smsText);
 
-                    setCopiedSms(true)
+                    setCopiedSms(true);
 
-                    onToast("SMS message text copied to clipboard! 📋")
+                    onToast("SMS message text copied to clipboard! 📋");
 
-                    setTimeout(() => setCopiedSms(false), 3000)
+                    setTimeout(() => setCopiedSms(false), 3000);
                   }}
                   style={{ padding: "9px 14px" }}
                 >
@@ -21166,9 +21342,9 @@ function ResidentsPage({
                   type="button"
                   className="row-action"
                   onClick={() => {
-                    setPwResetModalOpen(false)
+                    setPwResetModalOpen(false);
 
-                    setPwResetSuccess(false)
+                    setPwResetSuccess(false);
                   }}
                   style={{ padding: "9px 16px" }}
                 >
@@ -21319,9 +21495,9 @@ function ResidentsPage({
                     placeholder="Enter your admin password"
                     value={pwResetAdminPass}
                     onChange={(e) => {
-                      setPwResetAdminPass(e.target.value)
+                      setPwResetAdminPass(e.target.value);
 
-                      setPwResetError("")
+                      setPwResetError("");
                     }}
                     autoFocus
                   />
@@ -21361,11 +21537,11 @@ function ResidentsPage({
                   <button
                     type="button"
                     onClick={() => {
-                      const pass = generateSecurePassword()
+                      const pass = generateSecurePassword();
 
-                      setPwResetNewPass(pass)
+                      setPwResetNewPass(pass);
 
-                      setPwResetConfirmPass(pass)
+                      setPwResetConfirmPass(pass);
                     }}
                     style={{
                       border: "none",
@@ -21400,14 +21576,9 @@ function ResidentsPage({
                     aria-label={
                       showPwResetNew ? "Hide password" : "Show password"
                     }
-                    title={
-                      showPwResetNew ? "Hide password" : "Show password"
-                    }
+                    title={showPwResetNew ? "Hide password" : "Show password"}
                   >
-                    <Icon
-                      name={showPwResetNew ? "eyeOff" : "eye"}
-                      size={18}
-                    />
+                    <Icon name={showPwResetNew ? "eyeOff" : "eye"} size={18} />
                   </button>
                 </div>
               </label>
@@ -21455,9 +21626,9 @@ function ResidentsPage({
                   type="button"
                   className="row-action"
                   onClick={() => {
-                    setPwResetModalOpen(false)
+                    setPwResetModalOpen(false);
 
-                    setPwResetError("")
+                    setPwResetError("");
                   }}
                   disabled={pwResetSubmitting}
                 >
@@ -21487,7 +21658,7 @@ function ResidentsPage({
         </Modal>
       )}
     </div>
-  )
+  );
 }
 
 // ─── Barangay Settings ───────────────────────────────────────────────────────
@@ -21503,210 +21674,209 @@ function BarangaySettingsPage({
 
   onUpdateUserEmail,
 }: {
-  onToast: (msg: string) => void
+  onToast: (msg: string) => void;
 
-  barangay: BarangayInfo
+  barangay: BarangayInfo;
 
-  onBarangayChange: (info: BarangayInfo) => void
+  onBarangayChange: (info: BarangayInfo) => void;
 
-  currentUser?: Account | null
+  currentUser?: Account | null;
 
   onUpdateUserEmail?: (
     newEmail: string,
     verifyPassword?: string,
-  ) => Promise<{ success: boolean; error?: string }>
+  ) => Promise<{ success: boolean; error?: string }>;
 }) {
-  const [tab, setTab] =
-    useState<"profile" | "hours" | "documents" | "notifications" | "security">(
-      "profile",
-    )
+  const [tab, setTab] = useState<
+    "profile" | "hours" | "documents" | "notifications" | "security"
+  >("profile");
 
-  const [info, setInfo] = useState<BarangayInfo>(barangay)
+  const [info, setInfo] = useState<BarangayInfo>(barangay);
 
-  const [isDirty, setIsDirty] = useState(false)
+  const [isDirty, setIsDirty] = useState(false);
 
-  const [isSaving, setIsSaving] = useState(false)
+  const [isSaving, setIsSaving] = useState(false);
 
-  const [isSyncing, setIsSyncing] = useState(false)
+  const [isSyncing, setIsSyncing] = useState(false);
 
-  const [lastSyncTime, setLastSyncTime] = useState<string>("Synced with cloud")
+  const [lastSyncTime, setLastSyncTime] = useState<string>("Synced with cloud");
 
   // Keep info in sync if parent barangay changes and user isn't actively editing
 
   useEffect(() => {
     if (!isDirty) {
-      setInfo(barangay)
+      setInfo(barangay);
     }
-  }, [barangay, isDirty])
+  }, [barangay, isDirty]);
 
   // Operating Hours state
 
-  const [schedule, setSchedule] = useState<OperatingDay[]>(getCachedSchedule)
+  const [schedule, setSchedule] = useState<OperatingDay[]>(getCachedSchedule);
 
   const [holidayNotice, setHolidayNotice] = useState<string>(() => {
     return (
       localStorage.getItem("barangay_holiday_notice") ||
       "The barangay office will be closed on declared public holidays."
-    )
-  })
+    );
+  });
 
   // Listen for schedule updates pushed from other devices via realtime → custom event
 
   useEffect(() => {
     const handleRemoteSchedule = (e: Event) => {
-      const remote = (e as CustomEvent<OperatingDay[]>).detail
+      const remote = (e as CustomEvent<OperatingDay[]>).detail;
 
       if (Array.isArray(remote) && remote.length > 0 && !isDirty) {
-        setSchedule(remote)
+        setSchedule(remote);
       }
-    }
+    };
 
-    window.addEventListener("barangay_schedule_updated", handleRemoteSchedule)
+    window.addEventListener("barangay_schedule_updated", handleRemoteSchedule);
 
     return () => {
       window.removeEventListener(
         "barangay_schedule_updated",
 
         handleRemoteSchedule,
-      )
-    }
-  }, [isDirty])
+      );
+    };
+  }, [isDirty]);
 
   // Document Services state
 
   const [services, setServices] = useState<DocumentService[]>(
     getCachedDocumentServices,
-  )
+  );
 
   const [editingService, setEditingService] = useState<DocumentService | null>(
     null,
-  )
+  );
 
-  const [addingService, setAddingService] = useState(false)
+  const [addingService, setAddingService] = useState(false);
 
-  const [newServiceName, setNewServiceName] = useState("")
+  const [newServiceName, setNewServiceName] = useState("");
 
-  const [newServiceDays, setNewServiceDays] = useState(3)
+  const [newServiceDays, setNewServiceDays] = useState(3);
 
-  const [newServiceFee, setNewServiceFee] = useState("₱ 50")
+  const [newServiceFee, setNewServiceFee] = useState("₱ 50");
 
-  const [newServiceReq, setNewServiceReq] = useState("")
+  const [newServiceReq, setNewServiceReq] = useState("");
 
-  const [newServiceDesc, setNewServiceDesc] = useState("")
+  const [newServiceDesc, setNewServiceDesc] = useState("");
 
-  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   // Notification preferences state
 
   const [notifPrefs, setNotifPrefs] =
-    useState<NotificationPrefs>(getCachedNotifPrefs)
+    useState<NotificationPrefs>(getCachedNotifPrefs);
 
   // Security preferences state
 
   const [securityPrefs, setSecurityPrefs] = useState<SecurityAccessPrefs>(
     getCachedSecurityPrefs,
-  )
+  );
 
-  const [currentPassword, setCurrentPassword] = useState("")
+  const [currentPassword, setCurrentPassword] = useState("");
 
-  const [newPassword, setNewPassword] = useState("")
+  const [newPassword, setNewPassword] = useState("");
 
-  const [confirmPassword, setConfirmPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("");
 
-  const [showPassword, setShowPassword] = useState(false)
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [showVerifyEmailPassword, setShowVerifyEmailPassword] = useState(false)
+  const [showPassword, setShowPassword] = useState(false);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showVerifyEmailPassword, setShowVerifyEmailPassword] = useState(false);
 
-  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false)
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
 
   const [passwordStatus, setPasswordStatus] = useState<{
-    type: "success" | "error"
+    type: "success" | "error";
 
-    msg: string
-  } | null>(null)
+    msg: string;
+  } | null>(null);
 
-  const [newAdminEmail, setNewAdminEmail] = useState("")
-  const [verifyEmailPassword, setVerifyEmailPassword] = useState("")
-  const [isUpdatingEmail, setIsUpdatingEmail] = useState(false)
+  const [newAdminEmail, setNewAdminEmail] = useState("");
+  const [verifyEmailPassword, setVerifyEmailPassword] = useState("");
+  const [isUpdatingEmail, setIsUpdatingEmail] = useState(false);
   const [emailStatus, setEmailStatus] = useState<{
-    type: "success" | "error"
-    msg: string
-  } | null>(null)
+    type: "success" | "error";
+    msg: string;
+  } | null>(null);
 
   const handleUpdateEmail = async () => {
-    const cleanEmail = newAdminEmail.trim().toLowerCase()
+    const cleanEmail = newAdminEmail.trim().toLowerCase();
     if (!cleanEmail || !cleanEmail.includes("@")) {
       setEmailStatus({
         type: "error",
         msg: "Please enter a valid email address.",
-      })
-      return
+      });
+      return;
     }
     if (cleanEmail === (currentUser?.email || "").toLowerCase().trim()) {
       setEmailStatus({
         type: "error",
         msg: "New email is the same as your current email.",
-      })
-      return
+      });
+      return;
     }
-    setIsUpdatingEmail(true)
-    setEmailStatus(null)
+    setIsUpdatingEmail(true);
+    setEmailStatus(null);
     try {
       if (onUpdateUserEmail) {
         const res = await onUpdateUserEmail(
           cleanEmail,
           verifyEmailPassword || undefined,
-        )
+        );
         if (!res.success) {
           setEmailStatus({
             type: "error",
             msg: res.error || "Failed to update email.",
-          })
-          return
+          });
+          return;
         }
       }
       setEmailStatus({
         type: "success",
         msg: `Administrator email updated to ${cleanEmail}!`,
-      })
-      setNewAdminEmail("")
-      setVerifyEmailPassword("")
-      onToast("Admin email updated successfully! ✅")
+      });
+      setNewAdminEmail("");
+      setVerifyEmailPassword("");
+      onToast("Admin email updated successfully! ✅");
     } catch (err: any) {
       setEmailStatus({
         type: "error",
         msg: err?.message || "Failed to update email.",
-      })
+      });
     } finally {
-      setIsUpdatingEmail(false)
+      setIsUpdatingEmail(false);
     }
-  }
+  };
 
   // Database Diagnostics state
 
   const [dbStatus, setDbStatus] = useState<{
-    latency: number
+    latency: number;
 
-    accountsCount: number
+    accountsCount: number;
 
-    announcementsCount: number
+    announcementsCount: number;
 
-    documentsCount: number
+    documentsCount: number;
 
-    incidentsCount: number
+    incidentsCount: number;
 
-    lastTested: string
-  } | null>(null)
+    lastTested: string;
+  } | null>(null);
 
-  const [isTestingDb, setIsTestingDb] = useState(false)
+  const [isTestingDb, setIsTestingDb] = useState(false);
 
   const tabs: {
-    id: "profile" | "hours" | "documents" | "notifications" | "security"
+    id: "profile" | "hours" | "documents" | "notifications" | "security";
 
-    label: string
+    label: string;
 
-    icon: IconName
+    icon: IconName;
   }[] = [
     { id: "profile", label: "Barangay profile", icon: "logo" },
 
@@ -21717,12 +21887,12 @@ function BarangaySettingsPage({
     { id: "notifications", label: "Notifications", icon: "bell" },
 
     { id: "security", label: "Security & Cloud", icon: "shield" },
-  ]
+  ];
 
   // ── Cloud Sync (Pull latest from DB) ──
 
   const handleSyncFromCloud = async () => {
-    setIsSyncing(true)
+    setIsSyncing(true);
 
     try {
       const { data, error } = await supabase
@@ -21733,10 +21903,10 @@ function BarangaySettingsPage({
 
         .eq("id", 1)
 
-        .maybeSingle()
+        .maybeSingle();
 
       if (error) {
-        onToast("Sync failed: " + error.message)
+        onToast("Sync failed: " + error.message);
       } else if (data) {
         const cloudInfo: BarangayInfo = {
           name: data.name || defaultBarangayInfo.name,
@@ -21761,13 +21931,13 @@ function BarangaySettingsPage({
             data.saturday_hours || defaultBarangayInfo.saturdayHours,
 
           sundayHours: data.sunday_hours || defaultBarangayInfo.sundayHours,
-        }
+        };
 
-        setInfo(cloudInfo)
+        setInfo(cloudInfo);
 
-        onBarangayChange(cloudInfo)
+        onBarangayChange(cloudInfo);
 
-        localStorage.setItem("barangay_info", JSON.stringify(cloudInfo))
+        localStorage.setItem("barangay_info", JSON.stringify(cloudInfo));
 
         setLastSyncTime(
           new Date().toLocaleTimeString([], {
@@ -21775,26 +21945,26 @@ function BarangaySettingsPage({
 
             minute: "2-digit",
           }),
-        )
+        );
 
-        onToast("Barangay settings refreshed from Supabase database!")
+        onToast("Barangay settings refreshed from Supabase database!");
       }
     } catch (err: any) {
-      onToast("Sync error: " + (err.message || "Unknown error"))
+      onToast("Sync error: " + (err.message || "Unknown error"));
     } finally {
-      setIsSyncing(false)
+      setIsSyncing(false);
     }
-  }
+  };
 
   // ── Cloud Save (Push changes to DB) ──
 
   const handleSaveAll = async () => {
-    setIsSaving(true)
+    setIsSaving(true);
 
     try {
       // 1. Preserve promoted admin emails and active resets inside description
 
-      let currentDesc = ""
+      let currentDesc = "";
 
       try {
         const { data: dbSettings } = await supabase
@@ -21805,56 +21975,56 @@ function BarangaySettingsPage({
 
           .eq("id", 1)
 
-          .maybeSingle()
+          .maybeSingle();
 
-        currentDesc = dbSettings?.description || ""
+        currentDesc = dbSettings?.description || "";
       } catch {}
 
-      const cleanDesc = cleanBarangayDescription(info.description)
+      const cleanDesc = cleanBarangayDescription(info.description);
 
       const adminRolesMatch = (currentDesc || "").match(
         /<!--\s*ADMIN_ROLES:\s*(\[.*?\])\s*-->/,
-      )
+      );
 
       const activeResetsMatch = (currentDesc || "").match(
         /<!--\s*ACTIVE_RESETS:\s*(\{.*?\})\s*-->/,
-      )
+      );
 
-      let fullDesc = cleanDesc
+      let fullDesc = cleanDesc;
 
       if (adminRolesMatch) {
-        fullDesc += `\n<!-- ADMIN_ROLES: ${adminRolesMatch[1]} -->`
+        fullDesc += `\n<!-- ADMIN_ROLES: ${adminRolesMatch[1]} -->`;
       } else {
-        const promoted = getPromotedAdminEmails()
+        const promoted = getPromotedAdminEmails();
 
         if (promoted.length > 0) {
-          fullDesc += `\n<!-- ADMIN_ROLES: ${JSON.stringify(promoted)} -->`
+          fullDesc += `\n<!-- ADMIN_ROLES: ${JSON.stringify(promoted)} -->`;
         }
       }
 
       if (activeResetsMatch) {
-        fullDesc += `\n<!-- ACTIVE_RESETS: ${activeResetsMatch[1]} -->`
+        fullDesc += `\n<!-- ACTIVE_RESETS: ${activeResetsMatch[1]} -->`;
       }
 
       // Always embed the full 7-day schedule so other devices can read it via realtime
 
-      fullDesc += `\n<!-- SCHEDULE: ${JSON.stringify(schedule)} -->`
+      fullDesc += `\n<!-- SCHEDULE: ${JSON.stringify(schedule)} -->`;
 
       // Derive operating hour summaries directly from the schedule
 
-      const mon = schedule[0]
+      const mon = schedule[0];
 
-      const sat = schedule[5]
+      const sat = schedule[5];
 
-      const sun = schedule[6]
+      const sun = schedule[6];
 
       const derivedWeekday = mon?.active
         ? `${mon.open} to ${mon.close}`
-        : "Closed"
+        : "Closed";
 
-      const derivedSat = sat?.active ? `${sat.open} to ${sat.close}` : "Closed"
+      const derivedSat = sat?.active ? `${sat.open} to ${sat.close}` : "Closed";
 
-      const derivedSun = sun?.active ? `${sun.open} to ${sun.close}` : "Closed"
+      const derivedSun = sun?.active ? `${sun.open} to ${sun.close}` : "Closed";
 
       const updatedInfo: BarangayInfo = {
         ...info,
@@ -21864,7 +22034,7 @@ function BarangaySettingsPage({
         saturdayHours: derivedSat,
 
         sundayHours: derivedSun,
-      }
+      };
 
       // 1. Upsert Supabase barangay_settings table
 
@@ -21894,62 +22064,62 @@ function BarangaySettingsPage({
         sunday_hours: updatedInfo.sundayHours,
 
         updated_at: new Date().toISOString(),
-      })
+      });
 
       if (error) {
-        console.warn("Supabase upsert error:", error)
+        console.warn("Supabase upsert error:", error);
       }
 
       // 2. Persist to local caches
 
-      localStorage.setItem("barangay_info", JSON.stringify(updatedInfo))
+      localStorage.setItem("barangay_info", JSON.stringify(updatedInfo));
 
-      saveCachedSchedule(schedule)
+      saveCachedSchedule(schedule);
 
-      localStorage.setItem("barangay_holiday_notice", holidayNotice)
+      localStorage.setItem("barangay_holiday_notice", holidayNotice);
 
-      saveCachedDocumentServices(services)
+      saveCachedDocumentServices(services);
 
-      saveCachedNotifPrefs(notifPrefs)
+      saveCachedNotifPrefs(notifPrefs);
 
-      saveCachedSecurityPrefs(securityPrefs)
+      saveCachedSecurityPrefs(securityPrefs);
 
       // 3. Update state
 
-      setIsDirty(false)
+      setIsDirty(false);
 
-      setInfo(updatedInfo)
+      setInfo(updatedInfo);
 
-      onBarangayChange(updatedInfo)
+      onBarangayChange(updatedInfo);
 
-      setLastSyncTime("Just now")
+      setLastSyncTime("Just now");
 
-      onToast("Barangay settings saved and synchronized to database!")
+      onToast("Barangay settings saved and synchronized to database!");
     } catch (err: any) {
-      onToast("Save error: " + (err.message || "Unknown error"))
+      onToast("Save error: " + (err.message || "Unknown error"));
     } finally {
-      setIsSaving(false)
+      setIsSaving(false);
     }
-  }
+  };
 
   // ── Schedule Handlers ──
 
   const handleToggleDay = (dayIndex: number) => {
-    setIsDirty(true)
+    setIsDirty(true);
 
-    const updated = [...schedule]
+    const updated = [...schedule];
 
-    updated[dayIndex].active = !updated[dayIndex].active
+    updated[dayIndex].active = !updated[dayIndex].active;
 
-    setSchedule(updated)
+    setSchedule(updated);
 
-    saveCachedSchedule(updated)
+    saveCachedSchedule(updated);
 
-    const mon = updated[0]
+    const mon = updated[0];
 
-    const sat = updated[5]
+    const sat = updated[5];
 
-    const sun = updated[6]
+    const sun = updated[6];
 
     setInfo((prev) => ({
       ...prev,
@@ -21959,8 +22129,8 @@ function BarangaySettingsPage({
       saturdayHours: sat?.active ? `${sat.open} to ${sat.close}` : "Closed",
 
       sundayHours: sun?.active ? `${sun.open} to ${sun.close}` : "Closed",
-    }))
-  }
+    }));
+  };
 
   const handleTimeChange = (
     dayIndex: number,
@@ -21969,21 +22139,21 @@ function BarangaySettingsPage({
 
     val: string,
   ) => {
-    setIsDirty(true)
+    setIsDirty(true);
 
-    const updated = [...schedule]
+    const updated = [...schedule];
 
-    updated[dayIndex][field] = val
+    updated[dayIndex][field] = val;
 
-    setSchedule(updated)
+    setSchedule(updated);
 
-    saveCachedSchedule(updated)
+    saveCachedSchedule(updated);
 
-    const mon = updated[0]
+    const mon = updated[0];
 
-    const sat = updated[5]
+    const sat = updated[5];
 
-    const sun = updated[6]
+    const sun = updated[6];
 
     setInfo((prev) => ({
       ...prev,
@@ -21993,28 +22163,28 @@ function BarangaySettingsPage({
       saturdayHours: sat?.active ? `${sat.open} to ${sat.close}` : "Closed",
 
       sundayHours: sun?.active ? `${sun.open} to ${sun.close}` : "Closed",
-    }))
-  }
+    }));
+  };
 
   // ── Document Services Handlers ──
 
   const handleToggleService = (id: string) => {
     const updated = services.map((s) =>
       s.id === id ? { ...s, enabled: !s.enabled } : s,
-    )
+    );
 
-    setServices(updated)
+    setServices(updated);
 
-    saveCachedDocumentServices(updated)
+    saveCachedDocumentServices(updated);
 
-    onToast("Document availability updated")
-  }
+    onToast("Document availability updated");
+  };
 
   const handleSaveNewService = () => {
     if (!newServiceName.trim()) {
-      onToast("Please enter document service name")
+      onToast("Please enter document service name");
 
-      return
+      return;
     }
 
     const newDoc: DocumentService = {
@@ -22032,98 +22202,98 @@ function BarangaySettingsPage({
         newServiceDesc.trim() || "Official barangay document service.",
 
       enabled: true,
-    }
+    };
 
-    const updated = [...services, newDoc]
+    const updated = [...services, newDoc];
 
-    setServices(updated)
+    setServices(updated);
 
-    saveCachedDocumentServices(updated)
+    saveCachedDocumentServices(updated);
 
-    setAddingService(false)
+    setAddingService(false);
 
-    setNewServiceName("")
+    setNewServiceName("");
 
-    setNewServiceReq("")
+    setNewServiceReq("");
 
-    setNewServiceDesc("")
+    setNewServiceDesc("");
 
-    onToast(`Added "${newDoc.name}" to document catalog`)
-  }
+    onToast(`Added "${newDoc.name}" to document catalog`);
+  };
 
   const handleSaveEditService = () => {
-    if (!editingService) return
+    if (!editingService) return;
 
     const updated = services.map((s) =>
       s.id === editingService.id ? editingService : s,
-    )
+    );
 
-    setServices(updated)
+    setServices(updated);
 
-    saveCachedDocumentServices(updated)
+    saveCachedDocumentServices(updated);
 
-    setEditingService(null)
+    setEditingService(null);
 
-    onToast(`Updated "${editingService.name}" details`)
-  }
+    onToast(`Updated "${editingService.name}" details`);
+  };
 
   const handleDeleteService = (id: string) => {
-    const target = services.find((s) => s.id === id)
+    const target = services.find((s) => s.id === id);
 
-    const updated = services.filter((s) => s.id !== id)
+    const updated = services.filter((s) => s.id !== id);
 
-    setServices(updated)
+    setServices(updated);
 
-    saveCachedDocumentServices(updated)
+    saveCachedDocumentServices(updated);
 
-    setDeleteConfirmId(null)
+    setDeleteConfirmId(null);
 
-    onToast(`Removed "${target?.name || "document"}"`)
-  }
+    onToast(`Removed "${target?.name || "document"}"`);
+  };
 
   const handleResetServices = () => {
-    setServices(defaultDocumentServices)
+    setServices(defaultDocumentServices);
 
-    saveCachedDocumentServices(defaultDocumentServices)
+    saveCachedDocumentServices(defaultDocumentServices);
 
-    onToast("Document catalog reset to standard templates")
-  }
+    onToast("Document catalog reset to standard templates");
+  };
 
   // ── Notification Handlers ──
 
   const handleToggleNotif = (key: keyof NotificationPrefs) => {
-    const updated = { ...notifPrefs, [key]: !notifPrefs[key] }
+    const updated = { ...notifPrefs, [key]: !notifPrefs[key] };
 
-    setNotifPrefs(updated)
+    setNotifPrefs(updated);
 
-    saveCachedNotifPrefs(updated)
+    saveCachedNotifPrefs(updated);
 
-    onToast("Notification preference updated")
-  }
+    onToast("Notification preference updated");
+  };
 
   // ── Security Handlers ──
 
   const handleToggleSecurityPref = (key: keyof SecurityAccessPrefs) => {
-    const updated = { ...securityPrefs, [key]: !securityPrefs[key] }
+    const updated = { ...securityPrefs, [key]: !securityPrefs[key] };
 
-    setSecurityPrefs(updated)
+    setSecurityPrefs(updated);
 
-    saveCachedSecurityPrefs(updated)
+    saveCachedSecurityPrefs(updated);
 
-    onToast("Access rule updated")
-  }
+    onToast("Access rule updated");
+  };
 
   const handleUpdatePassword = async () => {
-    setPasswordStatus(null)
+    setPasswordStatus(null);
 
     if (!currentPassword) {
       setPasswordStatus({
         type: "error",
 
         msg: "Please enter your current administrator password.",
-      })
+      });
 
-      return
+      return;
     }
 
     if (newPassword.length < 6) {
@@ -22131,9 +22301,9 @@ function BarangaySettingsPage({
         type: "error",
 
         msg: "New password must be at least 6 characters long.",
-      })
+      });
 
-      return
+      return;
     }
 
     if (newPassword !== confirmPassword) {
@@ -22141,52 +22311,52 @@ function BarangaySettingsPage({
         type: "error",
 
         msg: "New password and password confirmation do not match.",
-      })
+      });
 
-      return
+      return;
     }
 
-    setIsUpdatingPassword(true)
+    setIsUpdatingPassword(true);
 
     try {
       const { error: authErr } = await supabase.auth.updateUser({
         password: newPassword,
-      })
+      });
 
       if (authErr) {
-        setPasswordStatus({ type: "error", msg: authErr.message })
+        setPasswordStatus({ type: "error", msg: authErr.message });
 
-        return
+        return;
       }
 
-      setCurrentPassword("")
+      setCurrentPassword("");
 
-      setNewPassword("")
+      setNewPassword("");
 
-      setConfirmPassword("")
+      setConfirmPassword("");
 
       setPasswordStatus({
         type: "success",
 
         msg: "Administrator password updated successfully in cloud authentication!",
-      })
+      });
 
-      onToast("Admin password successfully updated!")
+      onToast("Admin password successfully updated!");
     } catch (err: any) {
       setPasswordStatus({
         type: "error",
 
         msg: err.message || "Failed to update password.",
-      })
+      });
     } finally {
-      setIsUpdatingPassword(false)
+      setIsUpdatingPassword(false);
     }
-  }
+  };
 
   const handleTestDatabase = async () => {
-    setIsTestingDb(true)
+    setIsTestingDb(true);
 
-    const start = performance.now()
+    const start = performance.now();
 
     try {
       const [acctRes, annRes, docRes, incRes] = await Promise.all([
@@ -22205,9 +22375,9 @@ function BarangaySettingsPage({
           .select("id", { count: "exact", head: true }),
 
         supabase.from("incidents").select("id", { count: "exact", head: true }),
-      ])
+      ]);
 
-      const latency = Math.round(performance.now() - start)
+      const latency = Math.round(performance.now() - start);
 
       setDbStatus({
         latency,
@@ -22227,15 +22397,15 @@ function BarangaySettingsPage({
 
           second: "2-digit",
         }),
-      })
+      });
 
-      onToast(`Database connected! Roundtrip ping: ${latency}ms`)
+      onToast(`Database connected! Roundtrip ping: ${latency}ms`);
     } catch (e: any) {
-      onToast("Database test error: " + (e.message || "Connection failed"))
+      onToast("Database test error: " + (e.message || "Connection failed"));
     } finally {
-      setIsTestingDb(false)
+      setIsTestingDb(false);
     }
-  }
+  };
 
   return (
     <div className="page inner-page">
@@ -22320,9 +22490,9 @@ function BarangaySettingsPage({
                   <input
                     value={info.name}
                     onChange={(e) => {
-                      setIsDirty(true)
+                      setIsDirty(true);
 
-                      setInfo({ ...info, name: e.target.value })
+                      setInfo({ ...info, name: e.target.value });
                     }}
                     placeholder="e.g. San Isidro"
                   />
@@ -22332,9 +22502,9 @@ function BarangaySettingsPage({
                   <input
                     value={info.city}
                     onChange={(e) => {
-                      setIsDirty(true)
+                      setIsDirty(true);
 
-                      setInfo({ ...info, city: e.target.value })
+                      setInfo({ ...info, city: e.target.value });
                     }}
                     placeholder="e.g. Quezon City"
                   />
@@ -22344,9 +22514,9 @@ function BarangaySettingsPage({
                   <input
                     value={info.district}
                     onChange={(e) => {
-                      setIsDirty(true)
+                      setIsDirty(true);
 
-                      setInfo({ ...info, district: e.target.value })
+                      setInfo({ ...info, district: e.target.value });
                     }}
                     placeholder="e.g. 3rd District"
                   />
@@ -22356,9 +22526,9 @@ function BarangaySettingsPage({
                   <input
                     value={info.captain}
                     onChange={(e) => {
-                      setIsDirty(true)
+                      setIsDirty(true);
 
-                      setInfo({ ...info, captain: e.target.value })
+                      setInfo({ ...info, captain: e.target.value });
                     }}
                     placeholder="e.g. Kapitan Santos"
                   />
@@ -22368,9 +22538,9 @@ function BarangaySettingsPage({
                   <input
                     value={info.phone}
                     onChange={(e) => {
-                      setIsDirty(true)
+                      setIsDirty(true);
 
-                      setInfo({ ...info, phone: e.target.value })
+                      setInfo({ ...info, phone: e.target.value });
                     }}
                     placeholder="e.g. (02) 8123-4567"
                   />
@@ -22381,9 +22551,9 @@ function BarangaySettingsPage({
                     type="email"
                     value={info.email}
                     onChange={(e) => {
-                      setIsDirty(true)
+                      setIsDirty(true);
 
-                      setInfo({ ...info, email: e.target.value })
+                      setInfo({ ...info, email: e.target.value });
                     }}
                     placeholder="e.g. labangan@nagcarlan.gov.ph"
                   />
@@ -22393,9 +22563,9 @@ function BarangaySettingsPage({
                   <input
                     value={info.address}
                     onChange={(e) => {
-                      setIsDirty(true)
+                      setIsDirty(true);
 
-                      setInfo({ ...info, address: e.target.value })
+                      setInfo({ ...info, address: e.target.value });
                     }}
                     placeholder="e.g. 123 Mabini Street, San Isidro, Quezon City"
                   />
@@ -22406,9 +22576,9 @@ function BarangaySettingsPage({
                     rows={3}
                     value={info.description}
                     onChange={(e) => {
-                      setIsDirty(true)
+                      setIsDirty(true);
 
-                      setInfo({ ...info, description: e.target.value })
+                      setInfo({ ...info, description: e.target.value });
                     }}
                     placeholder="Brief description of community values, goals, and jurisdiction..."
                   />
@@ -22486,9 +22656,9 @@ function BarangaySettingsPage({
                   rows={2}
                   value={holidayNotice}
                   onChange={(e) => {
-                    setIsDirty(true)
+                    setIsDirty(true);
 
-                    setHolidayNotice(e.target.value)
+                    setHolidayNotice(e.target.value);
                   }}
                   placeholder="e.g. The barangay office will be closed on declared national holidays."
                 />
@@ -22927,7 +23097,6 @@ function BarangaySettingsPage({
                     placeholder="e.g. newadmin@baranggay.conn.gov.ph"
                   />
                 </label>
-
               </div>
 
               {emailStatus && (
@@ -23027,10 +23196,7 @@ function BarangaySettingsPage({
                       }
                       title={showPassword ? "Hide password" : "Show password"}
                     >
-                      <Icon
-                        name={showPassword ? "eyeOff" : "eye"}
-                        size={18}
-                      />
+                      <Icon name={showPassword ? "eyeOff" : "eye"} size={18} />
                     </button>
                   </div>
                 </label>
@@ -23050,14 +23216,10 @@ function BarangaySettingsPage({
                         setShowConfirmPassword(!showConfirmPassword)
                       }
                       aria-label={
-                        showConfirmPassword
-                          ? "Hide password"
-                          : "Show password"
+                        showConfirmPassword ? "Hide password" : "Show password"
                       }
                       title={
-                        showConfirmPassword
-                          ? "Hide password"
-                          : "Show password"
+                        showConfirmPassword ? "Hide password" : "Show password"
                       }
                     >
                       <Icon
@@ -23433,7 +23595,7 @@ function BarangaySettingsPage({
         </Modal>
       )}
     </div>
-  )
+  );
 }
 
 // ─── Emergency & Blotter / Incidents ──────────────────────────────────────────
@@ -23469,82 +23631,87 @@ function IncidentsPage({
 
   barangayInfo,
 }: {
-  isAdmin: boolean
+  isAdmin: boolean;
 
-  userEmail: string
+  userEmail: string;
 
-  userName: string
+  userName: string;
 
-  incidents: IncidentReport[]
+  incidents: IncidentReport[];
 
-  hotlines: EmergencyHotline[]
+  hotlines: EmergencyHotline[];
 
-  onAddHotline: (hotline: EmergencyHotline) => void
+  onAddHotline: (hotline: EmergencyHotline) => void;
 
-  onEditHotline: (hotline: EmergencyHotline) => void
+  onEditHotline: (hotline: EmergencyHotline) => void;
 
-  onDeleteHotline: (id: string) => void
+  onDeleteHotline: (id: string) => void;
 
-  onAddIncident: (report: IncidentReport) => void
+  onAddIncident: (report: IncidentReport) => void;
 
-  onUpdateIncident: (report: IncidentReport) => void
+  onUpdateIncident: (report: IncidentReport) => void;
 
-  onDeleteIncident: (id: string) => void
+  onDeleteIncident: (id: string) => void;
 
-  onRestoreIncident?: (id: string) => void
+  onRestoreIncident?: (id: string) => void;
 
-  onPurgeIncident?: (id: string) => void
+  onPurgeIncident?: (id: string) => void;
 
-  onToast: (msg: string) => void
+  onToast: (msg: string) => void;
 
-  barangayInfo?: BarangayInfo
+  barangayInfo?: BarangayInfo;
 }) {
   const bName = barangayInfo?.name
-    ? (barangayInfo.name.toLowerCase().startsWith("barangay")
-        ? barangayInfo.name
-        : `Barangay ${barangayInfo.name}`)
-    : "Barangay Office"
+    ? barangayInfo.name.toLowerCase().startsWith("barangay")
+      ? barangayInfo.name
+      : `Barangay ${barangayInfo.name}`
+    : "Barangay Office";
   const [tab, setTab] = useState<"hotlines" | "blotter">(
     isAdmin ? "blotter" : "hotlines",
-  )
+  );
 
-  const [blotterTab, setBlotterTab] =
-    useState<"all" | "under-review" | "scheduled" | "mediation" | "resolved" | "dismissed" | "deleted">(
-      "all",
-    )
+  const [blotterTab, setBlotterTab] = useState<
+    | "all"
+    | "under-review"
+    | "scheduled"
+    | "mediation"
+    | "resolved"
+    | "dismissed"
+    | "deleted"
+  >("all");
 
-  const [search, setSearch] = useState("")
+  const [search, setSearch] = useState("");
 
-  const [purokFilter, setPurokFilter] = useState("all")
+  const [purokFilter, setPurokFilter] = useState("all");
 
-  const [categoryFilter, setCategoryFilter] = useState("all")
+  const [categoryFilter, setCategoryFilter] = useState("all");
 
   // Modals state
 
-  const [fileModalOpen, setFileModalOpen] = useState(false)
+  const [fileModalOpen, setFileModalOpen] = useState(false);
 
-  const [walkInModalOpen, setWalkInModalOpen] = useState(false)
+  const [walkInModalOpen, setWalkInModalOpen] = useState(false);
 
-  const [hotlineModalOpen, setHotlineModalOpen] = useState(false)
+  const [hotlineModalOpen, setHotlineModalOpen] = useState(false);
 
   const [editingHotline, setEditingHotline] = useState<EmergencyHotline | null>(
     null,
-  )
+  );
 
   const [deleteHotlineItem, setDeleteHotlineItem] =
-    useState<EmergencyHotline | null>(null)
+    useState<EmergencyHotline | null>(null);
 
   const [manageModalItem, setManageModalItem] = useState<IncidentReport | null>(
     null,
-  )
+  );
 
-  const [kpSummonItem, setKpSummonItem] = useState<IncidentReport | null>(null)
+  const [kpSummonItem, setKpSummonItem] = useState<IncidentReport | null>(null);
 
   const [deleteConfirmItem, setDeleteConfirmItem] =
-    useState<IncidentReport | null>(null)
+    useState<IncidentReport | null>(null);
 
   const [purgeConfirmItem, setPurgeConfirmItem] =
-    useState<IncidentReport | null>(null)
+    useState<IncidentReport | null>(null);
 
   // Resident file incident form state
 
@@ -23556,7 +23723,7 @@ function IncidentsPage({
     description: "",
 
     isUrgent: false,
-  })
+  });
 
   // Admin walk-in blotter form state
 
@@ -23578,7 +23745,7 @@ function IncidentsPage({
     description: "",
 
     isUrgent: false,
-  })
+  });
 
   // Hotline form state (Add/Edit)
 
@@ -23596,7 +23763,7 @@ function IncidentsPage({
     tone: "green" as EmergencyHotline["tone"],
 
     icon: "shield" as IconName,
-  })
+  });
 
   // Admin mediation form state
 
@@ -23616,12 +23783,12 @@ function IncidentsPage({
     respondentName: "",
 
     respondentAddress: "",
-  })
+  });
 
   // Hotline handlers
 
   function openAddHotline() {
-    setEditingHotline(null)
+    setEditingHotline(null);
 
     setHotlineForm({
       name: "",
@@ -23637,13 +23804,13 @@ function IncidentsPage({
       tone: "green",
 
       icon: "phone",
-    })
+    });
 
-    setHotlineModalOpen(true)
+    setHotlineModalOpen(true);
   }
 
   function openEditHotline(hl: EmergencyHotline) {
-    setEditingHotline(hl)
+    setEditingHotline(hl);
 
     setHotlineForm({
       name: hl.name,
@@ -23659,43 +23826,43 @@ function IncidentsPage({
       tone: hl.tone,
 
       icon: hl.icon,
-    })
+    });
 
-    setHotlineModalOpen(true)
+    setHotlineModalOpen(true);
   }
 
   function handleSaveHotline() {
-    if (!hotlineForm.name.trim() || !hotlineForm.number.trim()) return
+    if (!hotlineForm.name.trim() || !hotlineForm.number.trim()) return;
 
     if (editingHotline) {
       onEditHotline({
         ...editingHotline,
 
         ...hotlineForm,
-      })
+      });
     } else {
       onAddHotline({
         id: `hl-${Date.now()}`,
 
         ...hotlineForm,
-      })
+      });
     }
 
-    setHotlineModalOpen(false)
+    setHotlineModalOpen(false);
   }
 
   function handleConfirmDeleteHotline() {
-    if (!deleteHotlineItem) return
+    if (!deleteHotlineItem) return;
 
-    onDeleteHotline(deleteHotlineItem.id)
+    onDeleteHotline(deleteHotlineItem.id);
 
-    setDeleteHotlineItem(null)
+    setDeleteHotlineItem(null);
   }
 
   // Manage incident handlers
 
   function openManage(item: IncidentReport) {
-    setManageModalItem(item)
+    setManageModalItem(item);
 
     setAdminForm({
       status: item.status,
@@ -23716,11 +23883,11 @@ function IncidentsPage({
       respondentName: item.respondentName || "",
 
       respondentAddress: item.respondentAddress || "",
-    })
+    });
   }
 
   function handleSaveManage() {
-    if (!manageModalItem) return
+    if (!manageModalItem) return;
 
     onUpdateIncident({
       ...manageModalItem,
@@ -23740,40 +23907,40 @@ function IncidentsPage({
       respondentName: adminForm.respondentName.trim(),
 
       respondentAddress: adminForm.respondentAddress.trim(),
-    })
+    });
 
-    setManageModalItem(null)
+    setManageModalItem(null);
   }
 
   // Soft delete & purge
 
   function handleConfirmSoftDelete() {
-    if (!deleteConfirmItem) return
+    if (!deleteConfirmItem) return;
 
-    onDeleteIncident(deleteConfirmItem.id)
+    onDeleteIncident(deleteConfirmItem.id);
 
-    setDeleteConfirmItem(null)
+    setDeleteConfirmItem(null);
 
     if (manageModalItem?.id === deleteConfirmItem.id) {
-      setManageModalItem(null)
+      setManageModalItem(null);
     }
   }
 
   function handleConfirmPurge() {
-    if (!purgeConfirmItem) return
+    if (!purgeConfirmItem) return;
 
     if (onPurgeIncident) {
-      onPurgeIncident(purgeConfirmItem.id)
+      onPurgeIncident(purgeConfirmItem.id);
     } else {
-      onDeleteIncident(purgeConfirmItem.id)
+      onDeleteIncident(purgeConfirmItem.id);
     }
 
-    setPurgeConfirmItem(null)
+    setPurgeConfirmItem(null);
   }
 
   function handleRestore(item: IncidentReport) {
     if (onRestoreIncident) {
-      onRestoreIncident(item.id)
+      onRestoreIncident(item.id);
     } else {
       onUpdateIncident({
         ...item,
@@ -23781,18 +23948,18 @@ function IncidentsPage({
         status: "Under Review",
 
         deletedAt: undefined,
-      })
+      });
 
-      onToast(`Blotter ${item.id} restored to active cases`)
+      onToast(`Blotter ${item.id} restored to active cases`);
     }
   }
 
   // Resident file submission
 
   function handleFileSubmit() {
-    if (!form.description.trim()) return
+    if (!form.description.trim()) return;
 
-    const newId = `INC-2025-${String(Math.floor(100 + Math.random() * 900))}`
+    const newId = `INC-2025-${String(Math.floor(100 + Math.random() * 900))}`;
 
     const newReport: IncidentReport = {
       id: newId,
@@ -23821,11 +23988,11 @@ function IncidentsPage({
 
       officerNotes:
         "Received via resident portal. Case queued for preliminary triage by Duty Desk Officer.",
-    }
+    };
 
-    onAddIncident(newReport)
+    onAddIncident(newReport);
 
-    setFileModalOpen(false)
+    setFileModalOpen(false);
 
     setForm({
       category: "Dispute / Noise",
@@ -23835,18 +24002,18 @@ function IncidentsPage({
       description: "",
 
       isUrgent: false,
-    })
+    });
 
-    setTab("blotter")
+    setTab("blotter");
   }
 
   // Admin walk-in submission
 
   function handleWalkInSubmit() {
     if (!walkInForm.complainantName.trim() || !walkInForm.description.trim())
-      return
+      return;
 
-    const newId = `INC-2025-${String(Math.floor(100 + Math.random() * 900))}`
+    const newId = `INC-2025-${String(Math.floor(100 + Math.random() * 900))}`;
 
     const newReport: IncidentReport = {
       id: newId,
@@ -23880,13 +24047,12 @@ function IncidentsPage({
 
       respondentContact: walkInForm.respondentContact.trim(),
 
-      officerNotes:
-        `Official walk-in blotter registered at ${bName} Hall by Duty Desk Officer.`,
-    }
+      officerNotes: `Official walk-in blotter registered at ${bName} Hall by Duty Desk Officer.`,
+    };
 
-    onAddIncident(newReport)
+    onAddIncident(newReport);
 
-    setWalkInModalOpen(false)
+    setWalkInModalOpen(false);
 
     setWalkInForm({
       complainantName: "",
@@ -23906,40 +24072,40 @@ function IncidentsPage({
       description: "",
 
       isUrgent: false,
-    })
+    });
   }
 
   function copyNumber(num: string, agency: string) {
-    copyToClipboard(num)
+    copyToClipboard(num);
 
-    onToast(`Copied hotline for ${agency}: ${num}`)
+    onToast(`Copied hotline for ${agency}: ${num}`);
   }
 
   // Counts breakdown
 
-  const activeIncidents = incidents.filter((i) => i.status !== "Deleted")
+  const activeIncidents = incidents.filter((i) => i.status !== "Deleted");
 
-  const deletedIncidents = incidents.filter((i) => i.status === "Deleted")
+  const deletedIncidents = incidents.filter((i) => i.status === "Deleted");
 
   const pendingCount = incidents.filter(
     (i) => i.status === "Under Review",
-  ).length
+  ).length;
 
   const scheduledCount = incidents.filter(
     (i) => i.status === "Scheduled Hearing",
-  ).length
+  ).length;
 
   const mediationCount = incidents.filter(
     (i) => i.status === "In Mediation",
-  ).length
+  ).length;
 
-  const resolvedCount = incidents.filter((i) => i.status === "Resolved").length
+  const resolvedCount = incidents.filter((i) => i.status === "Resolved").length;
 
   const dismissedCount = incidents.filter(
     (i) => i.status === "Dismissed",
-  ).length
+  ).length;
 
-  const deletedCount = deletedIncidents.length
+  const deletedCount = deletedIncidents.length;
 
   // Filtered lists for admin vs resident
 
@@ -23956,18 +24122,18 @@ function IncidentsPage({
               ? incidents.filter((i) => i.status === "Resolved")
               : blotterTab === "dismissed"
                 ? incidents.filter((i) => i.status === "Dismissed")
-                : deletedIncidents
+                : deletedIncidents;
 
   const displayIncidents = isAdmin
     ? adminBaseList.filter((item) => {
         if (purokFilter !== "all" && !item.purok.includes(purokFilter))
-          return false
+          return false;
 
         if (categoryFilter !== "all" && item.category !== categoryFilter)
-          return false
+          return false;
 
         if (search.trim()) {
-          const q = search.toLowerCase()
+          const q = search.toLowerCase();
 
           return (
             item.id.toLowerCase().includes(q) ||
@@ -23977,10 +24143,10 @@ function IncidentsPage({
             item.complainantName.toLowerCase().includes(q) ||
             (item.respondentName &&
               item.respondentName.toLowerCase().includes(q))
-          )
+          );
         }
 
-        return true
+        return true;
       })
     : incidents
 
@@ -23990,20 +24156,20 @@ function IncidentsPage({
 
         .filter((item) => {
           if (categoryFilter !== "all" && item.category !== categoryFilter)
-            return false
+            return false;
 
           if (search.trim()) {
-            const q = search.toLowerCase()
+            const q = search.toLowerCase();
 
             return (
               item.id.toLowerCase().includes(q) ||
               item.description.toLowerCase().includes(q) ||
               item.category.toLowerCase().includes(q)
-            )
+            );
           }
 
-          return true
-        })
+          return true;
+        });
 
   return (
     <div className="page inner-page">
@@ -24904,8 +25070,7 @@ function IncidentsPage({
               marginBottom: "14px",
             }}
           >
-            Submit an official report to the {bName} Lupon
-            Tagapamayapa desk.
+            Submit an official report to the {bName} Lupon Tagapamayapa desk.
           </p>
 
           <div className="form-grid">
@@ -25834,7 +25999,7 @@ function IncidentsPage({
                     assignedOfficer:
                       adminForm.assignedOfficer ||
                       manageModalItem.assignedOfficer,
-                  })
+                  });
                 }}
                 style={{ padding: "8px 14px", fontSize: "11.5px" }}
               >
@@ -26160,5 +26325,6 @@ function IncidentsPage({
         </Modal>
       )}
     </div>
-  )
+  );
 }
+/*  */
