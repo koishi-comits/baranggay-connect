@@ -10752,7 +10752,7 @@ function LoginView({
             </button>
           </p>
           <span className="secure-note">
-            Your information is protected and securely managed.
+            Barangay Connect Community Management System • Protected by encrypted authentication.
           </span>
         </form>
       </section>
@@ -18996,39 +18996,16 @@ function ResidentsPage({
 
   return (
     <div className="page inner-page">
-      {/* ── Page Heading ──────────────────────────────────────────────── */}
       <section className="page-heading">
         <div>
-          <p className="eyebrow">ADMINISTRATION & RESIDENT REGISTRY</p>
-          <h1>
-            Manage residents{" "}
-            {pendingList.length > 0 && (
-              <span className="heading-bubble">{pendingList.length} new</span>
-            )}
-          </h1>
+          <p className="eyebrow">ADMINISTRATION</p>
+          <h1>Manage Residents</h1>
           <p>
             Review applications, verify identity, manage resident access, and
             monitor community standing.
           </p>
         </div>
-        <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-          <button
-            type="button"
-            className="row-action"
-            style={{
-              color: "#b91c1c",
-              borderColor: "#fca5a5",
-              background: "#fff1f2",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "6px",
-              fontWeight: 600,
-            }}
-            onClick={() => setConfirmResetAllOpen(true)}
-            title="Reset all database accounts (keeps only master admin)"
-          >
-            <Icon name="trash" size={14} /> Reset all accounts
-          </button>
+        <div className="heading-actions">
           <button
             className="row-action"
             onClick={() => fetchResidents()}
