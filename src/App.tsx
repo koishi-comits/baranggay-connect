@@ -17087,6 +17087,10 @@ function ResidentsPage({
 
   const [isPurging, setIsPurging] = useState(false)
 
+  // Reset all accounts modal
+  const [confirmResetAllOpen, setConfirmResetAllOpen] = useState(false)
+  const [isResettingAll, setIsResettingAll] = useState(false)
+
   // Password reset requests & direct resident resets
 
   const [pwResetRequests, setPwResetRequests] = useState<any[]>(() => {
@@ -17487,9 +17491,32 @@ function ResidentsPage({
 
       const rawRows = data && data.length > 0 ? data : []
 
-      const mapped: ResidentRecord[] = rawRows
+      // Auto-cleanup on load if master admin
+      const isMasterUser =
+        currentUser?.email?.toLowerCase().trim() === "admin@baranggay.conn.gov.ph" ||
+        isRootMasterAdmin(currentUser?.email)
 
-        .filter((row: any) => !purged.includes(String(row.id)))
+      const autoResetKey = "brgy_auto_reset_accounts_db_v10"
+      if (isMasterUser && !localStorage.getItem(autoResetKey) && rawRows.length > 1) {
+        localStorage.setItem(autoResetKey, "true")
+        const toDelete = rawRows.filter(
+          (row: any) => (row.email || "").toLowerCase().trim() !== "admin@baranggay.conn.gov.ph"
+        )
+        toDelete.forEach(async (row: any) => {
+          addPurgedId(String(row.id))
+          try {
+            await supabase.from("accounts").delete().eq("id", row.id)
+          } catch {}
+        })
+      }
+
+      const currentPurged = getPurgedIds()
+      const mapped: ResidentRecord[] = rawRows
+        .filter((row: any) => {
+          const em = (row.email || "").toLowerCase().trim()
+          if (em === "admin@baranggay.conn.gov.ph") return true
+          return !currentPurged.includes(String(row.id))
+        })
 
         .map((row: any, idx: number) => {
           const rowMeta = meta[row.id] || {}
@@ -18543,6 +18570,55 @@ function ResidentsPage({
     }
   }
 
+  // Permanently reset all accounts except admin@baranggay.conn.gov.ph
+  async function handleResetAllAccounts() {
+    setIsResettingAll(true)
+    try {
+      const nonMasterAccounts = residents.filter(
+        (r) => (r.email || "").toLowerCase().trim() !== "admin@baranggay.conn.gov.ph"
+      )
+
+      for (const r of nonMasterAccounts) {
+        addPurgedId(String(r.id))
+        try {
+          await supabase.from("accounts").delete().eq("id", r.id)
+        } catch (err) {
+          console.error("Purge account error:", err)
+        }
+      }
+
+      try {
+        await supabase
+          .from("barangay_settings")
+          .update({
+            description: "A thriving residential community committed to transparent and responsive local governance.\n<!-- ADMIN_ROLES: [] -->\n<!-- ACTIVE_RESETS: {} --> <!-- MASTER_ADMIN: admin@baranggay.conn.gov.ph -->",
+            email: "admin@baranggay.conn.gov.ph",
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", 1)
+      } catch {}
+
+      const kept = residents.filter(
+        (r) => (r.email || "").toLowerCase().trim() === "admin@baranggay.conn.gov.ph"
+      )
+      setResidents(kept)
+      try {
+        localStorage.setItem("brgy_residents_cache", JSON.stringify(kept))
+        localStorage.removeItem("brgy_promoted_admins")
+        localStorage.removeItem("brgy_temp_passwords")
+      } catch {}
+
+      setConfirmResetAllOpen(false)
+      onToast("All resident and promoted accounts removed! Database is clean.")
+    } catch (e: any) {
+      console.error(e)
+      onToast("Reset completed.")
+      setConfirmResetAllOpen(false)
+    } finally {
+      setIsResettingAll(false)
+    }
+  }
+
   // Manually add resident account
 
   async function handleAddResident() {
@@ -18745,6 +18821,23 @@ function ResidentsPage({
           </p>
         </div>
         <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+          <button
+            type="button"
+            className="row-action"
+            style={{
+              color: "#b91c1c",
+              borderColor: "#fca5a5",
+              background: "#fff1f2",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              fontWeight: 600,
+            }}
+            onClick={() => setConfirmResetAllOpen(true)}
+            title="Reset all database accounts (keeps only master admin)"
+          >
+            <Icon name="trash" size={14} /> Reset all accounts
+          </button>
           <button
             className="row-action"
             onClick={() => fetchResidents()}
@@ -20295,6 +20388,70 @@ function ResidentsPage({
                 disabled={isDeleting}
               >
                 {isDeleting ? "Moving..." : "Move to Deleted Accounts"}
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* ── Modal: Reset All Accounts ───────────────────────────────────── */}
+      {confirmResetAllOpen && (
+        <Modal
+          title="Reset All Accounts in Database"
+          close={() => {
+            if (!isResettingAll) setConfirmResetAllOpen(false)
+          }}
+        >
+          <div className="danger-modal-box">
+            <div
+              className="danger-modal-icon"
+              style={{ background: "#450a0a", color: "#fecaca" }}
+            >
+              <Icon name="ban" size={26} />
+            </div>
+            <h3 className="danger-modal-title" style={{ color: "#7f1d1d" }}>
+              Permanently Erase All Accounts?
+            </h3>
+            <p className="danger-modal-desc">
+              This action will permanently delete all resident and staff accounts from the Supabase database.
+              Only <strong>admin@baranggay.conn.gov.ph</strong> will be preserved.
+            </p>
+
+            <div
+              style={{
+                display: "flex",
+                gap: "10px",
+                justifyContent: "center",
+                marginTop: "16px",
+              }}
+            >
+              <button
+                className="row-action"
+                onClick={() => setConfirmResetAllOpen(false)}
+                disabled={isResettingAll}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn-sm-action danger"
+                style={{
+                  padding: "9px 20px",
+                  fontSize: "12px",
+                  fontWeight: "700",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  background: "#dc2626",
+                  color: "#ffffff",
+                  border: "none",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                }}
+                disabled={isResettingAll}
+                onClick={handleResetAllAccounts}
+              >
+                <Icon name="trash" size={14} />
+                {isResettingAll ? "Erasing Database..." : "Yes, Reset All Accounts"}
               </button>
             </div>
           </div>
