@@ -1367,43 +1367,12 @@ export function cleanLegacyPlaceholderCaches() {
     localStorage.removeItem("brgy_promoted_admins");
     localStorage.removeItem("brgy_temp_passwords");
     localStorage.removeItem("brgy_pw_reset_requests");
+    localStorage.removeItem("barangay_purged_resident_ids");
     localStorage.removeItem("barangay_info");
     localStorage.setItem(
       "brgy_master_admin_email",
       "admin@baranggay.conn.gov.ph",
     );
-
-    // Purge legacy placeholder accounts so they never linger in cache
-    const legacyOldAccounts = [
-      "joel@email.com",
-      "julianevocal@email.com",
-      "ryan.montes001@gmail.com",
-      "maria.reyes@email.com",
-      "sephbueta@gmail.com",
-      "yssabritbrit@gmail.com",
-      "ryan@gmail.com",
-      "admin@barangay.gov.ph",
-      "admin@sanisidro.ph",
-      "admin@gov.ph",
-    ];
-    try {
-      const purgedRaw =
-        localStorage.getItem("barangay_purged_resident_ids") || "[]";
-      let purgedList: string[] = JSON.parse(purgedRaw);
-      // NEVER allow official admin emails to be purged
-      purgedList = purgedList.filter(
-        (x) =>
-          x !== "admin@sanisidro.gov.ph" && x !== "admin@baranggay.conn.gov.ph",
-      );
-      legacyOldAccounts.forEach((em) => {
-        if (!purgedList.includes(em)) purgedList.push(em);
-      });
-      localStorage.setItem(
-        "barangay_purged_resident_ids",
-        JSON.stringify(purgedList),
-      );
-    } catch {}
-
     localStorage.setItem(cleanedFlag, "true");
   } catch {}
 }
@@ -1495,7 +1464,7 @@ export function parseMasterAdminFromDesc(desc?: string): string | null {
 export function isProtectedAdminEmail(email?: string): boolean {
   if (!email) return false;
   const e = email.toLowerCase().trim();
-  return e === "admin@baranggay.conn.gov.ph" || e === "admin@sanisidro.gov.ph";
+  return e === "admin@baranggay.conn.gov.ph";
 }
 
 export function isRootMasterAdmin(email?: string, desc?: string): boolean {
@@ -1509,7 +1478,7 @@ export function isRootMasterAdmin(email?: string, desc?: string): boolean {
   const fromDesc = parseMasterAdminFromDesc(desc);
   if (fromDesc && e === fromDesc) return true;
 
-  return e === "admin@baranggay.conn.gov.ph" || e === "admin@sanisidro.gov.ph";
+  return e === "admin@baranggay.conn.gov.ph";
 }
 
 export function checkIsAdmin(
@@ -4049,62 +4018,55 @@ export default function App() {
 
           const meta = getResidentMeta();
 
-          const purged = getPurgedIds();
+          const mappedResidents: ResidentRecord[] = dbAccounts.map((row: any) => {
+            const rowMeta = meta[row.id] || {};
 
-          const mappedResidents: ResidentRecord[] = dbAccounts
-            .filter((row: any) => {
-              const em = (row.email || "").toLowerCase().trim();
-              if (isProtectedAdminEmail(em)) return true;
-              return !purged.includes(String(row.id)) && !purged.includes(em);
-            })
-            .map((row: any) => {
-              const rowMeta = meta[row.id] || {};
+            let finalStatus = (
+              rowMeta.statusOverride ||
+              row.status ||
+              "active"
+            ).toLowerCase() as any;
 
-              let finalStatus = (
-                rowMeta.statusOverride ||
-                row.status ||
-                "active"
-              ).toLowerCase() as any;
+            if (finalStatus === "verified") finalStatus = "active";
 
-              if (finalStatus === "verified") finalStatus = "active";
+            const address = row.address || "Barangay Labangan";
 
-              const address = row.address || "Barangay Labangan";
+            let purok = row.purok || "Purok 1";
 
-              let purok = row.purok || "Purok 1";
+            const purokMatch = address.match(/Purok\s*\d+/i);
 
-              const purokMatch = address.match(/Purok\s*\d+/i);
+            if (purokMatch) purok = purokMatch[0];
 
-              if (purokMatch) purok = purokMatch[0];
+            const rowEmail = (row.email || "").toLowerCase().trim();
+            const rowRole = isProtectedAdminEmail(rowEmail)
+              ? "admin"
+              : (row.role as any) || "resident";
 
-              const rowEmail = (row.email || "").toLowerCase().trim();
-              const rowRole = isProtectedAdminEmail(rowEmail)
-                ? "admin"
-                : (row.role as any) || "resident";
+            return {
+              id: String(row.id),
 
-              return {
-                id: String(row.id),
+              name:
+                row.full_name ||
+                row.name ||
+                (row.email ? row.email.split("@")[0] : "Resident"),
 
-                name:
-                  row.name ||
-                  (row.email ? row.email.split("@")[0] : "Resident"),
+              email: rowEmail,
 
-                email: rowEmail,
+              mobile: row.mobile || row.phone || "",
 
-                mobile: row.mobile || row.phone || "",
+              address,
 
-                address,
+              purok,
 
-                purok,
+              role: rowRole,
 
-                role: rowRole,
+              status: finalStatus,
 
-                status: finalStatus,
+              registered: formatResidentDate(row.created_at),
 
-                registered: formatResidentDate(row.created_at),
-
-                isOnline: false,
-              };
-            });
+              isOnline: false,
+            };
+          });
 
           setAllRegisteredResidents(mappedResidents);
 
@@ -15183,48 +15145,42 @@ function AdminMessagesPage({
         .order("created_at", { ascending: false })
         .then(({ data }) => {
           if (data) {
-            const purged = getPurgedIds();
             const meta = getResidentMeta();
-            const mapped: ResidentRecord[] = data
-              .filter((row: any) => {
-                const em = (row.email || "").toLowerCase().trim();
-                if (isProtectedAdminEmail(em)) return true;
-                return !purged.includes(String(row.id)) && !purged.includes(em);
-              })
-              .map((row: any) => {
-                const rowMeta = meta[row.id] || {};
-                let finalStatus = (
-                  rowMeta.statusOverride ||
-                  row.status ||
-                  "active"
-                ).toLowerCase() as any;
-                if (finalStatus === "verified") finalStatus = "active";
+            const mapped: ResidentRecord[] = data.map((row: any) => {
+              const rowMeta = meta[row.id] || {};
+              let finalStatus = (
+                rowMeta.statusOverride ||
+                row.status ||
+                "active"
+              ).toLowerCase() as any;
+              if (finalStatus === "verified") finalStatus = "active";
 
-                const address = row.address || `Barangay ${rawBarangayName}`;
-                let purok = row.purok || "Purok 1";
-                const purokMatch = address.match(/Purok\s*\d+/i);
-                if (purokMatch) purok = purokMatch[0];
+              const address = row.address || `Barangay ${rawBarangayName}`;
+              let purok = row.purok || "Purok 1";
+              const purokMatch = address.match(/Purok\s*\d+/i);
+              if (purokMatch) purok = purokMatch[0];
 
-                const rEmail = (row.email || "").toLowerCase().trim();
-                const rRole = isProtectedAdminEmail(rEmail)
-                  ? "admin"
-                  : (row.role as any) || "resident";
+              const rEmail = (row.email || "").toLowerCase().trim();
+              const rRole = isProtectedAdminEmail(rEmail)
+                ? "admin"
+                : (row.role as any) || "resident";
 
-                return {
-                  id: String(row.id),
-                  name:
-                    row.name ||
-                    (row.email ? row.email.split("@")[0] : "Resident"),
-                  email: rEmail,
-                  mobile: row.mobile || row.phone || "",
-                  address,
-                  purok,
-                  role: rRole,
-                  status: finalStatus,
-                  registered: formatResidentDate(row.created_at),
-                  isOnline: false,
-                };
-              });
+              return {
+                id: String(row.id),
+                name:
+                  row.full_name ||
+                  row.name ||
+                  (row.email ? row.email.split("@")[0] : "Resident"),
+                email: rEmail,
+                mobile: row.phone || row.mobile || "",
+                address,
+                purok,
+                role: rRole,
+                status: finalStatus,
+                registered: formatResidentDate(row.created_at),
+                isOnline: false,
+              };
+            });
 
             setLoadedResidents(mapped);
             try {
@@ -15276,19 +15232,11 @@ function AdminMessagesPage({
     const set = new Set<string>();
     if (masterAdminEmail) set.add(masterAdminEmail);
     set.add("admin@baranggay.conn.gov.ph");
-    set.add("admin@sanisidro.gov.ph");
     (promotedAdmins || getPromotedAdminEmails()).forEach((em: string) => {
       if (em) set.add(em.toLowerCase().trim());
     });
-    const purged = getPurgedIds();
     loadedResidents.forEach((r) => {
       const rEmail = (r.email || "").toLowerCase().trim();
-      if (
-        !isProtectedAdminEmail(rEmail) &&
-        (purged.includes(String(r.id)) || purged.includes(rEmail))
-      ) {
-        return;
-      }
       if ((r.role === "admin" || isProtectedAdminEmail(rEmail)) && r.email) {
         set.add(rEmail);
       }
@@ -15335,7 +15283,7 @@ function AdminMessagesPage({
         ? activeResidentThreads
         : sortedActiveThreads;
 
-  // Other available administrators (strictly excluding current user!)
+  // Other available administrators strictly from database accounts (strictly excluding current user!)
   const availableAdmins = useMemo(() => {
     const list: {
       email: string;
@@ -15345,43 +15293,26 @@ function AdminMessagesPage({
       id?: string;
     }[] = [];
     const seen = new Set<string>();
-    const purged = getPurgedIds();
 
     allAdminEmails.forEach((adminEmail) => {
       if (!adminEmail) return;
       if (isSelf(adminEmail)) return; // Current user can NEVER chat with themselves!
       if (seen.has(adminEmail)) return;
-      seen.add(adminEmail);
 
       const res = loadedResidents.find(
         (r) => r.email.toLowerCase().trim() === adminEmail,
       );
-      if (
-        res &&
-        !isProtectedAdminEmail(adminEmail) &&
-        (purged.includes(String(res.id)) ||
-          purged.includes(res.email.toLowerCase().trim()))
-      ) {
-        return;
-      }
+      // ONLY include if this admin account actually exists in database loadedResidents!
+      if (!res) return;
 
-      const isSanIsidro = adminEmail === "admin@sanisidro.gov.ph";
-      const isMaster =
-        adminEmail === masterAdminEmail ||
-        adminEmail === "admin@baranggay.conn.gov.ph";
+      seen.add(adminEmail);
 
       list.push({
-        id: res?.id,
+        id: res.id,
         email: adminEmail,
-        name:
-          res?.name ||
-          (isSanIsidro
-            ? `${barangayInfo?.captain || "Barangay Captain"} (Administrator)`
-            : isMaster
-              ? "Barangay Admin (Master Admin)"
-              : adminEmail.split("@")[0]),
+        name: res.name || adminEmail.split("@")[0],
         role: "Administrator",
-        purok: res?.purok,
+        purok: res.purok,
       });
     });
 
@@ -15391,8 +15322,6 @@ function AdminMessagesPage({
     myEmail,
     currentUser,
     loadedResidents,
-    masterAdminEmail,
-    barangayInfo?.captain,
   ]);
 
   const availableAdminsToStart = availableAdmins.filter(
@@ -15411,15 +15340,12 @@ function AdminMessagesPage({
 
   // Other registered residents who are not currently in active threads
   const availableResidents = useMemo(() => {
-    const purged = getPurgedIds();
     return loadedResidents.filter((r) => {
       const resEmail = (r.email || "").toLowerCase().trim();
       if (!resEmail) return false;
       if (isSelf(resEmail, r.id)) return false; // Current user can NEVER chat with themselves!
-      if (isAdminEmail(resEmail)) return false; // Admins are not residents!
-      if (purged.includes(String(r.id)) || purged.includes(resEmail)) {
-        return false;
-      }
+      if (isAdminEmail(resEmail) || r.role === "admin") return false; // Admins are not residents!
+      if (r.status === "deleted" || r.status === "banned") return false;
       return !allEmails.includes(resEmail);
     });
   }, [loadedResidents, myEmail, currentUser, allAdminEmails, allEmails]);
@@ -17166,41 +17092,15 @@ function saveResidentMeta(
 }
 
 function getPurgedIds(): string[] {
-  try {
-    const raw = localStorage.getItem("barangay_purged_resident_ids");
-
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
+  return [];
 }
 
-function addPurgedId(id: string) {
-  try {
-    const list = getPurgedIds();
-
-    if (!list.includes(id)) {
-      list.push(id);
-
-      localStorage.setItem(
-        "barangay_purged_resident_ids",
-
-        JSON.stringify(list),
-      );
-    }
-  } catch (e) {
-    console.error(e);
-  }
+function addPurgedId(_id: string) {
+  // Database is the single source of truth; no local suppression
 }
 
-function removePurgedId(id: string) {
-  try {
-    const list = getPurgedIds().filter((x) => x !== id);
-
-    localStorage.setItem("barangay_purged_resident_ids", JSON.stringify(list));
-  } catch (e) {
-    console.error(e);
-  }
+function removePurgedId(_id: string) {
+  // Database is the single source of truth; no local suppression
 }
 
 function formatResidentDate(isoDate?: string): string {
@@ -17841,22 +17741,9 @@ function ResidentsPage({
 
       const meta = getResidentMeta();
 
-      const purged = getPurgedIds();
-
       const rawRows = data && data.length > 0 ? data : [];
 
-      const currentPurged = getPurgedIds();
-      const mapped: ResidentRecord[] = rawRows
-        .filter((row: any) => {
-          const em = (row.email || "").toLowerCase().trim();
-          if (isProtectedAdminEmail(em)) return true;
-          return (
-            !currentPurged.includes(String(row.id)) &&
-            !currentPurged.includes(em)
-          );
-        })
-
-        .map((row: any, idx: number) => {
+      const mapped: ResidentRecord[] = rawRows.map((row: any, idx: number) => {
           const rowMeta = meta[row.id] || {};
 
           let finalStatus = (
@@ -20774,9 +20661,8 @@ function ResidentsPage({
             </h3>
             <p className="danger-modal-desc">
               This action will permanently delete all resident accounts from the
-              Supabase database. Official administrators (
-              <strong>admin@baranggay.conn.gov.ph</strong> &{" "}
-              <strong>admin@sanisidro.gov.ph</strong>) will be preserved.
+              Supabase database. Official administrator (
+              <strong>admin@baranggay.conn.gov.ph</strong>) will be preserved.
             </p>
 
             <div
@@ -23040,7 +22926,7 @@ function BarangaySettingsPage({
                       marginTop: 2,
                     }}
                   >
-                    {currentUser?.name || "Kap. Joseph M. Bueta"} (
+                    {currentUser?.name || "Barangay Administrator"} (
                     {currentUser?.email || "admin@baranggay.conn.gov.ph"})
                   </div>
                   <div style={{ fontSize: 11, color: "#6b8077", marginTop: 2 }}>
