@@ -1316,93 +1316,21 @@ export const initialDocumentRequests: DocumentRequest[] = []
 
 export function cleanLegacyPlaceholderCaches() {
   try {
-    const cleanedFlag = "brgy_cleaned_placeholders_v5"
+    const cleanedFlag = "brgy_cleaned_placeholders_reset_v10"
 
     if (localStorage.getItem(cleanedFlag)) return
 
     localStorage.removeItem("brgy_announcements_seeded")
-
-    const rawAnn = localStorage.getItem("brgy_announcements_cache")
-
-    if (rawAnn) {
-      try {
-        const list = JSON.parse(rawAnn)
-
-        if (Array.isArray(list)) {
-          const filtered = list.filter((a: any) => {
-            const t = (a.title || "").toLowerCase().trim()
-
-            return (
-              t !== "scheduled water interruption" &&
-              t !== "free medical and dental mission"
-            )
-          })
-
-          localStorage.setItem(
-            "brgy_announcements_cache",
-
-            JSON.stringify(filtered),
-          )
-        }
-      } catch {}
-    }
-
-    const rawDocs = localStorage.getItem("barangay_document_requests")
-
-    if (rawDocs) {
-      try {
-        const list = JSON.parse(rawDocs)
-
-        if (Array.isArray(list)) {
-          const filtered = list.filter(
-            (d: any) => !String(d.id || "").startsWith("REQ-2025-00"),
-          )
-
-          localStorage.setItem(
-            "barangay_document_requests",
-
-            JSON.stringify(filtered),
-          )
-        }
-      } catch {}
-    }
-
-    const rawInc = localStorage.getItem("barangay_incidents_cache")
-
-    if (rawInc) {
-      try {
-        const list = JSON.parse(rawInc)
-
-        if (Array.isArray(list)) {
-          const filtered = list.filter(
-            (i: any) =>
-              !["INC-2025-042", "INC-2025-041", "INC-2025-039"].includes(i.id),
-          )
-
-          localStorage.setItem(
-            "barangay_incidents_cache",
-
-            JSON.stringify(filtered),
-          )
-        }
-      } catch {}
-    }
-
-    const rawEvents = localStorage.getItem("brgy_events_cache")
-
-    if (rawEvents) {
-      try {
-        const list = JSON.parse(rawEvents)
-
-        if (Array.isArray(list)) {
-          const filtered = list.filter(
-            (e: any) => ![1, 2, 3].includes(Number(e.id)),
-          )
-
-          localStorage.setItem("brgy_events_cache", JSON.stringify(filtered))
-        }
-      } catch {}
-    }
+    localStorage.removeItem("brgy_announcements_cache")
+    localStorage.removeItem("barangay_document_requests")
+    localStorage.removeItem("barangay_incidents_cache")
+    localStorage.removeItem("brgy_events_cache")
+    localStorage.removeItem("brgy_residents_cache")
+    localStorage.removeItem("brgy_deleted_threads")
+    localStorage.removeItem("barangay_message_threads")
+    localStorage.removeItem("brgy_promoted_admins")
+    localStorage.removeItem("brgy_temp_passwords")
+    localStorage.setItem("brgy_master_admin_email", "admin@baranggay.conn.gov.ph")
 
     localStorage.setItem(cleanedFlag, "true")
   } catch {}
